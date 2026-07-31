@@ -10,7 +10,8 @@ WorkingDirectory=/opt/rok-vpn/portal
 # ── Variables de entorno ────────────────────────────────────────────────────
 # CAMBIA ROK_PORTAL_PASSWORD antes de iniciar el servicio.
 Environment="ROK_PORTAL_PASSWORD=changeme"
-Environment="ROK_SECRET_KEY="
+# portal-setup.sh inyecta aquí una clave aleatoria durante la instalación.
+Environment="ROK_SECRET_KEY=REPLACE_ME_AT_INSTALL"
 Environment="ROK_DB_PATH=/opt/rok-vpn/db/peers.db"
 Environment="ROK_PEERS_DIR=/opt/rok-vpn/peers"
 Environment="ROK_VPS_ENDPOINT=74.208.44.254:1194"

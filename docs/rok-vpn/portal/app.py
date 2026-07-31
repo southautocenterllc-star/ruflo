@@ -12,7 +12,10 @@ from flask import (Flask, flash, redirect, render_template, request,
                    send_file, session, url_for)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("ROK_SECRET_KEY", secrets.token_hex(32))
+# Debe venir del entorno: con varios workers de gunicorn, una clave generada
+# por proceso rompería las sesiones. El fallback solo sirve para desarrollo
+# con un único worker.
+app.secret_key = os.environ.get("ROK_SECRET_KEY") or secrets.token_hex(32)
 
 # ── Config from environment ────────────────────────────────────────────────────
 DB_PATH      = os.environ.get("ROK_DB_PATH",       "/opt/rok-vpn/db/peers.db")
@@ -37,7 +40,7 @@ def init_db():
         conn.execute("""
             CREATE TABLE IF NOT EXISTS peers (
                 id             INTEGER PRIMARY KEY AUTOINCREMENT,
-                name           TEXT    UNIQUE NOT NULL,
+                name           TEXT    NOT NULL,
                 email          TEXT,
                 public_key     TEXT    NOT NULL,
                 private_key    TEXT    NOT NULL,
@@ -47,6 +50,13 @@ def init_db():
                 revoked_at     TEXT,
                 revoked        INTEGER DEFAULT 0
             )
+        """)
+        # El nombre solo debe ser único entre peers activos: revocar a un
+        # cliente debe permitir volver a darlo de alta con el mismo nombre
+        # (p. ej. tras perder el dispositivo), conservando el histórico.
+        conn.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_peers_name_active
+                ON peers(name) WHERE revoked = 0
         """)
 
 
@@ -212,12 +222,14 @@ def admin_add():
 @app.route("/admin/revoke/<name>", methods=["POST"])
 @require_admin
 def admin_revoke(name: str):
+    # Filtramos por revoked = 0: un mismo nombre puede aparecer varias veces
+    # en el histórico y solo una de esas filas está activa.
     with get_db() as conn:
         row = conn.execute(
-            "SELECT * FROM peers WHERE name = ?", (name,)
+            "SELECT * FROM peers WHERE name = ? AND revoked = 0", (name,)
         ).fetchone()
 
-    if not row or row["revoked"]:
+    if not row:
         flash("Cliente no encontrado o ya revocado", "warning")
         return redirect(url_for("admin"))
 
@@ -230,8 +242,8 @@ def admin_revoke(name: str):
     now = datetime.now(timezone.utc).isoformat()
     with get_db() as conn:
         conn.execute(
-            "UPDATE peers SET revoked = 1, revoked_at = ? WHERE name = ?",
-            (now, name),
+            "UPDATE peers SET revoked = 1, revoked_at = ? WHERE id = ?",
+            (now, row["id"]),
         )
 
     flash(f"Cliente «{name}» revocado", "success")

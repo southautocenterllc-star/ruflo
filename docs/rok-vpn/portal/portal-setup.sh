@@ -29,6 +29,7 @@ cp "$SCRIPT_DIR/app.py"                        "$PORTAL_DIR/app.py"
 cp "$SCRIPT_DIR/templates/login.html"          "$PORTAL_DIR/templates/login.html"
 cp "$SCRIPT_DIR/templates/admin.html"          "$PORTAL_DIR/templates/admin.html"
 cp "$SCRIPT_DIR/templates/download.html"       "$PORTAL_DIR/templates/download.html"
+cp "$SCRIPT_DIR/templates/404.html"            "$PORTAL_DIR/templates/404.html"
 
 # ── 4. Entorno virtual Python ─────────────────────────────────────────────────
 echo "[4/7] Creando entorno virtual..."
@@ -54,12 +55,25 @@ fi
 # ── 6. Systemd service ────────────────────────────────────────────────────────
 echo "[6/7] Instalando servicio systemd..."
 cp "$SCRIPT_DIR/rok-portal.service" "/etc/systemd/system/${SERVICE_NAME}.service"
+
+# Generar clave de sesión Flask persistente. Sin esto, cada worker de gunicorn
+# usaría una clave distinta y las sesiones se romperían entre peticiones.
+SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+if grep -q "ROK_SECRET_KEY=REPLACE_ME_AT_INSTALL" "$SERVICE_FILE"; then
+  SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+  sed -i "s|ROK_SECRET_KEY=REPLACE_ME_AT_INSTALL|ROK_SECRET_KEY=${SECRET_KEY}|" \
+    "$SERVICE_FILE"
+  chmod 600 "$SERVICE_FILE"
+  echo "    Clave de sesión generada."
+else
+  echo "    Clave de sesión ya presente, se conserva."
+fi
+
 systemctl daemon-reload
 systemctl enable "$SERVICE_NAME"
 
 # ── 7. Verificar contraseña de portal ────────────────────────────────────────
 echo "[7/7] Verificando configuración..."
-SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 if grep -q "ROK_PORTAL_PASSWORD=changeme" "$SERVICE_FILE"; then
   echo ""
   echo "  ╔══════════════════════════════════════════════════════════════╗"

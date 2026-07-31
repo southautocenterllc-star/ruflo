@@ -1,0 +1,40 @@
+[Unit]
+Description=ROK VPN Portal
+After=network-online.target wg-quick@wg0.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/rok-vpn/portal
+
+# ── Variables de entorno ────────────────────────────────────────────────────
+# CAMBIA ROK_PORTAL_PASSWORD antes de iniciar el servicio.
+Environment="ROK_PORTAL_PASSWORD=changeme"
+Environment="ROK_SECRET_KEY="
+Environment="ROK_DB_PATH=/opt/rok-vpn/db/peers.db"
+Environment="ROK_PEERS_DIR=/opt/rok-vpn/peers"
+Environment="ROK_VPS_ENDPOINT=74.208.44.254:1194"
+Environment="ROK_WG_IFACE=wg0"
+Environment="ROK_WG_SUBNET=10.100.0"
+Environment="ROK_DNS=10.100.0.1"
+Environment="ROK_PORTAL_PORT=8080"
+
+# Abrir puerto 8080 si no está abierto aún (idempotente)
+ExecStartPre=/bin/bash -c \
+  "nft list ruleset | grep -q 'tcp dport 8080 accept' || \
+   nft add rule inet filter input tcp dport 8080 accept"
+
+ExecStart=/opt/rok-vpn/portal/venv/bin/gunicorn \
+  --bind 0.0.0.0:8080 \
+  --workers 2 \
+  --timeout 60 \
+  --access-logfile - \
+  --error-logfile - \
+  app:app
+
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -35,7 +35,7 @@ cp "$SCRIPT_DIR/templates/404.html"            "$PORTAL_DIR/templates/404.html"
 echo "[4/7] Creando entorno virtual..."
 python3 -m venv "$PORTAL_DIR/venv"
 "$PORTAL_DIR/venv/bin/pip" install --upgrade pip -q
-"$PORTAL_DIR/venv/bin/pip" install flask "qrcode[pil]" gunicorn -q
+"$PORTAL_DIR/venv/bin/pip" install flask "qrcode[pil]" gunicorn bcrypt PyJWT -q
 
 # ── 5. Firewall — abrir TCP 8080 ──────────────────────────────────────────────
 echo "[5/7] Abriendo TCP $PORTAL_PORT en nftables..."
@@ -61,12 +61,13 @@ cp "$SCRIPT_DIR/rok-portal.service" "/etc/systemd/system/${SERVICE_NAME}.service
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 if grep -q "ROK_SECRET_KEY=REPLACE_ME_AT_INSTALL" "$SERVICE_FILE"; then
   SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
-  sed -i "s|ROK_SECRET_KEY=REPLACE_ME_AT_INSTALL|ROK_SECRET_KEY=${SECRET_KEY}|" \
-    "$SERVICE_FILE"
+  JWT_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+  sed -i "s|ROK_SECRET_KEY=REPLACE_ME_AT_INSTALL\b|ROK_SECRET_KEY=${SECRET_KEY}|" "$SERVICE_FILE"
+  sed -i "s|ROK_JWT_SECRET=REPLACE_ME_AT_INSTALL_JWT|ROK_JWT_SECRET=${JWT_KEY}|" "$SERVICE_FILE"
   chmod 600 "$SERVICE_FILE"
-  echo "    Clave de sesión generada."
+  echo "    Claves de sesión y JWT generadas."
 else
-  echo "    Clave de sesión ya presente, se conserva."
+  echo "    Claves ya presentes, se conservan."
 fi
 
 systemctl daemon-reload

@@ -31,14 +31,18 @@
     <img src="/download/{{ token }}/qr.png" alt="QR WireGuard"
          class="qr-img mx-auto d-block mb-4">
 
+    <p class="small text-info mb-2">
+      ✅ <strong>Recomendado:</strong> la config wstunnel funciona en cualquier red,
+      incluso si tu ISP bloquea UDP.
+    </p>
     <div class="d-grid gap-2">
-      <a href="/download/{{ token }}/config"
-         class="btn btn-primary">
-        ⬇ Descargar config (conexión directa UDP)
-      </a>
       <a href="/download/{{ token }}/wstunnel-config"
-         class="btn btn-outline-info">
-        ⬇ Descargar config (wstunnel — si UDP está bloqueado)
+         class="btn btn-primary">
+        ⬇ Descargar config wstunnel (TCP 443 — recomendada)
+      </a>
+      <a href="/download/{{ token }}/config"
+         class="btn btn-outline-secondary">
+        ⬇ Descargar config directa (UDP 1194)
       </a>
     </div>
   </div>

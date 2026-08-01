@@ -5,9 +5,10 @@ import sys
 import tempfile
 
 tmp = tempfile.mkdtemp()
-os.environ["ROK_DB_PATH"] = os.path.join(tmp, "peers.db")
+os.environ["ROK_DB_PATH"]       = os.path.join(tmp, "peers.db")
+os.environ["ROK_PEERS_DIR"]     = os.path.join(tmp, "peers")
 os.environ["ROK_PORTAL_PASSWORD"] = "test-pass-smoke"
-os.environ["ROK_SECRET_KEY"] = "a" * 64
+os.environ["ROK_SECRET_KEY"]    = "a" * 64
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -103,6 +104,13 @@ check("wg set wg0 peer ... allowed-ips 10.100.0.2/32",
 check("wg-quick save wg0 tras alta",
       ["wg-quick", "save", "wg0"] in CALLS, CALLS)
 
+# 8b. conf files saved to PEERS_DIR
+peers_dir = os.environ["ROK_PEERS_DIR"]
+check("rok-vpn-smoke-1.conf guardado en PEERS_DIR",
+      os.path.isfile(os.path.join(peers_dir, "rok-vpn-smoke-1.conf")))
+check("rok-vpn-smoke-1-wstunnel.conf guardado en PEERS_DIR",
+      os.path.isfile(os.path.join(peers_dir, "rok-vpn-smoke-1-wstunnel.conf")))
+
 # 10. nombre duplicado rechazado
 r = c.post("/admin/add", data={"name": "smoke-1"}, follow_redirects=True)
 check("POST /admin/add nombre duplicado → error",
@@ -167,6 +175,12 @@ r = c.post("/admin/revoke/smoke-1", follow_redirects=True)
 check("POST /admin/revoke con sesión → revocado",
       "revocado" in r.data.decode() and "Revocado" in r.data.decode())
 
+# 18b. conf files deleted from PEERS_DIR after revoke
+check("rok-vpn-smoke-1.conf borrado tras revocación",
+      not os.path.isfile(os.path.join(peers_dir, "rok-vpn-smoke-1.conf")))
+check("rok-vpn-smoke-1-wstunnel.conf borrado tras revocación",
+      not os.path.isfile(os.path.join(peers_dir, "rok-vpn-smoke-1-wstunnel.conf")))
+
 # 19. wg set ... remove fue llamado
 check("wg set wg0 peer ... remove",
       any(x[:2] == ["wg", "set"] and "remove" in x for x in CALLS),
@@ -211,4 +225,4 @@ print()
 if failures:
     print(f"❌ {len(failures)} FALLO(S): {failures}")
     sys.exit(1)
-print("✅ 26/26 PASS")
+print("✅ 30/30 PASS")

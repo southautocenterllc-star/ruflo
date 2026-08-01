@@ -61,6 +61,7 @@ def init_db():
 
 
 init_db()
+os.makedirs(PEERS_DIR, exist_ok=True)
 
 
 # ── WireGuard helpers ──────────────────────────────────────────────────────────
@@ -130,6 +131,33 @@ def build_wstunnel_config(priv: str, ip: str, server_pubkey: str,
     # wstunnel client exposes WireGuard on localhost:51820
     return build_config(priv, ip, server_pubkey,
                         endpoint="127.0.0.1:51820", dns=dns)
+
+
+def _save_peer_configs(name: str, priv: str, ip: str) -> None:
+    """Escribe ambas variantes de .conf en PEERS_DIR. Fallo no es fatal."""
+    try:
+        server_pubkey = wg_get_server_pubkey()
+        pairs = [
+            (f"rok-vpn-{name}.conf",         build_config(priv, ip, server_pubkey, VPS_ENDPOINT)),
+            (f"rok-vpn-{name}-wstunnel.conf", build_wstunnel_config(priv, ip, server_pubkey)),
+        ]
+        for fname, content in pairs:
+            with open(os.path.join(PEERS_DIR, fname), "w") as fh:
+                fh.write(content)
+    except Exception as exc:
+        app.logger.warning("No se pudo guardar config en PEERS_DIR: %s", exc)
+
+
+def _delete_peer_configs(name: str) -> None:
+    """Borra los .conf de PEERS_DIR al revocar. Fallo no es fatal."""
+    for fname in (f"rok-vpn-{name}.conf", f"rok-vpn-{name}-wstunnel.conf"):
+        path = os.path.join(PEERS_DIR, fname)
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass
+        except Exception as exc:
+            app.logger.warning("No se pudo borrar %s: %s", path, exc)
 
 
 def generate_qr_png(config_text: str) -> bytes:
@@ -215,6 +243,7 @@ def admin_add():
             flash(f"Ya existe un cliente con el nombre «{name}»", "danger")
             return redirect(url_for("admin"))
 
+    _save_peer_configs(name, priv, ip)
     flash(f"Cliente «{name}» creado — IP {ip}", "success")
     return redirect(url_for("admin"))
 
@@ -246,6 +275,7 @@ def admin_revoke(name: str):
             (now, row["id"]),
         )
 
+    _delete_peer_configs(name)
     flash(f"Cliente «{name}» revocado", "success")
     return redirect(url_for("admin"))
 

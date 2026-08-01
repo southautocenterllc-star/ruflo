@@ -32,10 +32,15 @@ ssh root@74.208.44.254 "mkdir -p /tmp/rok-portal/templates"
 scp portal/app.py                      root@74.208.44.254:/tmp/rok-portal/
 scp portal/portal-setup.sh             root@74.208.44.254:/tmp/rok-portal/
 scp portal/rok-portal.service          root@74.208.44.254:/tmp/rok-portal/
+scp portal/smoke-test.py               root@74.208.44.254:/tmp/rok-portal/
 scp portal/templates/login.html        root@74.208.44.254:/tmp/rok-portal/templates/
 scp portal/templates/admin.html        root@74.208.44.254:/tmp/rok-portal/templates/
 scp portal/templates/download.html     root@74.208.44.254:/tmp/rok-portal/templates/
+scp portal/templates/404.html          root@74.208.44.254:/tmp/rok-portal/templates/
 ```
+
+> `404.html` no es opcional: `portal-setup.sh` corre con `set -euo pipefail` y
+> hace `cp` de ese archivo, así que si falta la instalación aborta en el paso 3.
 
 ---
 

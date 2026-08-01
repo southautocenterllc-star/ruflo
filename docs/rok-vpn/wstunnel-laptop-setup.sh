@@ -3,7 +3,7 @@
 # Run as root on laptop (requires sudo)
 set -euo pipefail
 
-WSTUNNEL_VERSION="10.1.8"
+WSTUNNEL_VERSION="10.6.2"   # versión validada end-to-end en Task 10
 VPS_IP="74.208.44.254"
 VPS_WST_PORT=443       # wstunnel WebSocket port on VPS
 LOCAL_UDP_PORT=51820   # local port wstunnel listens on (WireGuard will point here)

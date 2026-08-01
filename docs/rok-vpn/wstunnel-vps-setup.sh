@@ -3,7 +3,7 @@
 # Run as root on VPS (74.208.44.254)
 set -euo pipefail
 
-WSTUNNEL_VERSION="10.1.8"
+WSTUNNEL_VERSION="10.6.2"   # versión validada end-to-end en Task 10
 WG_PORT=1194
 WST_PORT=443
 

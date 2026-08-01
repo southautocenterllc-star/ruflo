@@ -124,13 +124,15 @@ sudo wg-quick up wg0</pre>
           <div class="accordion-body text-secondary small">
             <ol>
               <li>Descarga <strong>wstunnel</strong> desde GitHub
-                  (wstunnel v10.6+, archivo binario para tu plataforma).</li>
+                  (wstunnel v10.6.2, archivo binario para tu plataforma).</li>
               <li>Descarga el archivo <strong>.conf (wstunnel)</strong>.</li>
               <li>Ejecuta el cliente wstunnel en segundo plano:
                 <pre>wstunnel client \
-  --wg-mode wg \
-  -L "udp://51820:127.0.0.1:1194?timeout_sec=0" \
-  wss://74.208.44.254:443</pre>
+  -L "udp://127.0.0.1:51820:127.0.0.1:1194?timeout_sec=0" \
+  ws://74.208.44.254:443</pre>
+                <span class="text-warning">El servidor escucha en
+                <code>ws://</code> (sin TLS). Con <code>wss://</code> falla el
+                handshake.</span>
               </li>
               <li>Carga la config wstunnel en WireGuard.</li>
               <li>Activa el túnel.</li>

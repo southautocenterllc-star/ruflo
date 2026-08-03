@@ -583,7 +583,7 @@ def health():
 
 @app.route("/")
 def index():
-    return redirect(url_for("admin"))
+    return render_template("landing.html")
 
 
 if __name__ == "__main__":

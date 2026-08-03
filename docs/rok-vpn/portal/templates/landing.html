@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROK VPN — Seguro. Confiable. Privado.</title>
+<style>
+:root {
+  --bg:        #0A0F1C;
+  --surface:   #111827;
+  --surface-2: #1B2538;
+  --border:    rgba(255,255,255,0.07);
+  --border-2:  rgba(255,255,255,0.13);
+  --amber:     #E8A825;
+  --amber-dim: rgba(232,168,37,0.10);
+  --text:      #F0ECE4;
+  --muted:     #6B7FA0;
+  --ice:       #4A9CC7;
+  --danger:    #c0392b;
+  --success:   #27ae60;
+  --font-d: 'Impact','Franklin Gothic Medium','Arial Narrow',Haettenschweiler,Arial,sans-serif;
+  --font-b: Georgia,'Times New Roman',serif;
+  --font-u: system-ui,-apple-system,sans-serif;
+  --r: 8px; --rl: 14px;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin:0; padding:0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-b); line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Nav ─────────────────────────────────────────────── */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: .875rem 2rem;
+  background: rgba(10,15,28,.88);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; }
+.nav-mark {
+  width:34px; height:34px; background:var(--amber); border-radius:6px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-d); font-size:18px; color:var(--bg); line-height:1; letter-spacing:-.03em;
+}
+.nav-name {
+  font-family:var(--font-d); font-size:1.15rem; letter-spacing:.14em;
+  color:var(--text); text-transform:uppercase;
+}
+.nav-right { display:flex; align-items:center; gap:.625rem; }
+.btn-ghost {
+  background:none; border:1px solid var(--border); color:var(--muted);
+  padding:.375rem .9rem; border-radius:var(--r); cursor:pointer;
+  font-family:var(--font-u); font-size:.825rem;
+  transition: border-color .2s, color .2s;
+}
+.btn-ghost:hover { border-color:var(--amber); color:var(--amber); }
+.btn-nav {
+  background:var(--amber); border:none; color:var(--bg);
+  padding:.45rem 1.1rem; border-radius:var(--r); cursor:pointer;
+  font-family:var(--font-u); font-size:.825rem; font-weight:700; letter-spacing:.03em;
+  transition: opacity .2s;
+}
+.btn-nav:hover { opacity:.88; }
+
+/* ── Hero ────────────────────────────────────────────── */
+.hero {
+  position:relative; min-height:100svh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding: 7rem 2rem 5rem; overflow:hidden;
+}
+
+.lettermark {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-36%, -52%);
+  font-family:var(--font-d);
+  font-size: clamp(260px, 36vw, 560px);
+  line-height:.85; letter-spacing:-.05em;
+  color:transparent;
+  -webkit-text-stroke: 1.5px rgba(232,168,37,.13);
+  user-select:none; pointer-events:none; white-space:nowrap;
+  animation: letter-drift 18s ease-in-out infinite alternate;
+}
+@keyframes letter-drift {
+  from { transform: translate(-36%, -52%); }
+  to   { transform: translate(-34%, -50%); }
+}
+@media (prefers-reduced-motion: reduce) { .lettermark { animation:none; } }
+
+.hero::before {
+  content:'';
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width: min(700px,100vw); height: min(700px,100vw);
+  background: radial-gradient(ellipse at center, rgba(232,168,37,.06) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+.hero-eyebrow {
+  font-family:var(--font-u); font-size:.7rem; letter-spacing:.28em;
+  text-transform:uppercase; color:var(--amber);
+  margin-bottom:1.1rem; position:relative;
+}
+
+.hero-headline {
+  font-family:var(--font-d);
+  font-size: clamp(2.6rem, 7.5vw, 5.75rem);
+  line-height:.93; letter-spacing:-.02em; text-transform:uppercase;
+  color:var(--text); text-wrap:balance; max-width:14ch; position:relative;
+}
+.hero-headline em { font-style:normal; color:var(--amber); }
+
+.hero-sub {
+  margin-top:1.4rem;
+  font-size: clamp(.95rem, 2.2vw, 1.15rem);
+  color:var(--muted); max-width:44ch; text-wrap:balance; position:relative;
+}
+
+.hero-ctas {
+  position:relative; display:flex; align-items:center; gap:.875rem;
+  margin-top:2.25rem; flex-wrap:wrap; justify-content:center;
+}
+.btn-hero {
+  padding:.85rem 2rem; border-radius:var(--r); cursor:pointer;
+  font-family:var(--font-u); font-size:.975rem; font-weight:700; letter-spacing:.04em;
+  border:none; transition: opacity .2s, transform .15s; text-decoration:none; display:inline-block;
+}
+.btn-hero:hover { opacity:.9; transform:translateY(-1px); }
+.btn-hero:active { transform:translateY(0); }
+.btn-hero.solid { background:var(--amber); color:var(--bg); }
+.btn-hero.outline {
+  background:none; color:var(--text);
+  border:1px solid rgba(255,255,255,.18);
+}
+.btn-hero.outline:hover { border-color:rgba(255,255,255,.45); opacity:1; }
+
+.hero-trust {
+  position:relative; display:flex; gap:2rem;
+  margin-top:3rem; flex-wrap:wrap; justify-content:center;
+}
+.trust-item {
+  display:flex; align-items:center; gap:.45rem;
+  font-family:var(--font-u); font-size:.7rem; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted);
+}
+.trust-dot { width:5px; height:5px; background:var(--amber); border-radius:50%; flex-shrink:0; }
+
+/* ── Sections ────────────────────────────────────────── */
+.section-wrap {
+  max-width:1080px; margin:0 auto; padding:5rem 2rem;
+}
+.section-wrap + .section-wrap {
+  border-top:1px solid var(--border);
+}
+
+.eyebrow {
+  font-family:var(--font-u); font-size:.69rem; letter-spacing:.26em;
+  text-transform:uppercase; color:var(--amber); margin-bottom:.7rem;
+}
+.section-title {
+  font-family:var(--font-d);
+  font-size: clamp(1.75rem, 4vw, 2.7rem);
+  letter-spacing:-.02em; text-transform:uppercase;
+  line-height:1.02; text-wrap:balance;
+}
+.section-sub {
+  margin-top:.7rem; color:var(--muted);
+  font-size:.95rem; max-width:50ch;
+}
+.section-centered { text-align:center; }
+.section-centered .section-sub { margin-left:auto; margin-right:auto; }
+
+/* ── Pricing ─────────────────────────────────────────── */
+.pricing-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+  gap:1.25rem; margin-top:3rem;
+}
+.plan {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--rl); padding:2rem;
+  display:flex; flex-direction:column;
+  position:relative; transition: border-color .25s;
+}
+.plan:hover { border-color:var(--border-2); }
+.plan.best {
+  border-color:var(--amber);
+  background:linear-gradient(148deg,#111827,#131f32);
+}
+.plan.best:hover { border-color:#f0b830; }
+
+.plan-badge {
+  position:absolute; top:-11px; left:50%; transform:translateX(-50%);
+  background:var(--amber); color:var(--bg);
+  font-family:var(--font-u); font-size:.65rem; font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase;
+  padding:.22rem .7rem; border-radius:99px; white-space:nowrap;
+}
+
+.plan-label {
+  font-family:var(--font-u); font-size:.7rem;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--muted);
+  margin-bottom:1rem;
+}
+.plan-price {
+  font-family:var(--font-d);
+  font-size:3.25rem; line-height:1; letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;
+}
+.plan-price sup {
+  font-size:1.4rem; vertical-align:top; margin-top:.4rem; color:var(--muted);
+}
+.plan-period {
+  font-family:var(--font-u); font-size:.78rem; color:var(--muted); margin-top:.25rem;
+}
+.plan-divider { height:1px; background:var(--border); margin:1.5rem 0; }
+
+.plan-features { list-style:none; display:flex; flex-direction:column; gap:.6rem; flex:1; }
+.plan-features li {
+  display:flex; align-items:flex-start; gap:.55rem;
+  font-family:var(--font-u); font-size:.875rem; color:var(--text);
+}
+.plan-features li::before {
+  content:''; width:5px; height:5px; background:var(--amber);
+  border-radius:50%; flex-shrink:0; margin-top:.55em;
+}
+.plan-features li.dim { color:var(--muted); }
+.plan-features li.dim::before { background:var(--muted); }
+
+.plan-btn {
+  margin-top:1.75rem; width:100%; padding:.8rem;
+  border-radius:var(--r); cursor:pointer;
+  font-family:var(--font-u); font-size:.875rem;
+  font-weight:700; letter-spacing:.04em; border:none;
+  transition: opacity .2s, transform .15s;
+}
+.plan-btn:hover { transform:translateY(-1px); }
+.plan-btn.amber { background:var(--amber); color:var(--bg); }
+.plan-btn.ghost-btn {
+  background:var(--surface-2); color:var(--text);
+  border:1px solid var(--border);
+}
+
+/* ── Features ────────────────────────────────────────── */
+.features-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:2rem; margin-top:3rem;
+}
+.feat { display:flex; flex-direction:column; gap:.7rem; }
+.feat-icon {
+  width:40px; height:40px; border:1px solid var(--border);
+  border-radius:var(--r); display:flex; align-items:center; justify-content:center;
+  font-size:1.15rem;
+}
+.feat-title {
+  font-family:var(--font-u); font-weight:700; font-size:.9rem;
+  letter-spacing:.02em;
+}
+.feat-body { font-size:.85rem; color:var(--muted); line-height:1.55; }
+
+/* ── Strip ───────────────────────────────────────────── */
+.strip {
+  background:var(--amber-dim); border-top:1px solid rgba(232,168,37,.18);
+  border-bottom:1px solid rgba(232,168,37,.18);
+  padding:2.5rem 2rem; text-align:center;
+}
+.strip-headline {
+  font-family:var(--font-d); font-size: clamp(1.5rem,4vw,2.4rem);
+  letter-spacing:-.02em; text-transform:uppercase; margin-bottom:1rem;
+}
+.strip-headline em { font-style:normal; color:var(--amber); }
+
+/* ── Modal ───────────────────────────────────────────── */
+.backdrop {
+  position:fixed; inset:0; z-index:200;
+  background:rgba(10,15,28,.88);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  display:none; align-items:center; justify-content:center; padding:1rem;
+}
+.backdrop.open { display:flex; animation: fade-in .18s ease; }
+@keyframes fade-in { from { opacity:0; } to { opacity:1; } }
+
+.modal {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--rl); padding:2.25rem;
+  width:100%; max-width:400px; position:relative;
+  animation: slide-up .2s ease;
+}
+@keyframes slide-up { from { transform:translateY(12px); opacity:.5; } to { transform:none; opacity:1; } }
+
+.modal-close {
+  position:absolute; top:1.1rem; right:1.1rem;
+  background:none; border:none; cursor:pointer;
+  color:var(--muted); font-size:1.2rem; line-height:1;
+  transition:color .2s; font-family:var(--font-u);
+}
+.modal-close:hover { color:var(--text); }
+
+.modal-title {
+  font-family:var(--font-d); font-size:1.75rem;
+  letter-spacing:-.02em; text-transform:uppercase; margin-bottom:.2rem;
+}
+.modal-sub { font-size:.85rem; color:var(--muted); margin-bottom:1.6rem; }
+
+.field { display:flex; flex-direction:column; gap:.35rem; margin-bottom:.875rem; }
+.field-label {
+  font-family:var(--font-u); font-size:.68rem;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+}
+.field-input {
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:var(--r); color:var(--text);
+  font-family:var(--font-u); font-size:.925rem;
+  padding:.625rem .8rem; outline:none; transition:border-color .2s;
+  width:100%;
+}
+.field-input:focus { border-color:var(--amber); }
+
+.form-err {
+  display:none; background:rgba(192,57,43,.12);
+  border:1px solid rgba(192,57,43,.3); color:#e07060;
+  border-radius:var(--r); padding:.55rem .8rem;
+  font-family:var(--font-u); font-size:.825rem; margin-bottom:.875rem;
+}
+.form-err.on { display:block; }
+
+.btn-submit {
+  width:100%; background:var(--amber); border:none; color:var(--bg);
+  padding:.8rem; border-radius:var(--r); cursor:pointer;
+  font-family:var(--font-u); font-size:.925rem;
+  font-weight:700; letter-spacing:.04em; margin-top:.25rem;
+  transition:opacity .2s;
+}
+.btn-submit:disabled { opacity:.5; cursor:not-allowed; }
+
+.toggle-row {
+  text-align:center; margin-top:1.1rem;
+  font-family:var(--font-u); font-size:.825rem; color:var(--muted);
+}
+.toggle-row button {
+  background:none; border:none; cursor:pointer; color:var(--amber);
+  font-size:.825rem; text-decoration:underline; text-underline-offset:3px; padding:0;
+}
+
+.success-panel { text-align:center; padding:1.5rem 0; }
+.success-panel .icon { font-size:2.5rem; margin-bottom:.75rem; }
+.success-panel h3 {
+  font-family:var(--font-d); font-size:1.5rem;
+  letter-spacing:-.02em; text-transform:uppercase; margin-bottom:.4rem;
+}
+.success-panel p { font-size:.85rem; color:var(--muted); }
+.success-panel a {
+  display:inline-block; margin-top:1.25rem;
+  background:var(--amber); color:var(--bg);
+  padding:.65rem 1.75rem; border-radius:var(--r);
+  font-family:var(--font-u); font-size:.875rem;
+  font-weight:700; letter-spacing:.04em; text-decoration:none;
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+footer {
+  border-top:1px solid var(--border);
+  padding:2.75rem 2rem; text-align:center;
+}
+.footer-brand {
+  font-family:var(--font-d); font-size:1.3rem;
+  letter-spacing:.15em; margin-bottom:.45rem;
+}
+.footer-brand span { color:var(--amber); }
+.footer-tag {
+  font-family:var(--font-u); font-size:.66rem;
+  letter-spacing:.24em; text-transform:uppercase; color:var(--muted);
+  margin-bottom:1.5rem;
+}
+.footer-links {
+  display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:1.75rem;
+}
+.footer-links a {
+  font-family:var(--font-u); font-size:.78rem;
+  color:var(--muted); text-decoration:none; transition:color .2s;
+}
+.footer-links a:hover { color:var(--amber); }
+.footer-copy {
+  font-family:var(--font-u); font-size:.68rem;
+  color:rgba(107,127,160,.45);
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width:600px) {
+  nav { padding:.875rem 1rem; }
+  .section-wrap { padding:4rem 1.25rem; }
+  .hero-trust { gap:1.1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-mark">R</div>
+    <span class="nav-name">ROK VPN</span>
+  </a>
+  <div class="nav-right">
+    <button class="btn-ghost" onclick="openModal('login')">Iniciar sesión</button>
+    <button class="btn-nav" onclick="openModal('register')">Empezar gratis</button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="lettermark" aria-hidden="true">ROK</div>
+  <p class="hero-eyebrow">WireGuard® · Sin registros · Siempre privado</p>
+  <h1 class="hero-headline">Privado<br>por <em>defecto.</em></h1>
+  <p class="hero-sub">Un dispositivo, para siempre gratis. Sin tarjeta de crédito, sin trampas. Solo conexión cifrada desde el primer segundo.</p>
+  <div class="hero-ctas">
+    <button class="btn-hero solid" onclick="openModal('register')">Empezar gratis</button>
+    <a class="btn-hero outline" href="#planes">Ver planes</a>
+  </div>
+  <div class="hero-trust">
+    <span class="trust-item"><span class="trust-dot"></span>Protocolo WireGuard®</span>
+    <span class="trust-item"><span class="trust-dot"></span>Cero registros de actividad</span>
+    <span class="trust-item"><span class="trust-dot"></span>Cifrado extremo a extremo</span>
+  </div>
+</section>
+
+<!-- Pricing -->
+<div class="section-wrap section-centered" id="planes">
+  <p class="eyebrow">Planes</p>
+  <h2 class="section-title">Simple. Honesto. Justo.</h2>
+  <p class="section-sub">Sin sorpresas, sin velocidades artificialmente limitadas en los niveles pagos. El plan gratuito existe para que te convenzas solo.</p>
+  <div class="pricing-grid">
+
+    <!-- Free -->
+    <div class="plan">
+      <p class="plan-label">Gratis</p>
+      <div class="plan-price">$<span>0</span></div>
+      <p class="plan-period">para siempre</p>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>1 dispositivo</li>
+        <li>Hasta 5 Mbps</li>
+        <li>Protocolo WireGuard®</li>
+        <li>Cero registros</li>
+        <li class="dim">Sin acceso wstunnel</li>
+        <li class="dim">Soporte por correo</li>
+      </ul>
+      <button class="plan-btn ghost-btn" onclick="openModal('register')">Crear cuenta</button>
+    </div>
+
+    <!-- Monthly -->
+    <div class="plan">
+      <p class="plan-label">Mensual</p>
+      <div class="plan-price"><sup>$</sup>4<span style="font-size:2rem">.99</span></div>
+      <p class="plan-period">por mes</p>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>5 dispositivos</li>
+        <li>Velocidad sin límite</li>
+        <li>Protocolo WireGuard®</li>
+        <li>Modo wstunnel (TCP 443)</li>
+        <li>Cero registros</li>
+        <li>Soporte prioritario</li>
+      </ul>
+      <button class="plan-btn ghost-btn" onclick="openModal('register')">Suscribirse</button>
+    </div>
+
+    <!-- Annual (featured) -->
+    <div class="plan best">
+      <div class="plan-badge">Mejor valor — 50% de descuento</div>
+      <p class="plan-label">Anual</p>
+      <div class="plan-price"><sup>$</sup>29<span style="font-size:2rem">.99</span></div>
+      <p class="plan-period">por año · equivale a $2.50/mes</p>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>5 dispositivos</li>
+        <li>Velocidad sin límite</li>
+        <li>Protocolo WireGuard®</li>
+        <li>Modo wstunnel (TCP 443)</li>
+        <li>Cero registros</li>
+        <li>Soporte prioritario</li>
+      </ul>
+      <button class="plan-btn amber" onclick="openModal('register')">Obtener acceso anual</button>
+    </div>
+  </div>
+</div>
+
+<!-- Strip CTA -->
+<div class="strip">
+  <p class="strip-headline">Un dispositivo.<br><em>Siempre gratis.</em> Sin límite de tiempo.</p>
+  <button class="btn-hero solid" onclick="openModal('register')">Crear mi cuenta</button>
+</div>
+
+<!-- Features -->
+<div class="section-wrap" id="como-funciona">
+  <p class="eyebrow">Por qué ROK VPN</p>
+  <h2 class="section-title">Construido diferente.</h2>
+  <p class="section-sub">No somos un intermediario que revende capacidad. Nuestro propio servidor, nuestras propias reglas.</p>
+  <div class="features-grid">
+    <div class="feat">
+      <div class="feat-icon">&#9889;</div>
+      <p class="feat-title">WireGuard® nativo</p>
+      <p class="feat-body">El protocolo VPN más moderno: más rápido, más seguro y mucho más sencillo que OpenVPN o IPSec.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128274;</div>
+      <p class="feat-title">Cero registros</p>
+      <p class="feat-body">No guardamos tu IP, tus sitios visitados ni tus tiempos de conexión. No hay nada que entregar porque no hay nada registrado.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#127760;</div>
+      <p class="feat-title">wstunnel (TCP 443)</p>
+      <p class="feat-body">En redes que bloquean UDP, wstunnel encapsula WireGuard dentro de WebSocket sobre HTTPS para pasar cualquier firewall.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128241;</div>
+      <p class="feat-title">Apps nativas (próximamente)</p>
+      <p class="feat-body">iOS y Android con configuración automática. Por ahora usa los archivos .conf con la app oficial de WireGuard.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#127970;</div>
+      <p class="feat-title">LLC registrada en Florida</p>
+      <p class="feat-body">LUROK BUSINESS GROUP LLC. Empresa real, responsable, sujeta a la ley estadounidense. No somos anónimos.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128179;</div>
+      <p class="feat-title">Pago seguro con Square</p>
+      <p class="feat-body">Procesamos pagos con Square. Nunca almacenamos datos de tu tarjeta. Cancela cuando quieras sin penalizaciones.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-brand"><span>ROK</span> VPN</div>
+  <p class="footer-tag">Secure · Reliable · Private</p>
+  <div class="footer-links">
+    <a href="#planes">Planes</a>
+    <a href="#como-funciona">Cómo funciona</a>
+    <a href="/login">Administración</a>
+  </div>
+  <p class="footer-copy">© 2025 LUROK BUSINESS GROUP LLC · Florida, USA · Todos los derechos reservados</p>
+</footer>
+
+<!-- Modal -->
+<div class="backdrop" id="modal" role="dialog" aria-modal="true" aria-label="Cuenta ROK VPN">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&#10005;</button>
+
+    <!-- Register form -->
+    <div id="pane-register">
+      <h2 class="modal-title">Crear cuenta</h2>
+      <p class="modal-sub">Gratis para siempre. Un dispositivo incluido.</p>
+      <div class="form-err" id="reg-err"></div>
+      <div class="field">
+        <label class="field-label" for="reg-email">Correo electrónico</label>
+        <input class="field-input" id="reg-email" type="email" placeholder="tu@correo.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label class="field-label" for="reg-pass">Contraseña</label>
+        <input class="field-input" id="reg-pass" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+      </div>
+      <button class="btn-submit" id="reg-btn" onclick="doRegister()">Crear cuenta gratis</button>
+      <div class="toggle-row">¿Ya tienes cuenta? <button onclick="switchPane('login')">Iniciar sesión</button></div>
+    </div>
+
+    <!-- Login form -->
+    <div id="pane-login" style="display:none">
+      <h2 class="modal-title">Bienvenido</h2>
+      <p class="modal-sub">Accede a tu panel de dispositivos.</p>
+      <div class="form-err" id="log-err"></div>
+      <div class="field">
+        <label class="field-label" for="log-email">Correo electrónico</label>
+        <input class="field-input" id="log-email" type="email" placeholder="tu@correo.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label class="field-label" for="log-pass">Contraseña</label>
+        <input class="field-input" id="log-pass" type="password" placeholder="Tu contraseña" autocomplete="current-password">
+      </div>
+      <button class="btn-submit" id="log-btn" onclick="doLogin()">Iniciar sesión</button>
+      <div class="toggle-row">¿Sin cuenta aún? <button onclick="switchPane('register')">Crear una gratis</button></div>
+    </div>
+
+    <!-- Success -->
+    <div id="pane-success" style="display:none">
+      <div class="success-panel">
+        <div class="icon">&#128273;</div>
+        <h3>Acceso activado</h3>
+        <p>Tu cuenta está lista. Agrega tu primer dispositivo desde el panel de usuario.</p>
+        <a href="#" id="dash-link">Ir a mi panel</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const backdrop = document.getElementById('modal');
+
+function openModal(pane) {
+  backdrop.classList.add('open');
+  switchPane(pane || 'register');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  backdrop.classList.remove('open');
+  document.body.style.overflow = '';
+}
+backdrop.addEventListener('click', function(e) { if (e.target === backdrop) closeModal(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+function switchPane(name) {
+  ['register','login','success'].forEach(function(p) {
+    document.getElementById('pane-'+p).style.display = p === name ? '' : 'none';
+  });
+  clearErrors();
+}
+function clearErrors() {
+  document.querySelectorAll('.form-err').forEach(function(el) { el.classList.remove('on'); el.textContent=''; });
+}
+function showError(id, msg) {
+  var el = document.getElementById(id);
+  el.textContent = msg; el.classList.add('on');
+}
+function setLoading(btnId, loading) {
+  var btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.textContent = loading
+    ? (btnId === 'reg-btn' ? 'Creando cuenta…' : 'Verificando…')
+    : (btnId === 'reg-btn' ? 'Crear cuenta gratis' : 'Iniciar sesión');
+}
+
+async function doRegister() {
+  var email = document.getElementById('reg-email').value.trim();
+  var pass  = document.getElementById('reg-pass').value;
+  if (!email || !pass) { showError('reg-err','Completa todos los campos.'); return; }
+  if (pass.length < 8) { showError('reg-err','La contraseña debe tener al menos 8 caracteres.'); return; }
+  setLoading('reg-btn', true);
+  try {
+    var res = await fetch('/api/v1/register', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email: email, password: pass })
+    });
+    var data = await res.json();
+    if (!res.ok) { showError('reg-err', data.error || 'Error al registrar.'); return; }
+    localStorage.setItem('rok_token', data.token);
+    document.getElementById('dash-link').href = '/download';
+    switchPane('success');
+  } catch(e) {
+    showError('reg-err','No se pudo conectar al servidor. Intenta de nuevo.');
+  } finally { setLoading('reg-btn', false); }
+}
+
+async function doLogin() {
+  var email = document.getElementById('log-email').value.trim();
+  var pass  = document.getElementById('log-pass').value;
+  if (!email || !pass) { showError('log-err','Completa todos los campos.'); return; }
+  setLoading('log-btn', true);
+  try {
+    var res = await fetch('/api/v1/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email: email, password: pass })
+    });
+    var data = await res.json();
+    if (!res.ok) { showError('log-err', data.error || 'Credenciales incorrectas.'); return; }
+    localStorage.setItem('rok_token', data.token);
+    document.getElementById('dash-link').href = '/download';
+    switchPane('success');
+  } catch(e) {
+    showError('log-err','No se pudo conectar al servidor. Intenta de nuevo.');
+  } finally { setLoading('log-btn', false); }
+}
+</script>
+</body>
+</html>

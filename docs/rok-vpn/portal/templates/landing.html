@@ -6,50 +6,45 @@
 <title>ROK VPN — Seguro. Confiable. Privado.</title>
 <style>
 :root {
-  --bg:        #0A0F1C;
-  --surface:   #111827;
-  --surface-2: #1B2538;
-  --border:    rgba(255,255,255,0.07);
-  --border-2:  rgba(255,255,255,0.13);
-  --amber:     #E8A825;
-  --amber-dim: rgba(232,168,37,0.10);
-  --text:      #F0ECE4;
-  --muted:     #6B7FA0;
-  --ice:       #4A9CC7;
+  --bg:        #07111F;
+  --surface:   #0D1C2E;
+  --surface-2: #152538;
+  --border:    rgba(74,128,168,0.14);
+  --border-2:  rgba(74,128,168,0.28);
+  --navy:      #1A3A5C;
+  --steel:     #2D5F8A;
+  --blue-mid:  #4A80A8;
+  --blue-lt:   #8AB4CC;
+  --text:      #EFF3F8;
+  --muted:     #5C7E9C;
   --danger:    #c0392b;
-  --success:   #27ae60;
   --font-d: 'Impact','Franklin Gothic Medium','Arial Narrow',Haettenschweiler,Arial,sans-serif;
   --font-b: Georgia,'Times New Roman',serif;
   --font-u: system-ui,-apple-system,sans-serif;
   --r: 8px; --rl: 14px;
 }
 
-*,*::before,*::after { box-sizing: border-box; margin:0; padding:0; }
-html { scroll-behavior: smooth; }
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
 body {
-  background: var(--bg); color: var(--text);
-  font-family: var(--font-b); line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  background:var(--bg); color:var(--text);
+  font-family:var(--font-b); line-height:1.6;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
 }
 
-/* ── Nav ─────────────────────────────────────────────── */
+/* ── Nav ── */
 nav {
-  position: fixed; top:0; left:0; right:0; z-index:100;
+  position:fixed; top:0; left:0; right:0; z-index:100;
   display:flex; align-items:center; justify-content:space-between;
-  padding: .875rem 2rem;
-  background: rgba(10,15,28,.88);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--border);
+  padding:.875rem 2rem;
+  background:rgba(7,17,31,.92);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
 }
-.nav-brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; }
-.nav-mark {
-  width:34px; height:34px; background:var(--amber); border-radius:6px;
-  display:flex; align-items:center; justify-content:center;
-  font-family:var(--font-d); font-size:18px; color:var(--bg); line-height:1; letter-spacing:-.03em;
-}
+.nav-brand { display:flex; align-items:center; gap:.6rem; text-decoration:none; }
+.nav-hex { width:32px; height:32px; flex-shrink:0; }
 .nav-name {
-  font-family:var(--font-d); font-size:1.15rem; letter-spacing:.14em;
+  font-family:var(--font-d); font-size:1.1rem; letter-spacing:.14em;
   color:var(--text); text-transform:uppercase;
 }
 .nav-right { display:flex; align-items:center; gap:.625rem; }
@@ -57,70 +52,77 @@ nav {
   background:none; border:1px solid var(--border); color:var(--muted);
   padding:.375rem .9rem; border-radius:var(--r); cursor:pointer;
   font-family:var(--font-u); font-size:.825rem;
-  transition: border-color .2s, color .2s;
+  transition:border-color .2s,color .2s;
 }
-.btn-ghost:hover { border-color:var(--amber); color:var(--amber); }
+.btn-ghost:hover { border-color:var(--blue-mid); color:var(--blue-lt); }
 .btn-nav {
-  background:var(--amber); border:none; color:var(--bg);
+  background:var(--steel); border:none; color:#fff;
   padding:.45rem 1.1rem; border-radius:var(--r); cursor:pointer;
   font-family:var(--font-u); font-size:.825rem; font-weight:700; letter-spacing:.03em;
-  transition: opacity .2s;
+  transition:opacity .2s;
 }
 .btn-nav:hover { opacity:.88; }
 
-/* ── Hero ────────────────────────────────────────────── */
+/* ── Hero ── */
 .hero {
   position:relative; min-height:100svh;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; padding: 7rem 2rem 5rem; overflow:hidden;
+  text-align:center; padding:7rem 2rem 5rem; overflow:hidden;
 }
-
-.lettermark {
-  position:absolute; top:50%; left:50%;
-  transform:translate(-36%, -52%);
-  font-family:var(--font-d);
-  font-size: clamp(260px, 36vw, 560px);
-  line-height:.85; letter-spacing:-.05em;
-  color:transparent;
-  -webkit-text-stroke: 1.5px rgba(232,168,37,.13);
-  user-select:none; pointer-events:none; white-space:nowrap;
-  animation: letter-drift 18s ease-in-out infinite alternate;
-}
-@keyframes letter-drift {
-  from { transform: translate(-36%, -52%); }
-  to   { transform: translate(-34%, -50%); }
-}
-@media (prefers-reduced-motion: reduce) { .lettermark { animation:none; } }
-
 .hero::before {
-  content:'';
-  position:absolute; top:50%; left:50%;
+  content:''; position:absolute; top:50%; left:50%;
   transform:translate(-50%,-50%);
-  width: min(700px,100vw); height: min(700px,100vw);
-  background: radial-gradient(ellipse at center, rgba(232,168,37,.06) 0%, transparent 70%);
+  width:min(800px,100vw); height:min(800px,100vw);
+  background:radial-gradient(ellipse at center,rgba(45,95,138,.07) 0%,transparent 70%);
   pointer-events:none;
 }
 
+/* 3D spinning logo */
+.logo-scene {
+  position:relative; display:flex; align-items:center; justify-content:center;
+  margin-bottom:2.5rem; perspective:700px;
+}
+.logo-glow {
+  position:absolute; inset:-55px;
+  background:radial-gradient(ellipse at center,rgba(45,95,138,.5) 0%,rgba(26,58,92,.18) 45%,transparent 72%);
+  border-radius:50%; pointer-events:none;
+}
+.logo-pedestal {
+  position:relative; z-index:1;
+  width:200px; height:200px; background:#fff; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  animation:rokSpin 14s linear infinite;
+  box-shadow:
+    0 0 0 1px rgba(74,128,168,.15),
+    0 8px 32px rgba(0,0,0,.55),
+    0 28px 70px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.95);
+  overflow:hidden;
+}
+.logo-pedestal::before {
+  content:''; position:absolute; inset:0; border-radius:50%;
+  background:linear-gradient(135deg,rgba(255,255,255,.65) 0%,rgba(255,255,255,.1) 38%,transparent 55%);
+  z-index:2; pointer-events:none;
+}
+.logo-pedestal svg { width:130px; height:130px; position:relative; z-index:1; }
+@keyframes rokSpin { from{transform:rotateY(0deg)} to{transform:rotateY(360deg)} }
+@media (prefers-reduced-motion:reduce) { .logo-pedestal{animation:none;} }
+
 .hero-eyebrow {
   font-family:var(--font-u); font-size:.7rem; letter-spacing:.28em;
-  text-transform:uppercase; color:var(--amber);
-  margin-bottom:1.1rem; position:relative;
+  text-transform:uppercase; color:var(--blue-lt); margin-bottom:1.1rem; position:relative;
 }
-
 .hero-headline {
   font-family:var(--font-d);
-  font-size: clamp(2.6rem, 7.5vw, 5.75rem);
+  font-size:clamp(2.6rem,7.5vw,5.75rem);
   line-height:.93; letter-spacing:-.02em; text-transform:uppercase;
   color:var(--text); text-wrap:balance; max-width:14ch; position:relative;
 }
-.hero-headline em { font-style:normal; color:var(--amber); }
-
+.hero-headline em { font-style:normal; color:var(--blue-lt); }
 .hero-sub {
-  margin-top:1.4rem;
-  font-size: clamp(.95rem, 2.2vw, 1.15rem);
+  margin-top:1.4rem; font-size:clamp(.95rem,2.2vw,1.15rem);
   color:var(--muted); max-width:44ch; text-wrap:balance; position:relative;
 }
-
 .hero-ctas {
   position:relative; display:flex; align-items:center; gap:.875rem;
   margin-top:2.25rem; flex-wrap:wrap; justify-content:center;
@@ -128,15 +130,12 @@ nav {
 .btn-hero {
   padding:.85rem 2rem; border-radius:var(--r); cursor:pointer;
   font-family:var(--font-u); font-size:.975rem; font-weight:700; letter-spacing:.04em;
-  border:none; transition: opacity .2s, transform .15s; text-decoration:none; display:inline-block;
+  border:none; transition:opacity .2s,transform .15s; text-decoration:none; display:inline-block;
 }
 .btn-hero:hover { opacity:.9; transform:translateY(-1px); }
 .btn-hero:active { transform:translateY(0); }
-.btn-hero.solid { background:var(--amber); color:var(--bg); }
-.btn-hero.outline {
-  background:none; color:var(--text);
-  border:1px solid rgba(255,255,255,.18);
-}
+.btn-hero.solid { background:var(--steel); color:#fff; }
+.btn-hero.outline { background:none; color:var(--text); border:1px solid rgba(255,255,255,.18); }
 .btn-hero.outline:hover { border-color:rgba(255,255,255,.45); opacity:1; }
 
 .hero-trust {
@@ -148,253 +147,192 @@ nav {
   font-family:var(--font-u); font-size:.7rem; letter-spacing:.12em;
   text-transform:uppercase; color:var(--muted);
 }
-.trust-dot { width:5px; height:5px; background:var(--amber); border-radius:50%; flex-shrink:0; }
+.trust-dot { width:5px; height:5px; background:var(--blue-mid); border-radius:50%; flex-shrink:0; }
 
-/* ── Sections ────────────────────────────────────────── */
-.section-wrap {
-  max-width:1080px; margin:0 auto; padding:5rem 2rem;
-}
-.section-wrap + .section-wrap {
-  border-top:1px solid var(--border);
-}
-
+/* ── Sections ── */
+.section-wrap { max-width:1080px; margin:0 auto; padding:5rem 2rem; }
+.section-wrap + .section-wrap { border-top:1px solid var(--border); }
 .eyebrow {
   font-family:var(--font-u); font-size:.69rem; letter-spacing:.26em;
-  text-transform:uppercase; color:var(--amber); margin-bottom:.7rem;
+  text-transform:uppercase; color:var(--blue-lt); margin-bottom:.7rem;
 }
 .section-title {
   font-family:var(--font-d);
-  font-size: clamp(1.75rem, 4vw, 2.7rem);
+  font-size:clamp(1.75rem,4vw,2.7rem);
   letter-spacing:-.02em; text-transform:uppercase;
   line-height:1.02; text-wrap:balance;
 }
-.section-sub {
-  margin-top:.7rem; color:var(--muted);
-  font-size:.95rem; max-width:50ch;
-}
+.section-sub { margin-top:.7rem; color:var(--muted); font-size:.95rem; max-width:50ch; }
 .section-centered { text-align:center; }
 .section-centered .section-sub { margin-left:auto; margin-right:auto; }
 
-/* ── Pricing ─────────────────────────────────────────── */
+/* ── Pricing ── */
 .pricing-grid {
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
   gap:1.25rem; margin-top:3rem;
 }
 .plan {
   background:var(--surface); border:1px solid var(--border);
   border-radius:var(--rl); padding:2rem;
   display:flex; flex-direction:column;
-  position:relative; transition: border-color .25s;
+  position:relative; transition:border-color .25s;
 }
 .plan:hover { border-color:var(--border-2); }
 .plan.best {
-  border-color:var(--amber);
-  background:linear-gradient(148deg,#111827,#131f32);
+  border-color:var(--steel);
+  background:linear-gradient(148deg,var(--surface),#0A1828);
 }
-.plan.best:hover { border-color:#f0b830; }
-
+.plan.best:hover { border-color:var(--blue-mid); }
 .plan-badge {
   position:absolute; top:-11px; left:50%; transform:translateX(-50%);
-  background:var(--amber); color:var(--bg);
+  background:var(--steel); color:#fff;
   font-family:var(--font-u); font-size:.65rem; font-weight:700;
   letter-spacing:.14em; text-transform:uppercase;
   padding:.22rem .7rem; border-radius:99px; white-space:nowrap;
 }
-
 .plan-label {
   font-family:var(--font-u); font-size:.7rem;
-  letter-spacing:.2em; text-transform:uppercase; color:var(--muted);
-  margin-bottom:1rem;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:1rem;
 }
 .plan-price {
   font-family:var(--font-d);
-  font-size:3.25rem; line-height:1; letter-spacing:-.03em;
-  font-variant-numeric:tabular-nums;
+  font-size:3.25rem; line-height:1; letter-spacing:-.03em; font-variant-numeric:tabular-nums;
 }
-.plan-price sup {
-  font-size:1.4rem; vertical-align:top; margin-top:.4rem; color:var(--muted);
-}
-.plan-period {
-  font-family:var(--font-u); font-size:.78rem; color:var(--muted); margin-top:.25rem;
-}
+.plan-price sup { font-size:1.4rem; vertical-align:top; margin-top:.4rem; color:var(--muted); }
+.plan-period { font-family:var(--font-u); font-size:.78rem; color:var(--muted); margin-top:.25rem; }
 .plan-divider { height:1px; background:var(--border); margin:1.5rem 0; }
-
 .plan-features { list-style:none; display:flex; flex-direction:column; gap:.6rem; flex:1; }
 .plan-features li {
   display:flex; align-items:flex-start; gap:.55rem;
   font-family:var(--font-u); font-size:.875rem; color:var(--text);
 }
 .plan-features li::before {
-  content:''; width:5px; height:5px; background:var(--amber);
+  content:''; width:5px; height:5px; background:var(--blue-mid);
   border-radius:50%; flex-shrink:0; margin-top:.55em;
 }
 .plan-features li.dim { color:var(--muted); }
 .plan-features li.dim::before { background:var(--muted); }
-
 .plan-btn {
   margin-top:1.75rem; width:100%; padding:.8rem;
   border-radius:var(--r); cursor:pointer;
-  font-family:var(--font-u); font-size:.875rem;
-  font-weight:700; letter-spacing:.04em; border:none;
-  transition: opacity .2s, transform .15s;
+  font-family:var(--font-u); font-size:.875rem; font-weight:700; letter-spacing:.04em; border:none;
+  transition:opacity .2s,transform .15s;
 }
-.plan-btn:hover { transform:translateY(-1px); }
-.plan-btn.amber { background:var(--amber); color:var(--bg); }
-.plan-btn.ghost-btn {
-  background:var(--surface-2); color:var(--text);
-  border:1px solid var(--border);
-}
+.plan-btn:hover { transform:translateY(-1px); opacity:.9; }
+.plan-btn.primary { background:var(--steel); color:#fff; }
+.plan-btn.ghost-btn { background:var(--surface-2); color:var(--text); border:1px solid var(--border); }
 
-/* ── Features ────────────────────────────────────────── */
+/* ── Features ── */
 .features-grid {
   display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:2rem; margin-top:3rem;
 }
 .feat { display:flex; flex-direction:column; gap:.7rem; }
 .feat-icon {
-  width:40px; height:40px; border:1px solid var(--border);
-  border-radius:var(--r); display:flex; align-items:center; justify-content:center;
-  font-size:1.15rem;
+  width:40px; height:40px; border:1px solid var(--border); background:var(--surface);
+  border-radius:var(--r); display:flex; align-items:center; justify-content:center; font-size:1.15rem;
 }
-.feat-title {
-  font-family:var(--font-u); font-weight:700; font-size:.9rem;
-  letter-spacing:.02em;
-}
+.feat-title { font-family:var(--font-u); font-weight:700; font-size:.9rem; letter-spacing:.02em; }
 .feat-body { font-size:.85rem; color:var(--muted); line-height:1.55; }
 
-/* ── Strip ───────────────────────────────────────────── */
+/* ── App Store Badges ── */
+.badges-wrap {
+  display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2.25rem;
+}
+.store-badge {
+  display:inline-flex; align-items:center; gap:.75rem;
+  background:#000; border:1px solid rgba(255,255,255,.15); border-radius:12px;
+  padding:.8rem 1.4rem; text-decoration:none; color:#fff;
+  transition:border-color .2s,transform .15s; min-width:172px;
+}
+.store-badge:hover { border-color:rgba(255,255,255,.42); transform:translateY(-2px); }
+.badge-icon { width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.badge-text { display:flex; flex-direction:column; }
+.badge-sub { font-family:var(--font-u); font-size:.6rem; letter-spacing:.06em; opacity:.72; line-height:1.3; }
+.badge-name { font-family:var(--font-u); font-size:.95rem; font-weight:600; letter-spacing:.01em; line-height:1.3; }
+
+/* ── Strip ── */
 .strip {
-  background:var(--amber-dim); border-top:1px solid rgba(232,168,37,.18);
-  border-bottom:1px solid rgba(232,168,37,.18);
+  background:rgba(45,95,138,.06);
+  border-top:1px solid rgba(45,95,138,.18); border-bottom:1px solid rgba(45,95,138,.18);
   padding:2.5rem 2rem; text-align:center;
 }
 .strip-headline {
-  font-family:var(--font-d); font-size: clamp(1.5rem,4vw,2.4rem);
+  font-family:var(--font-d); font-size:clamp(1.5rem,4vw,2.4rem);
   letter-spacing:-.02em; text-transform:uppercase; margin-bottom:1rem;
 }
-.strip-headline em { font-style:normal; color:var(--amber); }
+.strip-headline em { font-style:normal; color:var(--blue-lt); }
 
-/* ── Modal ───────────────────────────────────────────── */
+/* ── Modal ── */
 .backdrop {
   position:fixed; inset:0; z-index:200;
-  background:rgba(10,15,28,.88);
-  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  background:rgba(7,17,31,.9); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
   display:none; align-items:center; justify-content:center; padding:1rem;
 }
-.backdrop.open { display:flex; animation: fade-in .18s ease; }
-@keyframes fade-in { from { opacity:0; } to { opacity:1; } }
-
+.backdrop.open { display:flex; animation:fade-in .18s ease; }
+@keyframes fade-in { from{opacity:0} to{opacity:1} }
 .modal {
   background:var(--surface); border:1px solid var(--border);
   border-radius:var(--rl); padding:2.25rem;
-  width:100%; max-width:400px; position:relative;
-  animation: slide-up .2s ease;
+  width:100%; max-width:400px; position:relative; animation:slide-up .2s ease;
 }
-@keyframes slide-up { from { transform:translateY(12px); opacity:.5; } to { transform:none; opacity:1; } }
-
+@keyframes slide-up { from{transform:translateY(12px);opacity:.5} to{transform:none;opacity:1} }
 .modal-close {
   position:absolute; top:1.1rem; right:1.1rem;
-  background:none; border:none; cursor:pointer;
-  color:var(--muted); font-size:1.2rem; line-height:1;
+  background:none; border:none; cursor:pointer; color:var(--muted); font-size:1.2rem; line-height:1;
   transition:color .2s; font-family:var(--font-u);
 }
 .modal-close:hover { color:var(--text); }
-
-.modal-title {
-  font-family:var(--font-d); font-size:1.75rem;
-  letter-spacing:-.02em; text-transform:uppercase; margin-bottom:.2rem;
-}
+.modal-title { font-family:var(--font-d); font-size:1.75rem; letter-spacing:-.02em; text-transform:uppercase; margin-bottom:.2rem; }
 .modal-sub { font-size:.85rem; color:var(--muted); margin-bottom:1.6rem; }
-
 .field { display:flex; flex-direction:column; gap:.35rem; margin-bottom:.875rem; }
-.field-label {
-  font-family:var(--font-u); font-size:.68rem;
-  letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
-}
+.field-label { font-family:var(--font-u); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
 .field-input {
-  background:var(--bg); border:1px solid var(--border);
-  border-radius:var(--r); color:var(--text);
-  font-family:var(--font-u); font-size:.925rem;
-  padding:.625rem .8rem; outline:none; transition:border-color .2s;
-  width:100%;
+  background:var(--bg); border:1px solid var(--border); border-radius:var(--r); color:var(--text);
+  font-family:var(--font-u); font-size:.925rem; padding:.625rem .8rem; outline:none;
+  transition:border-color .2s; width:100%;
 }
-.field-input:focus { border-color:var(--amber); }
-
+.field-input:focus { border-color:var(--steel); }
 .form-err {
-  display:none; background:rgba(192,57,43,.12);
-  border:1px solid rgba(192,57,43,.3); color:#e07060;
-  border-radius:var(--r); padding:.55rem .8rem;
-  font-family:var(--font-u); font-size:.825rem; margin-bottom:.875rem;
+  display:none; background:rgba(192,57,43,.12); border:1px solid rgba(192,57,43,.3); color:#e07060;
+  border-radius:var(--r); padding:.55rem .8rem; font-family:var(--font-u); font-size:.825rem; margin-bottom:.875rem;
 }
 .form-err.on { display:block; }
-
 .btn-submit {
-  width:100%; background:var(--amber); border:none; color:var(--bg);
-  padding:.8rem; border-radius:var(--r); cursor:pointer;
-  font-family:var(--font-u); font-size:.925rem;
-  font-weight:700; letter-spacing:.04em; margin-top:.25rem;
-  transition:opacity .2s;
+  width:100%; background:var(--steel); border:none; color:#fff; padding:.8rem; border-radius:var(--r);
+  cursor:pointer; font-family:var(--font-u); font-size:.925rem; font-weight:700; letter-spacing:.04em;
+  margin-top:.25rem; transition:opacity .2s;
 }
 .btn-submit:disabled { opacity:.5; cursor:not-allowed; }
-
-.toggle-row {
-  text-align:center; margin-top:1.1rem;
-  font-family:var(--font-u); font-size:.825rem; color:var(--muted);
-}
-.toggle-row button {
-  background:none; border:none; cursor:pointer; color:var(--amber);
-  font-size:.825rem; text-decoration:underline; text-underline-offset:3px; padding:0;
-}
-
+.toggle-row { text-align:center; margin-top:1.1rem; font-family:var(--font-u); font-size:.825rem; color:var(--muted); }
+.toggle-row button { background:none; border:none; cursor:pointer; color:var(--blue-lt); font-size:.825rem; text-decoration:underline; text-underline-offset:3px; padding:0; }
 .success-panel { text-align:center; padding:1.5rem 0; }
 .success-panel .icon { font-size:2.5rem; margin-bottom:.75rem; }
-.success-panel h3 {
-  font-family:var(--font-d); font-size:1.5rem;
-  letter-spacing:-.02em; text-transform:uppercase; margin-bottom:.4rem;
-}
+.success-panel h3 { font-family:var(--font-d); font-size:1.5rem; letter-spacing:-.02em; text-transform:uppercase; margin-bottom:.4rem; }
 .success-panel p { font-size:.85rem; color:var(--muted); }
 .success-panel a {
-  display:inline-block; margin-top:1.25rem;
-  background:var(--amber); color:var(--bg);
+  display:inline-block; margin-top:1.25rem; background:var(--steel); color:#fff;
   padding:.65rem 1.75rem; border-radius:var(--r);
-  font-family:var(--font-u); font-size:.875rem;
-  font-weight:700; letter-spacing:.04em; text-decoration:none;
+  font-family:var(--font-u); font-size:.875rem; font-weight:700; letter-spacing:.04em; text-decoration:none;
 }
 
-/* ── Footer ──────────────────────────────────────────── */
-footer {
-  border-top:1px solid var(--border);
-  padding:2.75rem 2rem; text-align:center;
-}
-.footer-brand {
-  font-family:var(--font-d); font-size:1.3rem;
-  letter-spacing:.15em; margin-bottom:.45rem;
-}
-.footer-brand span { color:var(--amber); }
-.footer-tag {
-  font-family:var(--font-u); font-size:.66rem;
-  letter-spacing:.24em; text-transform:uppercase; color:var(--muted);
-  margin-bottom:1.5rem;
-}
-.footer-links {
-  display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:1.75rem;
-}
-.footer-links a {
-  font-family:var(--font-u); font-size:.78rem;
-  color:var(--muted); text-decoration:none; transition:color .2s;
-}
-.footer-links a:hover { color:var(--amber); }
-.footer-copy {
-  font-family:var(--font-u); font-size:.68rem;
-  color:rgba(107,127,160,.45);
-}
+/* ── Footer ── */
+footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:center; }
+.footer-brand { font-family:var(--font-d); font-size:1.3rem; letter-spacing:.15em; margin-bottom:.45rem; }
+.footer-brand span { color:var(--blue-lt); }
+.footer-tag { font-family:var(--font-u); font-size:.66rem; letter-spacing:.24em; text-transform:uppercase; color:var(--muted); margin-bottom:1.5rem; }
+.footer-links { display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:1.75rem; }
+.footer-links a { font-family:var(--font-u); font-size:.78rem; color:var(--muted); text-decoration:none; transition:color .2s; }
+.footer-links a:hover { color:var(--blue-lt); }
+.footer-copy { font-family:var(--font-u); font-size:.68rem; color:rgba(92,126,156,.4); }
 
-/* ── Responsive ──────────────────────────────────────── */
+/* ── Responsive ── */
 @media (max-width:600px) {
   nav { padding:.875rem 1rem; }
   .section-wrap { padding:4rem 1.25rem; }
   .hero-trust { gap:1.1rem; }
+  .logo-pedestal { width:160px; height:160px; }
+  .logo-pedestal svg { width:104px; height:104px; }
 }
 </style>
 </head>
@@ -403,7 +341,21 @@ footer {
 <!-- Nav -->
 <nav>
   <a class="nav-brand" href="#">
-    <div class="nav-mark">R</div>
+    <svg class="nav-hex" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="100,6 175,46 175,154 100,194 25,154 25,46" fill="#1A3A5C"/>
+      <polygon points="100,6 175,46 128,72 100,32 72,72 25,46" fill="#4A80A8"/>
+      <polygon points="175,46 175,154 148,124 128,72" fill="#2D5F8A"/>
+      <polygon points="25,46 72,72 52,124 25,154" fill="#2D5F8A"/>
+      <polygon points="148,124 175,154 100,194 100,144 112,126" fill="#122A42"/>
+      <polygon points="52,124 88,144 100,194 25,154" fill="#1A3A5C"/>
+      <polygon points="100,32 128,72 100,94 72,72" fill="#5B9BC4"/>
+      <polygon points="128,72 148,124 112,126 100,94" fill="#1E4A72"/>
+      <polygon points="72,72 100,94 88,144 52,124" fill="#254E78"/>
+      <circle cx="100" cy="92" r="26" fill="white" opacity=".96"/>
+      <path d="M89,112 L89,144 Q89,149 100,149 Q111,149 111,144 L111,112 Z" fill="white" opacity=".96"/>
+      <circle cx="100" cy="92" r="12" fill="#1A3A5C"/>
+      <rect x="95" y="100" width="10" height="26" rx="2" fill="#1A3A5C"/>
+    </svg>
     <span class="nav-name">ROK VPN</span>
   </a>
   <div class="nav-right">
@@ -414,7 +366,27 @@ footer {
 
 <!-- Hero -->
 <section class="hero">
-  <div class="lettermark" aria-hidden="true">ROK</div>
+  <div class="logo-scene" aria-hidden="true">
+    <div class="logo-glow"></div>
+    <div class="logo-pedestal">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="100,6 175,46 175,154 100,194 25,154 25,46" fill="#1A3A5C"/>
+        <polygon points="100,6 175,46 128,72 100,32 72,72 25,46" fill="#4A80A8"/>
+        <polygon points="175,46 175,154 148,124 128,72" fill="#2D5F8A"/>
+        <polygon points="25,46 72,72 52,124 25,154" fill="#2D5F8A"/>
+        <polygon points="148,124 175,154 100,194 100,144 112,126" fill="#122A42"/>
+        <polygon points="52,124 88,144 100,194 25,154" fill="#1A3A5C"/>
+        <polygon points="100,32 128,72 100,94 72,72" fill="#5B9BC4"/>
+        <polygon points="128,72 148,124 112,126 100,94" fill="#1E4A72"/>
+        <polygon points="72,72 100,94 88,144 52,124" fill="#254E78"/>
+        <circle cx="100" cy="92" r="26" fill="white" opacity=".96"/>
+        <path d="M89,112 L89,144 Q89,149 100,149 Q111,149 111,144 L111,112 Z" fill="white" opacity=".96"/>
+        <circle cx="100" cy="92" r="12" fill="#1A3A5C"/>
+        <rect x="95" y="100" width="10" height="26" rx="2" fill="#1A3A5C"/>
+        <polygon points="100,6 175,46 128,72 100,32 72,72 25,46" fill="white" opacity=".07"/>
+      </svg>
+    </div>
+  </div>
   <p class="hero-eyebrow">WireGuard® · Sin registros · Siempre privado</p>
   <h1 class="hero-headline">Privado<br>por <em>defecto.</em></h1>
   <p class="hero-sub">Un dispositivo, para siempre gratis. Sin tarjeta de crédito, sin trampas. Solo conexión cifrada desde el primer segundo.</p>
@@ -443,34 +415,41 @@ footer {
       <p class="plan-period">para siempre</p>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>1 dispositivo</li>
-        <li>Hasta 5 Mbps</li>
+        <li>1 dispositivo incluido</li>
+        <li>Hasta 5 Mbps garantizados</li>
         <li>Protocolo WireGuard®</li>
-        <li>Cero registros</li>
+        <li>Cero registros de actividad</li>
+        <li>Kill switch incluido</li>
+        <li>Panel web de gestión</li>
+        <li>Archivo .conf descargable</li>
         <li class="dim">Sin acceso wstunnel</li>
-        <li class="dim">Soporte por correo</li>
+        <li class="dim">Soporte comunitario</li>
       </ul>
-      <button class="plan-btn ghost-btn" onclick="openModal('register')">Crear cuenta</button>
+      <button class="plan-btn ghost-btn" onclick="openModal('register')">Crear cuenta gratis</button>
     </div>
 
     <!-- Monthly -->
     <div class="plan">
       <p class="plan-label">Mensual</p>
       <div class="plan-price"><sup>$</sup>4<span style="font-size:2rem">.99</span></div>
-      <p class="plan-period">por mes</p>
+      <p class="plan-period">por mes · cancela cuando quieras</p>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>5 dispositivos</li>
+        <li>Hasta 5 dispositivos</li>
         <li>Velocidad sin límite</li>
         <li>Protocolo WireGuard®</li>
         <li>Modo wstunnel (TCP 443)</li>
-        <li>Cero registros</li>
-        <li>Soporte prioritario</li>
+        <li>Cero registros de actividad</li>
+        <li>Kill switch automático</li>
+        <li>Panel web + app móvil</li>
+        <li>Código QR para configurar</li>
+        <li>Sin contrato de permanencia</li>
+        <li>Soporte prioritario por correo</li>
       </ul>
-      <button class="plan-btn ghost-btn" onclick="openModal('register')">Suscribirse</button>
+      <button class="plan-btn ghost-btn" onclick="openModal('register')">Suscribirse mensualmente</button>
     </div>
 
-    <!-- Annual (featured) -->
+    <!-- Annual -->
     <div class="plan best">
       <div class="plan-badge">Mejor valor — 50% de descuento</div>
       <p class="plan-label">Anual</p>
@@ -478,14 +457,20 @@ footer {
       <p class="plan-period">por año · equivale a $2.50/mes</p>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>5 dispositivos</li>
+        <li>Hasta 5 dispositivos</li>
         <li>Velocidad sin límite</li>
         <li>Protocolo WireGuard®</li>
         <li>Modo wstunnel (TCP 443)</li>
-        <li>Cero registros</li>
-        <li>Soporte prioritario</li>
+        <li>Cero registros de actividad</li>
+        <li>Kill switch automático</li>
+        <li>Panel web + app móvil</li>
+        <li>Código QR para configurar</li>
+        <li>Sin contrato de permanencia</li>
+        <li>Ahorra $29.89 vs mensual</li>
+        <li>Equivale a 2 meses gratis</li>
+        <li>Soporte prioritario VIP</li>
       </ul>
-      <button class="plan-btn amber" onclick="openModal('register')">Obtener acceso anual</button>
+      <button class="plan-btn primary" onclick="openModal('register')">Obtener acceso anual</button>
     </div>
   </div>
 </div>
@@ -519,8 +504,18 @@ footer {
     </div>
     <div class="feat">
       <div class="feat-icon">&#128241;</div>
-      <p class="feat-title">Apps nativas (próximamente)</p>
-      <p class="feat-body">iOS y Android con configuración automática. Por ahora usa los archivos .conf con la app oficial de WireGuard.</p>
+      <p class="feat-title">Apps iOS y Android</p>
+      <p class="feat-body">Disponibles en App Store y Google Play. Configuración automática con código QR. Conéctate en segundos desde cualquier dispositivo.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128737;</div>
+      <p class="feat-title">Kill switch automático</p>
+      <p class="feat-body">Si la conexión VPN cae, el kill switch corta todo el tráfico al instante. Tu IP real nunca se expone, ni por un segundo.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128640;</div>
+      <p class="feat-title">Velocidad real garantizada</p>
+      <p class="feat-body">Sin throttling artificial en planes pagos. Servidor dedicado con ancho de banda real, sin sobre-suscripción ni congestionamiento.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#127970;</div>
@@ -535,6 +530,44 @@ footer {
   </div>
 </div>
 
+<!-- Download -->
+<div class="section-wrap section-centered" id="descargar">
+  <p class="eyebrow">Aplicación móvil</p>
+  <h2 class="section-title">Disponible en tu plataforma.</h2>
+  <p class="section-sub">Descarga ROK VPN y conéctate en segundos. Configuración automática con código QR incluido en la app.</p>
+  <div class="badges-wrap">
+
+    <!-- Apple App Store -->
+    <a href="#" class="store-badge">
+      <div class="badge-icon">
+        <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+        </svg>
+      </div>
+      <div class="badge-text">
+        <span class="badge-sub">Disponible en</span>
+        <span class="badge-name">App Store</span>
+      </div>
+    </a>
+
+    <!-- Google Play -->
+    <a href="#" class="store-badge">
+      <div class="badge-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3.18 23.83L13.5 13.5 3.18.17C2.5.5 2 1.2 2 2v20c0 .8.5 1.5 1.18 1.83z" fill="#32BBFF"/>
+          <path d="M20.16 10.5l-2.44-1.41-4.22 4.41 4.22 4.41 2.44-1.41C21.4 15.7 21.4 11.2 20.16 10.5z" fill="#FFCA28"/>
+          <path d="M3.18.17L13.5 10.5l4.22-4.41L5.49-.6C4.66-1.07 3.71-.96 3.18.17z" fill="#00F076"/>
+          <path d="M13.5 13.5L3.18 23.83c.53 1.13 1.48 1.24 2.31.77l12.23-7.1z" fill="#FF3A44"/>
+        </svg>
+      </div>
+      <div class="badge-text">
+        <span class="badge-sub">Disponible en</span>
+        <span class="badge-name">Google Play</span>
+      </div>
+    </a>
+  </div>
+</div>
+
 <!-- Footer -->
 <footer>
   <div class="footer-brand"><span>ROK</span> VPN</div>
@@ -542,6 +575,7 @@ footer {
   <div class="footer-links">
     <a href="#planes">Planes</a>
     <a href="#como-funciona">Cómo funciona</a>
+    <a href="#descargar">Descargar</a>
     <a href="/login">Administración</a>
   </div>
   <p class="footer-copy">© 2025 LUROK BUSINESS GROUP LLC · Florida, USA · Todos los derechos reservados</p>
@@ -552,7 +586,6 @@ footer {
   <div class="modal">
     <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&#10005;</button>
 
-    <!-- Register form -->
     <div id="pane-register">
       <h2 class="modal-title">Crear cuenta</h2>
       <p class="modal-sub">Gratis para siempre. Un dispositivo incluido.</p>
@@ -569,7 +602,6 @@ footer {
       <div class="toggle-row">¿Ya tienes cuenta? <button onclick="switchPane('login')">Iniciar sesión</button></div>
     </div>
 
-    <!-- Login form -->
     <div id="pane-login" style="display:none">
       <h2 class="modal-title">Bienvenido</h2>
       <p class="modal-sub">Accede a tu panel de dispositivos.</p>
@@ -586,7 +618,6 @@ footer {
       <div class="toggle-row">¿Sin cuenta aún? <button onclick="switchPane('register')">Crear una gratis</button></div>
     </div>
 
-    <!-- Success -->
     <div id="pane-success" style="display:none">
       <div class="success-panel">
         <div class="icon">&#128273;</div>
@@ -595,85 +626,55 @@ footer {
         <a href="#" id="dash-link">Ir a mi panel</a>
       </div>
     </div>
-
   </div>
 </div>
 
 <script>
 const backdrop = document.getElementById('modal');
-
-function openModal(pane) {
-  backdrop.classList.add('open');
-  switchPane(pane || 'register');
-  document.body.style.overflow = 'hidden';
-}
-function closeModal() {
-  backdrop.classList.remove('open');
-  document.body.style.overflow = '';
-}
-backdrop.addEventListener('click', function(e) { if (e.target === backdrop) closeModal(); });
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
-
+function openModal(pane) { backdrop.classList.add('open'); switchPane(pane||'register'); document.body.style.overflow='hidden'; }
+function closeModal() { backdrop.classList.remove('open'); document.body.style.overflow=''; }
+backdrop.addEventListener('click',function(e){ if(e.target===backdrop) closeModal(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); });
 function switchPane(name) {
-  ['register','login','success'].forEach(function(p) {
-    document.getElementById('pane-'+p).style.display = p === name ? '' : 'none';
-  });
+  ['register','login','success'].forEach(function(p){ document.getElementById('pane-'+p).style.display=p===name?'':'none'; });
   clearErrors();
 }
-function clearErrors() {
-  document.querySelectorAll('.form-err').forEach(function(el) { el.classList.remove('on'); el.textContent=''; });
+function clearErrors() { document.querySelectorAll('.form-err').forEach(function(el){ el.classList.remove('on'); el.textContent=''; }); }
+function showError(id,msg){ var el=document.getElementById(id); el.textContent=msg; el.classList.add('on'); }
+function setLoading(btnId,loading){
+  var btn=document.getElementById(btnId); btn.disabled=loading;
+  btn.textContent=loading?(btnId==='reg-btn'?'Creando cuenta…':'Verificando…'):(btnId==='reg-btn'?'Crear cuenta gratis':'Iniciar sesión');
 }
-function showError(id, msg) {
-  var el = document.getElementById(id);
-  el.textContent = msg; el.classList.add('on');
-}
-function setLoading(btnId, loading) {
-  var btn = document.getElementById(btnId);
-  btn.disabled = loading;
-  btn.textContent = loading
-    ? (btnId === 'reg-btn' ? 'Creando cuenta…' : 'Verificando…')
-    : (btnId === 'reg-btn' ? 'Crear cuenta gratis' : 'Iniciar sesión');
-}
-
-async function doRegister() {
-  var email = document.getElementById('reg-email').value.trim();
-  var pass  = document.getElementById('reg-pass').value;
-  if (!email || !pass) { showError('reg-err','Completa todos los campos.'); return; }
-  if (pass.length < 8) { showError('reg-err','La contraseña debe tener al menos 8 caracteres.'); return; }
-  setLoading('reg-btn', true);
-  try {
-    var res = await fetch('/api/v1/register', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ email: email, password: pass })
-    });
-    var data = await res.json();
-    if (!res.ok) { showError('reg-err', data.error || 'Error al registrar.'); return; }
-    localStorage.setItem('rok_token', data.token);
-    document.getElementById('dash-link').href = '/download';
+async function doRegister(){
+  var email=document.getElementById('reg-email').value.trim();
+  var pass=document.getElementById('reg-pass').value;
+  if(!email||!pass){showError('reg-err','Completa todos los campos.');return;}
+  if(pass.length<8){showError('reg-err','La contraseña debe tener al menos 8 caracteres.');return;}
+  setLoading('reg-btn',true);
+  try{
+    var res=await fetch('/api/v1/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})});
+    var data=await res.json();
+    if(!res.ok){showError('reg-err',data.error||'Error al registrar.');return;}
+    localStorage.setItem('rok_token',data.token);
+    document.getElementById('dash-link').href='/download';
     switchPane('success');
-  } catch(e) {
-    showError('reg-err','No se pudo conectar al servidor. Intenta de nuevo.');
-  } finally { setLoading('reg-btn', false); }
+  }catch(e){showError('reg-err','No se pudo conectar al servidor. Intenta de nuevo.');}
+  finally{setLoading('reg-btn',false);}
 }
-
-async function doLogin() {
-  var email = document.getElementById('log-email').value.trim();
-  var pass  = document.getElementById('log-pass').value;
-  if (!email || !pass) { showError('log-err','Completa todos los campos.'); return; }
-  setLoading('log-btn', true);
-  try {
-    var res = await fetch('/api/v1/login', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ email: email, password: pass })
-    });
-    var data = await res.json();
-    if (!res.ok) { showError('log-err', data.error || 'Credenciales incorrectas.'); return; }
-    localStorage.setItem('rok_token', data.token);
-    document.getElementById('dash-link').href = '/download';
+async function doLogin(){
+  var email=document.getElementById('log-email').value.trim();
+  var pass=document.getElementById('log-pass').value;
+  if(!email||!pass){showError('log-err','Completa todos los campos.');return;}
+  setLoading('log-btn',true);
+  try{
+    var res=await fetch('/api/v1/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})});
+    var data=await res.json();
+    if(!res.ok){showError('log-err',data.error||'Credenciales incorrectas.');return;}
+    localStorage.setItem('rok_token',data.token);
+    document.getElementById('dash-link').href='/download';
     switchPane('success');
-  } catch(e) {
-    showError('log-err','No se pudo conectar al servidor. Intenta de nuevo.');
-  } finally { setLoading('log-btn', false); }
+  }catch(e){showError('log-err','No se pudo conectar al servidor. Intenta de nuevo.');}
+  finally{setLoading('log-btn',false);}
 }
 </script>
 </body>

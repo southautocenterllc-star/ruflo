@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" data-bs-theme="dark">
+<html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,7 +17,7 @@
 
     <div class="text-center mb-4">
       <h4 class="brand text-light">ROK <span class="text-primary">VPN</span></h4>
-      <p class="text-secondary small mb-0">Panel de administración</p>
+      <p class="text-secondary small mb-0">Admin panel</p>
     </div>
 
     {% with msgs = get_flashed_messages(with_categories=true) %}
@@ -32,12 +32,12 @@
     <div class="card p-4 shadow-sm">
       <form method="post" action="/login" autocomplete="off">
         <div class="mb-3">
-          <label for="password" class="form-label text-secondary small">Contraseña</label>
+          <label for="password" class="form-label text-secondary small">Password</label>
           <input type="password" id="password" name="password"
                  class="form-control form-control-lg"
                  placeholder="••••••••" autofocus required>
         </div>
-        <button type="submit" class="btn btn-primary w-100">Entrar</button>
+        <button type="submit" class="btn btn-primary w-100">Sign in</button>
       </form>
     </div>
 

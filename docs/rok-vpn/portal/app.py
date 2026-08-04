@@ -35,8 +35,8 @@ SQUARE_LOCATION_ID = os.environ.get("ROK_SQUARE_LOCATION_ID", "")
 FREE_DEVICE_LIMIT = 1
 PAID_DEVICE_LIMIT = 5
 PLAN_PRICES = {
-    "monthly": {"amount": 499,  "currency": "USD", "label": "$4.99/mes"},
-    "annual":  {"amount": 2999, "currency": "USD", "label": "$29.99/año"},
+    "monthly": {"amount": 499,  "currency": "USD", "label": "$4.99/mo"},
+    "annual":  {"amount": 2999, "currency": "USD", "label": "$29.99/yr"},
 }
 
 
@@ -165,15 +165,15 @@ def resolve_server(conn, server_id, tier: str):
     if server_id is None:
         server = srv.default_server(conn)
         if not server:
-            return None, "No hay servidores disponibles"
+            return None, "No servers available"
         return server, None
     server = srv.get_server(conn, server_id)
     if not server:
-        return None, "Servidor no encontrado"
+        return None, "Server not found"
     if not (server["active"] and server["endpoint_host"]):
-        return None, f"{server['country']} aún no está disponible"
+        return None, f"{server['country']} is not available yet"
     if tier != "paid" and server["tier_required"] == "paid":
-        return None, f"{server['country']} requiere plan pago"
+        return None, f"{server['country']} requires a paid plan"
     return server, None
 
 
@@ -285,13 +285,13 @@ def require_user(f):
         try:
             payload = _decode_token(auth[7:])
         except jwt.PyJWTError:
-            return jsonify(error="Token inválido o expirado"), 401
+            return jsonify(error="Invalid or expired token"), 401
         with get_db() as conn:
             user = conn.execute(
                 "SELECT * FROM users WHERE id = ?", (payload["sub"],)
             ).fetchone()
         if not user:
-            return jsonify(error="Usuario no encontrado"), 401
+            return jsonify(error="User not found"), 401
         return f(dict(user), *args, **kwargs)
     return wrapper
 
@@ -313,7 +313,7 @@ def login():
         if request.form.get("password") == PORTAL_PASS:
             session["admin"] = True
             return redirect(url_for("admin"))
-        flash("Contraseña incorrecta", "danger")
+        flash("Incorrect password", "danger")
     return render_template("login.html")
 
 
@@ -338,12 +338,12 @@ def admin_add():
     name  = request.form.get("name",  "").strip()
     email = request.form.get("email", "").strip()
     if not name:
-        flash("El nombre es obligatorio", "danger")
+        flash("Name is required", "danger")
         return redirect(url_for("admin"))
     with get_db() as conn:
         server = srv.default_server(conn)
     if not server:
-        flash("No hay servidores activos", "danger")
+        flash("No active servers", "danger")
         return redirect(url_for("admin"))
     priv, pub = wg_genkey()
     token     = secrets.token_urlsafe(32)
@@ -353,7 +353,7 @@ def admin_add():
     try:
         server_add_peer(server, pub, ip)
     except (subprocess.CalledProcessError, srv.AgentError) as exc:
-        flash(f"Error al añadir peer en WireGuard: {exc}", "danger")
+        flash(f"Failed to add WireGuard peer: {exc}", "danger")
         return redirect(url_for("admin"))
     with get_db() as conn:
         try:
@@ -364,10 +364,10 @@ def admin_add():
             )
         except sqlite3.IntegrityError:
             server_remove_peer(server, pub)
-            flash(f"Ya existe un cliente con el nombre «{name}»", "danger")
+            flash(f"A client named \u00ab{name}\u00bb already exists", "danger")
             return redirect(url_for("admin"))
     _save_peer_configs(name, priv, ip)
-    flash(f"Cliente «{name}» creado — IP {ip}", "success")
+    flash(f"Client \u00ab{name}\u00bb created \u2014 IP {ip}", "success")
     return redirect(url_for("admin"))
 
 
@@ -400,7 +400,7 @@ def admin_server_update(server_id: int):
     data = request.get_json(silent=True) or {}
     with get_db() as conn:
         if not srv.get_server(conn, server_id):
-            return jsonify(error="Servidor no encontrado"), 404
+            return jsonify(error="Server not found"), 404
         fields, values = [], []
         for key in ("endpoint_host", "agent_url", "agent_token", "wg_subnet"):
             if key in data:
@@ -411,7 +411,7 @@ def admin_server_update(server_id: int):
                 fields.append(f"{key} = ?")
                 values.append(int(data[key]))
         if not fields:
-            return jsonify(error="Nada que actualizar"), 400
+            return jsonify(error="Nothing to update"), 400
         values.append(server_id)
         conn.execute(f"UPDATE servers SET {', '.join(fields)} WHERE id = ?", values)
         server = srv.get_server(conn, server_id)
@@ -438,19 +438,19 @@ def admin_revoke(name: str):
             "SELECT * FROM peers WHERE name = ? AND revoked = 0", (name,)
         ).fetchone()
     if not row:
-        flash("Cliente no encontrado o ya revocado", "warning")
+        flash("Client not found or already revoked", "warning")
         return redirect(url_for("admin"))
     try:
         wg_remove_peer(row["public_key"])
     except subprocess.CalledProcessError as exc:
-        flash(f"Error al revocar en WireGuard: {exc}", "danger")
+        flash(f"Failed to revoke in WireGuard: {exc}", "danger")
         return redirect(url_for("admin"))
     now = datetime.now(timezone.utc).isoformat()
     with get_db() as conn:
         conn.execute("UPDATE peers SET revoked = 1, revoked_at = ? WHERE id = ?",
                      (now, row["id"]))
     _delete_peer_configs(name)
-    flash(f"Cliente «{name}» revocado", "success")
+    flash(f"Client \u00ab{name}\u00bb revoked", "success")
     return redirect(url_for("admin"))
 
 
@@ -522,9 +522,9 @@ def api_register():
     email    = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
     if not email or not password:
-        return jsonify(error="email y password son obligatorios"), 400
+        return jsonify(error="email and password are required"), 400
     if len(password) < 8:
-        return jsonify(error="La contraseña debe tener al menos 8 caracteres"), 400
+        return jsonify(error="Password must be at least 8 characters"), 400
     pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     now = datetime.now(timezone.utc).isoformat()
     with get_db() as conn:
@@ -533,7 +533,7 @@ def api_register():
                          (email, pw_hash, now))
             user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
         except sqlite3.IntegrityError:
-            return jsonify(error="El email ya está registrado"), 409
+            return jsonify(error="That email is already registered"), 409
     return jsonify(token=_make_token(user["id"]), tier=user["tier"]), 201
 
 
@@ -545,7 +545,7 @@ def api_login():
     with get_db() as conn:
         user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
     if not user or not bcrypt.checkpw(password.encode(), user["password_hash"].encode()):
-        return jsonify(error="Credenciales incorrectas"), 401
+        return jsonify(error="Incorrect credentials"), 401
     return jsonify(token=_make_token(user["id"]), tier=user["tier"])
 
 
@@ -598,8 +598,8 @@ def api_devices_add(user):
             "SELECT COUNT(*) FROM peers WHERE user_id = ? AND revoked = 0", (user["id"],)
         ).fetchone()[0]
     if count >= limit:
-        return jsonify(error=f"Límite de dispositivos alcanzado ({limit}). "
-                             f"Actualiza a plan pago para agregar más."), 403
+        return jsonify(error=f"Device limit reached ({limit}). "
+                             f"Upgrade to a paid plan to add more."), 403
     data        = request.get_json(silent=True) or {}
     device_name = (data.get("name") or "dispositivo").strip()[:20]
     peer_name   = f"u{user['id']}-{device_name}"[:40]
@@ -612,11 +612,11 @@ def api_devices_add(user):
     try:
         peer = _provision_peer(peer_name, server, user_id=user["id"])
     except sqlite3.IntegrityError:
-        return jsonify(error="Ya tienes un dispositivo con ese nombre"), 409
+        return jsonify(error="You already have a device with that name"), 409
     except srv.AgentError as exc:
         return jsonify(error=str(exc)), 502
     except subprocess.CalledProcessError as exc:
-        return jsonify(error=f"Error al crear peer WireGuard: {exc}"), 500
+        return jsonify(error=f"Failed to create WireGuard peer: {exc}"), 500
 
     try:
         pubkey = server_public_key(server)
@@ -648,18 +648,18 @@ def api_devices_delete(user, device_id):
             (device_id, user["id"])
         ).fetchone()
     if not row:
-        return jsonify(error="Dispositivo no encontrado"), 404
+        return jsonify(error="Device not found"), 404
     with get_db() as conn:
         server = (srv.get_server(conn, row["server_id"]) if row["server_id"]
                   else srv.default_server(conn))
     if not server:
-        return jsonify(error="Servidor del dispositivo no encontrado"), 500
+        return jsonify(error="Device server not found"), 500
     try:
         server_remove_peer(server, row["public_key"])
     except srv.AgentError as exc:
         return jsonify(error=str(exc)), 502
     except subprocess.CalledProcessError as exc:
-        return jsonify(error=f"Error al revocar: {exc}"), 500
+        return jsonify(error=f"Failed to revoke: {exc}"), 500
     now = datetime.now(timezone.utc).isoformat()
     with get_db() as conn:
         conn.execute("UPDATE peers SET revoked = 1, revoked_at = ? WHERE id = ?",
@@ -711,9 +711,9 @@ def api_servers():
 @app.route("/api/v1/plans")
 def api_plans():
     plans = [
-        {"id": "free",    "label": "Gratis",       "amount": 0,   "devices": FREE_DEVICE_LIMIT, "speed": "5 Mbps"},
-        {"id": "monthly", "label": "$4.99/mes",    "amount": 499, "devices": PAID_DEVICE_LIMIT, "speed": "Sin límite"},
-        {"id": "annual",  "label": "$29.99/año",   "amount": 2999,"devices": PAID_DEVICE_LIMIT, "speed": "Sin límite"},
+        {"id": "free",    "label": "Free",       "amount": 0,   "devices": FREE_DEVICE_LIMIT, "speed": "5 Mbps"},
+        {"id": "monthly", "label": "$4.99/mo",    "amount": 499, "devices": PAID_DEVICE_LIMIT, "speed": "Unlimited"},
+        {"id": "annual",  "label": "$29.99/yr",   "amount": 2999,"devices": PAID_DEVICE_LIMIT, "speed": "Unlimited"},
     ]
     return jsonify(plans=plans)
 
@@ -724,10 +724,10 @@ def api_subscribe(user):
     data = request.get_json(silent=True) or {}
     plan = data.get("plan")
     if plan not in ("monthly", "annual"):
-        return jsonify(error="plan debe ser 'monthly' o 'annual'"), 400
+        return jsonify(error="plan must be 'monthly' or 'annual'"), 400
     nonce = data.get("nonce") or ""   # Square payment source ID / nonce
     if not nonce:
-        return jsonify(error="nonce de pago requerido"), 400
+        return jsonify(error="payment nonce is required"), 400
 
     # Square payment via REST API (no SDK dependency)
     import urllib.request, urllib.error, json as _json
@@ -750,10 +750,10 @@ def api_subscribe(user):
             result = _json.loads(resp.read())
         payment_id = result["payment"]["id"]
     except urllib.error.HTTPError as exc:
-        err = _json.loads(exc.read()).get("errors", [{}])[0].get("detail", "Error de pago")
+        err = _json.loads(exc.read()).get("errors", [{}])[0].get("detail", "Payment error")
         return jsonify(error=err), 402
     except Exception as exc:
-        return jsonify(error=f"Error de pago: {exc}"), 500
+        return jsonify(error=f"Payment error: {exc}"), 500
 
     now = datetime.now(timezone.utc)
     expires = now + (timedelta(days=365) if plan == "annual" else timedelta(days=31))

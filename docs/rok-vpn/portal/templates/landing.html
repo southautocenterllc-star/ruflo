@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ROK VPN — Seguro. Confiable. Privado.</title>
+<title>ROK VPN — Secure. Reliable. Private.</title>
 <style>
 :root {
   --bg:        #07111F;
@@ -235,6 +235,71 @@ nav {
 .feat-title { font-family:var(--font-u); font-weight:700; font-size:.9rem; letter-spacing:.02em; }
 .feat-body { font-size:.85rem; color:var(--muted); line-height:1.55; }
 
+/* ── Selector de idioma ── */
+.lang-btn {
+  font-family:var(--font-u); font-size:.7rem; font-weight:700; letter-spacing:.1em;
+  color:var(--blue-lt); background:transparent; cursor:pointer;
+  border:1px solid var(--border-2); border-radius:var(--r);
+  padding:.42rem .6rem; transition:background .18s cubic-bezier(.23,1,.32,1),color .18s;
+}
+.lang-btn:hover { background:var(--surface-2); color:var(--text); }
+
+/* ── Mapa mundial ── */
+.map-wrap {
+  position:relative; margin-top:2.75rem;
+  border:1px solid var(--border); border-radius:var(--rl);
+  background:
+    radial-gradient(ellipse 70% 90% at 50% 45%, rgba(45,95,138,.16) 0%, transparent 70%),
+    #050D18;
+  overflow:hidden;
+}
+.world-map { display:block; width:100%; height:auto; }
+.map-land {
+  fill:#16293E; stroke:#22405C; stroke-width:.7; stroke-linejoin:round;
+}
+/* Los pines se inyectan desde /api/v1/servers, no están cableados en el HTML. */
+.pin { cursor:default; }
+.pin-hit { fill:transparent; }          /* área de toque mayor que el punto */
+.pin-halo, .pin-ring { pointer-events:none; }
+.pin-on   .pin-core { fill:#5FCB8B; }
+.pin-on   .pin-halo { fill:#5FCB8B; opacity:.13; }
+.pin-on   .pin-ring { fill:#5FCB8B; opacity:.28; }
+.pin-lock .pin-core { fill:#6BA8D8; }
+.pin-lock .pin-halo { fill:#6BA8D8; opacity:.11; }
+.pin-lock .pin-ring { fill:#6BA8D8; opacity:.24; }
+.pin-soon .pin-core { fill:#3A5670; }
+.pin-soon .pin-halo, .pin-soon .pin-ring { display:none; }
+.pin:hover .pin-core { r:5; }
+.pin-count {
+  font-family:var(--font-u); font-size:9px; font-weight:700;
+  fill:#07111F; text-anchor:middle; dominant-baseline:central; pointer-events:none;
+}
+/* El halo late sólo en los nodos activos, y se detiene si el sistema lo pide. */
+@keyframes pinPulse { 0%,100%{transform:scale(1);opacity:.13} 50%{transform:scale(1.5);opacity:.03} }
+.pin-on .pin-halo { animation:pinPulse 3.2s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+@media (prefers-reduced-motion:reduce) { .pin-on .pin-halo { animation:none; } }
+
+.map-tip {
+  position:absolute; z-index:3; pointer-events:none;
+  transform:translate(-50%,-140%); white-space:nowrap;
+  font-family:var(--font-u); font-size:.74rem;
+  background:var(--surface-2); color:var(--text);
+  border:1px solid var(--border-2); border-radius:var(--r);
+  padding:.38rem .6rem; box-shadow:0 6px 22px rgba(0,0,0,.5);
+}
+.map-tip b { font-weight:700; }
+.map-tip span { color:var(--muted); }
+
+.map-legend {
+  display:flex; flex-wrap:wrap; justify-content:center; gap:1.4rem;
+  margin-top:1.1rem; font-family:var(--font-u); font-size:.74rem; color:var(--muted);
+}
+.lg { display:inline-flex; align-items:center; gap:.45rem; }
+.lg-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.lg-on { background:#5FCB8B; box-shadow:0 0 0 3px rgba(95,203,139,.16); }
+.lg-lock { background:#6BA8D8; box-shadow:0 0 0 3px rgba(107,168,216,.14); }
+.lg-soon { background:#3A5670; }
+
 /* ── Servidores por país ── */
 .region { margin-top:2.75rem; }
 .region-head {
@@ -412,8 +477,9 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
     <span class="nav-name">ROK VPN</span>
   </a>
   <div class="nav-right">
-    <button class="btn-ghost" onclick="openModal('login')">Iniciar sesión</button>
-    <button class="btn-nav" onclick="openModal('register')">Empezar gratis</button>
+    <button class="lang-btn" id="lang-btn" onclick="toggleLang()" title="Español / English">ES</button>
+    <button class="btn-ghost" onclick="openModal('login')" data-i18n="nav.login">Log in</button>
+    <button class="btn-nav" onclick="openModal('register')" data-i18n="nav.start">Get started</button>
   </div>
 </nav>
 
@@ -440,165 +506,183 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
       </svg>
     </div>
   </div>
-  <p class="hero-eyebrow">WireGuard® · Sin registros · Siempre privado</p>
-  <h1 class="hero-headline">Privado<br>por <em>defecto.</em></h1>
-  <p class="hero-sub">Un dispositivo, para siempre gratis. Sin tarjeta de crédito, sin trampas. Solo conexión cifrada desde el primer segundo.</p>
+  <p class="hero-eyebrow" data-i18n="hero.eyebrow">WireGuard® · No logs · Private by design</p>
+  <h1 class="hero-headline" data-i18n-html="hero.title">Private<br>by <em>default.</em></h1>
+  <p class="hero-sub" data-i18n="hero.sub">One device, free forever. No credit card, no catch. Just encrypted traffic from the very first second.</p>
   <div class="hero-ctas">
-    <button class="btn-hero solid" onclick="openModal('register')">Empezar gratis</button>
-    <a class="btn-hero outline" href="#planes">Ver planes</a>
+    <button class="btn-hero solid" onclick="openModal('register')" data-i18n="hero.cta1">Start for free</button>
+    <a class="btn-hero outline" href="#pricing" data-i18n="hero.cta2">See plans</a>
   </div>
   <div class="hero-trust">
-    <span class="trust-item"><span class="trust-dot"></span>Protocolo WireGuard®</span>
-    <span class="trust-item"><span class="trust-dot"></span>Cero registros de actividad</span>
-    <span class="trust-item"><span class="trust-dot"></span>Cifrado extremo a extremo</span>
+    <span class="trust-item"><span class="trust-dot"></span><span data-i18n="hero.t1">WireGuard® protocol</span></span>
+    <span class="trust-item"><span class="trust-dot"></span><span data-i18n="hero.t2">Zero activity logs</span></span>
+    <span class="trust-item"><span class="trust-dot"></span><span data-i18n="hero.t3">End-to-end encryption</span></span>
   </div>
 </section>
 
 <!-- Pricing -->
-<div class="section-wrap section-centered" id="planes">
-  <p class="eyebrow">Planes</p>
-  <h2 class="section-title">Simple. Honesto. Justo.</h2>
-  <p class="section-sub">Sin sorpresas, sin velocidades artificialmente limitadas en los niveles pagos. El plan gratuito existe para que te convenzas solo.</p>
+<div class="section-wrap section-centered" id="pricing">
+  <p class="eyebrow" data-i18n="price.eyebrow">Plans</p>
+  <h2 class="section-title" data-i18n="price.title">Simple. Honest. Fair.</h2>
+  <p class="section-sub" data-i18n="price.sub">No surprises and no artificial speed caps on paid tiers. The free plan exists so you can judge for yourself.</p>
   <div class="pricing-grid">
 
     <!-- Free -->
     <div class="plan">
-      <p class="plan-label">Gratis</p>
+      <p class="plan-label" data-i18n="plan.free">Free</p>
       <div class="plan-price">$<span>0</span></div>
-      <p class="plan-period">para siempre</p>
+      <p class="plan-period" data-i18n="plan.free.period">forever</p>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>1 dispositivo incluido</li>
-        <li>Hasta 5 Mbps garantizados</li>
-        <li>Protocolo WireGuard®</li>
-        <li>Cero registros de actividad</li>
-        <li>Kill switch incluido</li>
-        <li>Panel web de gestión</li>
-        <li>Archivo .conf descargable</li>
-        <li class="dim">Sin acceso wstunnel</li>
-        <li class="dim">Soporte comunitario</li>
+        <li data-i18n="f.dev1">1 device included</li>
+        <li data-i18n="f.speed5">Up to 5 Mbps guaranteed</li>
+        <li data-i18n="f.wg">WireGuard® protocol</li>
+        <li data-i18n="f.nolog">Zero activity logs</li>
+        <li data-i18n="f.kill">Kill switch included</li>
+        <li data-i18n="f.panel">Web management panel</li>
+        <li data-i18n="f.conf">Downloadable .conf file</li>
+        <li data-i18n="f.us">United States location</li>
+        <li class="dim" data-i18n="f.nowst">No wstunnel access</li>
+        <li class="dim" data-i18n="f.community">Community support</li>
       </ul>
-      <button class="plan-btn ghost-btn" onclick="openModal('register')">Crear cuenta gratis</button>
+      <button class="plan-btn ghost-btn" onclick="openModal('register')" data-i18n="plan.free.cta">Create free account</button>
     </div>
 
     <!-- Monthly -->
     <div class="plan">
-      <p class="plan-label">Mensual</p>
+      <p class="plan-label" data-i18n="plan.monthly">Monthly</p>
       <div class="plan-price"><sup>$</sup>4<span style="font-size:2rem">.99</span></div>
-      <p class="plan-period">por mes · cancela cuando quieras</p>
+      <p class="plan-period" data-i18n="plan.monthly.period">per month · cancel anytime</p>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>Hasta 5 dispositivos</li>
-        <li>Velocidad sin límite</li>
-        <li>Protocolo WireGuard®</li>
-        <li>Modo wstunnel (TCP 443)</li>
-        <li>Cero registros de actividad</li>
-        <li>Kill switch automático</li>
-        <li>Panel web + app móvil</li>
-        <li>Código QR para configurar</li>
-        <li>Sin contrato de permanencia</li>
-        <li>Soporte prioritario por correo</li>
+        <li data-i18n="f.dev5">Up to 5 devices</li>
+        <li data-i18n="f.unlimited">Unlimited speed</li>
+        <li data-i18n="f.wg">WireGuard® protocol</li>
+        <li data-i18n="f.allc">All countries unlocked</li>
+        <li data-i18n="f.wst">wstunnel mode (TCP 443)</li>
+        <li data-i18n="f.nolog">Zero activity logs</li>
+        <li data-i18n="f.killauto">Automatic kill switch</li>
+        <li data-i18n="f.panelapp">Web panel + mobile app</li>
+        <li data-i18n="f.qr">QR code setup</li>
+        <li data-i18n="f.nocontract">No lock-in contract</li>
+        <li data-i18n="f.priority">Priority email support</li>
       </ul>
-      <button class="plan-btn ghost-btn" onclick="openModal('register')">Suscribirse mensualmente</button>
+      <button class="plan-btn ghost-btn" onclick="openModal('register')" data-i18n="plan.monthly.cta">Subscribe monthly</button>
     </div>
 
     <!-- Annual -->
     <div class="plan best">
-      <div class="plan-badge">Mejor valor — 50% de descuento</div>
-      <p class="plan-label">Anual</p>
+      <div class="plan-badge" data-i18n="plan.badge">Best value — save 50%</div>
+      <p class="plan-label" data-i18n="plan.annual">Annual</p>
       <div class="plan-price"><sup>$</sup>29<span style="font-size:2rem">.99</span></div>
-      <p class="plan-period">por año · equivale a $2.50/mes</p>
+      <p class="plan-period" data-i18n="plan.annual.period">per year · just $2.50/month</p>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>Hasta 5 dispositivos</li>
-        <li>Velocidad sin límite</li>
-        <li>Protocolo WireGuard®</li>
-        <li>Modo wstunnel (TCP 443)</li>
-        <li>Cero registros de actividad</li>
-        <li>Kill switch automático</li>
-        <li>Panel web + app móvil</li>
-        <li>Código QR para configurar</li>
-        <li>Sin contrato de permanencia</li>
-        <li>Ahorra $29.89 vs mensual</li>
-        <li>Equivale a 2 meses gratis</li>
-        <li>Soporte prioritario VIP</li>
+        <li data-i18n="f.dev5">Up to 5 devices</li>
+        <li data-i18n="f.unlimited">Unlimited speed</li>
+        <li data-i18n="f.wg">WireGuard® protocol</li>
+        <li data-i18n="f.allc">All countries unlocked</li>
+        <li data-i18n="f.wst">wstunnel mode (TCP 443)</li>
+        <li data-i18n="f.nolog">Zero activity logs</li>
+        <li data-i18n="f.killauto">Automatic kill switch</li>
+        <li data-i18n="f.panelapp">Web panel + mobile app</li>
+        <li data-i18n="f.qr">QR code setup</li>
+        <li data-i18n="f.nocontract">No lock-in contract</li>
+        <li data-i18n="f.save">Save $29.89 vs monthly</li>
+        <li data-i18n="f.2free">Like getting 2 months free</li>
+        <li data-i18n="f.vip">VIP priority support</li>
       </ul>
-      <button class="plan-btn primary" onclick="openModal('register')">Obtener acceso anual</button>
+      <button class="plan-btn primary" onclick="openModal('register')" data-i18n="plan.annual.cta">Get annual access</button>
     </div>
   </div>
 </div>
 
 <!-- Strip CTA -->
 <div class="strip">
-  <p class="strip-headline">Un dispositivo.<br><em>Siempre gratis.</em> Sin límite de tiempo.</p>
-  <button class="btn-hero solid" onclick="openModal('register')">Crear mi cuenta</button>
+  <p class="strip-headline" data-i18n-html="strip.title">One device.<br><em>Free forever.</em> No time limit.</p>
+  <button class="btn-hero solid" onclick="openModal('register')" data-i18n="strip.cta">Create my account</button>
 </div>
 
 <!-- Features -->
-<div class="section-wrap" id="como-funciona">
-  <p class="eyebrow">Por qué ROK VPN</p>
-  <h2 class="section-title">Construido diferente.</h2>
-  <p class="section-sub">No somos un intermediario que revende capacidad. Nuestro propio servidor, nuestras propias reglas.</p>
+<div class="section-wrap" id="features">
+  <p class="eyebrow" data-i18n="feat.eyebrow">Why ROK VPN</p>
+  <h2 class="section-title" data-i18n="feat.title">Built differently.</h2>
+  <p class="section-sub" data-i18n="feat.sub">We are not a reseller renting someone else's capacity. Our own servers, our own rules.</p>
   <div class="features-grid">
     <div class="feat">
       <div class="feat-icon">&#9889;</div>
-      <p class="feat-title">WireGuard® nativo</p>
-      <p class="feat-body">El protocolo VPN más moderno: más rápido, más seguro y mucho más sencillo que OpenVPN o IPSec.</p>
+      <p class="feat-title" data-i18n="feat.1.t">Native WireGuard®</p>
+      <p class="feat-body" data-i18n="feat.1.b">The most modern VPN protocol: faster, safer and far simpler than OpenVPN or IPSec.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#128274;</div>
-      <p class="feat-title">Cero registros</p>
-      <p class="feat-body">No guardamos tu IP, tus sitios visitados ni tus tiempos de conexión. No hay nada que entregar porque no hay nada registrado.</p>
+      <p class="feat-title" data-i18n="feat.2.t">Zero logs</p>
+      <p class="feat-body" data-i18n="feat.2.b">We do not store your IP, the sites you visit or your connection times. There is nothing to hand over because nothing is recorded.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#127760;</div>
-      <p class="feat-title">wstunnel (TCP 443)</p>
-      <p class="feat-body">En redes que bloquean UDP, wstunnel encapsula WireGuard dentro de WebSocket sobre HTTPS para pasar cualquier firewall.</p>
+      <p class="feat-title" data-i18n="feat.3.t">wstunnel (TCP 443)</p>
+      <p class="feat-body" data-i18n="feat.3.b">On networks that block UDP, wstunnel wraps WireGuard inside WebSocket over HTTPS to get through any firewall.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#128241;</div>
-      <p class="feat-title">Apps iOS y Android</p>
-      <p class="feat-body">Disponibles en App Store y Google Play. Configuración automática con código QR. Conéctate en segundos desde cualquier dispositivo.</p>
+      <p class="feat-title" data-i18n="feat.4.t">iOS and Android apps</p>
+      <p class="feat-body" data-i18n="feat.4.b">Available on the App Store and Google Play. Automatic setup via QR code. Connect in seconds from any device.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#128737;</div>
-      <p class="feat-title">Kill switch automático</p>
-      <p class="feat-body">Si la conexión VPN cae, el kill switch corta todo el tráfico al instante. Tu IP real nunca se expone, ni por un segundo.</p>
+      <p class="feat-title" data-i18n="feat.5.t">Automatic kill switch</p>
+      <p class="feat-body" data-i18n="feat.5.b">If the VPN drops, the kill switch cuts all traffic instantly. Your real IP is never exposed, not even for a second.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#128640;</div>
-      <p class="feat-title">Velocidad real garantizada</p>
-      <p class="feat-body">Sin throttling artificial en planes pagos. Servidor dedicado con ancho de banda real, sin sobre-suscripción ni congestionamiento.</p>
+      <p class="feat-title" data-i18n="feat.6.t">Real guaranteed speed</p>
+      <p class="feat-body" data-i18n="feat.6.b">No artificial throttling on paid plans. Dedicated servers with real bandwidth, no overselling and no congestion.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#127970;</div>
-      <p class="feat-title">LLC registrada en Florida</p>
-      <p class="feat-body">LUROK BUSINESS GROUP LLC. Empresa real, responsable, sujeta a la ley estadounidense. No somos anónimos.</p>
+      <p class="feat-title" data-i18n="feat.7.t">Florida-registered LLC</p>
+      <p class="feat-body" data-i18n="feat.7.b">LUROK BUSINESS GROUP LLC. A real, accountable company under United States law. We are not anonymous.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#128179;</div>
-      <p class="feat-title">Pago seguro con Square</p>
-      <p class="feat-body">Procesamos pagos con Square. Nunca almacenamos datos de tu tarjeta. Cancela cuando quieras sin penalizaciones.</p>
+      <p class="feat-title" data-i18n="feat.8.t">Secure payments with Square</p>
+      <p class="feat-body" data-i18n="feat.8.b">Payments are processed by Square. We never store your card details. Cancel anytime with no penalty.</p>
     </div>
   </div>
 </div>
 
-<!-- Servidores por país -->
-<div class="section-wrap" id="paises">
-  <p class="eyebrow">Red global</p>
-  <h2 class="section-title">Elige tu país.</h2>
-  <p class="section-sub">Conéctate desde Norteamérica, Sudamérica, Europa o Asia. El plan gratis incluye Estados Unidos; los planes pagos abren toda la red.</p>
-  <div id="servers-list">
-    <p class="servers-fallback">Cargando servidores…</p>
+<!-- Locations -->
+<div class="section-wrap" id="locations">
+  <p class="eyebrow" data-i18n="loc.eyebrow">Global network</p>
+  <h2 class="section-title" data-i18n="loc.title">Pick your country.</h2>
+  <p class="section-sub" data-i18n="loc.sub">Connect from North America, South America, Europe or Asia. The free plan includes the United States; paid plans unlock the whole network.</p>
+
+  <div class="map-wrap">
+    <svg class="world-map" viewBox="0 0 1000 388" role="img" aria-label="ROK VPN server locations worldwide">
+      <path class="map-land" d="M967 281L968 281L968 283L966 283L965 283L966 280ZM972 277L970 279L969 279L970 278L972 277ZM564 234L575 240L575 242L579 245L577 248L578 250L579 251L579 253L579 256L580 257L581 260L580 262L577 263L575 263L572 264L568 264L566 264L565 260L564 258L561 258L559 257L557 256L555 255L554 252L552 250L551 248L552 247L551 244L553 243L554 242L555 240L554 239L555 237L554 235L558 235L564 234ZM445 155L445 160L436 159L436 167L433 167L433 168L433 172L422 172L428 172L430 170L430 166L434 163L436 159L437 157L440 156L442 157L445 156L445 155ZM126 95L120 92L118 91L113 90L112 87L112 86L109 84L108 82L105 80L105 79L106 77L106 76L101 74L99 71L97 69L94 67L92 66L91 65L88 66L85 67L83 65L81 64L78 63L75 63L75 47L75 37L81 38L85 39L88 39L90 38L94 37L98 38L102 36L107 36L109 37L111 36L113 35L118 38L122 36L122 38L126 38L130 37L134 38L141 39L145 40L147 39L151 41L147 42L152 43L160 42L162 42L165 44L168 42L165 41L167 40L171 40L173 40L175 40L178 42L181 42L186 43L190 42L194 43L194 41L196 40L201 41L201 44L203 42L205 42L206 39L203 37L200 36L200 33L203 31L207 31L210 33L214 36L211 37L216 38L216 41L220 38L223 40L223 42L225 44L228 42L230 40L230 37L234 37L238 37L242 39L240 42L242 43L236 46L233 47L230 46L229 47L226 50L222 53L218 53L216 54L216 56L212 56L209 59L206 62L205 64L205 67L209 68L210 70L211 72L215 72L221 73L223 74L225 75L229 76L232 77L236 78L239 78L239 80L240 83L242 86L246 89L248 88L250 85L248 81L246 79L251 78L254 76L255 74L255 72L253 70L250 68L253 65L252 62L251 58L253 57L258 58L261 58L263 57L266 58L269 60L275 61L275 64L276 67L278 68L280 69L284 68L287 65L289 63L291 66L295 69L298 73L297 74L300 76L303 78L307 78L309 79L310 82L312 82L314 86L312 87L310 88L305 89L302 92L297 92L291 91L287 91L284 92L281 94L278 95L274 98L271 101L273 101L278 97L283 95L288 94L290 96L287 98L288 101L289 103L293 104L297 104L300 101L300 103L302 104L299 105L293 107L290 108L287 110L285 110L284 108L289 105L285 105L282 106L280 104L280 100L277 100L274 101L273 104L271 105L264 106L260 106L256 109L252 110L249 110L249 112L245 113L242 114L239 115L237 115L238 113L239 112L240 110L239 108L239 105L236 104L234 102L232 102L230 100L228 99L225 98L222 97L220 98L216 97L213 97L211 97L208 96L206 96L204 94L198 95L188 95L179 95L170 95L162 95L154 95L145 95L142 95L134 95L126 95ZM235 57L237 56L241 56L237 58L235 58ZM246 28L243 27L245 26L251 26L256 28L253 28L250 28L247 29ZM208 22L206 23L202 23L199 23L200 21L204 21L207 22ZM199 12L202 13L197 14L195 14L194 12L197 12L199 12ZM223 24L219 24L211 23L210 21L207 19L201 18L198 17L205 16L208 17L213 17L216 18L218 20L220 21L224 21L228 21L232 20L238 20L243 20L246 21L245 23L240 24L237 24L229 24L223 24ZM158 14L162 14L156 16L152 15L154 14L158 14ZM159 12L163 12L160 13L155 13L158 12L159 12ZM314 88L312 90L311 93L312 92L314 92L316 94L320 94L319 96L321 96L321 97L322 99L321 102L318 101L319 99L315 101L313 101L315 99L312 99L309 99L304 99L305 97L306 95L309 90L311 89L313 88ZM235 50L238 51L241 52L244 53L246 54L243 55L239 54L237 53L234 54L230 56L229 54L226 54L228 53L228 51L229 48L231 48L233 49L235 50ZM249 30L252 29L258 30L262 31L267 32L270 34L277 35L280 36L282 39L277 40L284 42L288 42L292 45L297 45L296 47L291 50L287 49L283 46L279 47L279 48L282 50L286 51L289 55L288 57L284 56L277 54L281 56L284 58L277 58L271 56L267 55L264 53L260 51L252 52L250 51L252 49L257 49L263 49L263 47L266 44L264 42L260 40L255 39L256 39L253 37L251 37L249 36L247 37L242 37L232 36L226 36L222 35L219 34L222 33L218 33L217 30L219 28L222 26L230 26L227 27L230 29L232 27L239 26L244 29L244 31L249 30ZM205 25L211 25L216 26L212 28L209 29L206 31L203 31L201 28L203 26L205 25ZM126 19L131 17L137 15L141 15L145 15L144 17L142 18L140 18L134 19L130 20L126 19ZM99 81L101 81L100 84L103 86L100 85L98 83L97 81ZM175 10L180 11L188 12L190 13L186 14L182 13L175 13L178 12L175 11ZM124 96L123 97L118 95L115 93L112 92L110 91L114 91L115 91L118 91L120 94L123 95L124 96ZM130 24L134 24L141 25L144 25L147 27L143 27L136 29L133 31L125 34L124 33L118 31L121 28L123 26L120 24L130 24ZM168 20L171 20L174 20L172 22L163 23L156 24L152 24L157 22L144 22L140 22L144 19L147 18L155 19L160 21L165 21L161 18L163 17L166 18L168 20ZM172 28L175 29L177 32L177 34L182 35L187 36L182 38L184 39L178 39L173 39L170 39L165 40L158 40L153 40L151 39L147 38L145 39L142 36L143 36L148 36L152 36L155 35L150 35L144 35L140 35L138 34L145 33L141 33L136 32L138 30L140 29L148 27L150 28L155 28L159 29L162 28L165 29L167 32L168 31L166 28L169 27L172 28ZM189 29L186 27L189 26L192 26L197 26L195 28L200 29L199 32L195 33L192 33L190 31L183 29L189 29ZM172 26L175 26L177 27L175 29L171 27ZM194 18L196 19L196 20L195 22L190 23L187 22L188 21L183 21L183 19L186 19L190 18L194 18ZM201 7L203 6L206 6L211 5L215 6L219 7L224 7L226 9L230 10L226 11L221 13L216 13L210 13L207 12L209 10L204 10L201 9L199 8L201 7ZM213 3L218 3L221 2L226 2L230 1L234 1L237 2L239 0L243 -0L248 -0L256 -0L258 -0L266 -1L272 -0L278 -0L285 -0L291 0L297 1L290 3L283 4L280 4L286 4L280 6L275 7L270 9L265 9L263 10L254 10L258 11L256 11L259 12L256 13L252 14L246 16L252 17L244 19L237 18L229 19L225 18L219 18L224 16L223 14L224 14L232 15L228 13L224 13L226 12L231 11L228 9L226 8L234 8L236 8L241 7L234 7L225 7L220 6L217 5L214 4ZM259 43L257 44L254 44L255 41L257 41L259 42L259 43ZM200 38L202 39L200 40L197 39L194 39L191 38L193 37L195 36L198 37L200 37ZM289 93L294 93L297 94L292 94L289 93ZM290 100L293 102L296 102L294 103L290 102L290 100ZM126 95L134 95L142 95L145 95L154 95L162 95L170 95L179 95L188 95L198 95L203 95L205 95L208 96L211 97L213 97L216 97L219 98L222 97L225 98L228 99L230 100L232 101L234 102L236 103L239 105L239 108L240 110L239 112L238 113L237 115L239 115L242 114L245 113L249 112L248 110L252 110L255 110L259 107L264 106L270 106L272 105L274 101L276 99L279 100L280 104L282 106L279 108L276 109L273 110L272 111L271 114L272 115L274 115L272 116L269 116L266 117L263 118L267 117L264 118L263 118L262 121L260 123L258 122L259 123L260 125L257 128L258 126L256 125L256 122L256 125L254 125L256 126L256 129L258 133L256 135L253 135L251 137L248 138L245 141L243 142L242 144L242 146L242 148L243 150L244 152L246 157L246 159L245 161L243 161L241 160L240 157L238 155L238 152L238 151L235 148L232 149L230 148L228 147L225 147L222 147L220 147L219 149L217 151L215 150L213 149L211 149L209 149L207 149L205 149L202 152L199 153L198 154L197 157L198 160L195 159L193 158L191 155L190 153L189 152L187 150L185 149L183 149L181 151L179 150L177 149L177 148L176 146L174 145L173 144L167 143L165 144L159 144L153 142L149 141L145 141L142 141L142 140L140 138L138 137L137 137L133 136L132 134L129 131L127 127L126 125L124 123L123 121L122 119L122 117L122 115L121 112L123 110L123 107L123 105L123 101L122 99L121 97L125 98L127 100L127 97L126 95ZM35 176L37 177L35 179L33 177L34 175ZM4 63L6 63L5 65L3 64L2 64L4 63ZM41 70L43 70L42 72L39 73L38 73L40 70L41 70ZM75 37L75 47L75 63L78 63L81 64L83 65L85 67L88 66L91 65L92 66L94 67L97 69L99 71L101 74L106 76L106 77L105 79L103 78L101 77L100 74L96 72L95 69L92 69L88 69L84 68L79 66L76 65L71 64L67 64L62 63L58 62L55 62L56 64L54 64L51 65L49 66L45 67L45 65L46 62L49 61L45 62L43 64L39 66L41 67L38 69L35 71L33 71L28 74L23 77L22 76L19 77L16 78L14 79L9 80L12 78L14 77L17 76L21 75L26 73L29 71L29 69L31 67L27 68L25 69L23 67L21 67L19 68L17 68L17 66L15 64L12 65L9 63L7 63L7 61L5 60L6 58L9 57L10 55L12 55L14 56L16 54L18 55L20 54L18 52L20 51L18 51L15 52L12 52L8 52L4 51M1005 48M4 47L10 46L12 46L18 47L15 45L12 44L10 43L7 42L3 41L5 39L10 39L13 38L17 35L20 35L25 34L28 34L32 33L36 33L38 34L44 34L48 35L51 35L57 36L62 36L64 36L68 36L72 37L75 37ZM995 54L997 54L999 54L1001 55L1004 55L1001 56L999 55L996 55ZM713 94L711 96L709 96L709 99L707 101L702 100L700 105L698 105L693 106L695 111L693 112L693 114L692 113L690 112L686 112L682 112L677 111L675 111L675 113L670 112L668 113L666 114L662 116L661 118L659 117L656 117L655 115L654 112L651 110L646 110L642 110L640 108L638 107L633 105L625 106L626 116L624 117L622 114L620 114L617 114L616 112L613 111L611 109L610 108L613 108L613 105L615 105L617 105L618 103L617 101L615 101L612 100L609 102L606 102L605 102L605 100L604 98L601 99L599 97L601 95L602 91L605 93L605 90L611 87L615 87L622 89L625 90L628 89L632 89L636 91L641 90L637 87L639 85L642 84L640 82L651 80L660 78L662 77L667 78L668 81L671 80L675 81L674 82L677 82L684 80L687 83L693 90L694 88L698 90L702 89L704 90L705 91L707 92L712 93L713 94ZM626 116L625 106L633 105L638 107L640 108L642 110L646 110L651 110L654 112L654 115L656 117L659 117L661 118L662 116L666 114L667 114L666 116L668 117L670 116L673 118L670 120L668 119L666 119L663 118L662 120L661 121L658 121L660 123L660 125L659 128L657 127L655 127L655 126L651 125L649 123L647 122L644 120L642 117L638 117L637 114L633 112L631 114L628 115L629 116L626 116ZM863 239L868 241L873 243L875 244L877 245L877 247L882 249L882 250L880 251L880 252L883 254L885 257L886 257L888 259L891 261L888 262L885 261L882 260L880 258L879 257L877 254L874 253L871 254L870 255L870 257L868 258L866 257L863 257L863 248L863 239ZM896 242L897 244L895 242L892 240L890 240L892 240L895 241ZM892 248L890 249L889 249L887 249L885 249L884 248L886 247L888 247L889 246L889 247L891 247L893 245L893 243L894 243L895 245L894 247L892 247ZM902 247L904 249L905 251L903 250L901 248L901 246ZM863 239L863 248L863 257L861 255L858 254L854 255L855 253L857 252L856 249L855 247L849 245L847 244L843 242L841 243L840 241L838 240L841 239L843 239L839 238L838 236L835 236L838 234L839 233L844 234L845 240L848 241L850 238L853 237L856 237L858 238L860 239L863 239ZM818 257L817 260L814 261L816 258L818 257ZM844 251L844 249L845 247L846 249L844 251ZM799 220L797 223L799 225L802 229L798 230L797 232L798 234L795 236L795 239L794 243L790 243L789 242L787 241L782 242L779 240L777 240L777 236L774 233L774 231L774 228L776 226L776 228L778 230L780 229L782 229L783 228L787 228L789 228L791 224L793 220L796 220L799 220ZM831 240L834 240L835 243L832 241L830 241L828 241L827 241L827 240L831 240ZM827 226L827 227L828 228L829 231L827 231L827 233L828 234L826 233L825 229L826 227ZM813 229L816 229L819 227L817 231L815 231L812 231L807 231L805 231L805 233L807 236L809 235L814 234L812 234L811 236L809 237L811 241L813 245L813 247L812 248L812 244L809 245L809 244L807 242L807 239L805 240L806 243L806 247L804 248L803 244L803 242L801 240L802 238L803 236L804 231L807 228L809 229L813 229ZM805 260L802 259L804 258L806 259L806 260ZM808 256L810 255L813 254L812 256L808 257L804 256L806 255L808 256ZM800 255L801 255L799 257L797 257L795 257L796 255L798 255L800 255ZM772 250L778 251L784 251L785 253L789 254L792 255L789 256L786 255L784 255L781 255L778 255L775 253L773 253L767 252L764 251L766 248L769 248L771 250ZM761 235L761 237L762 238L764 239L766 240L765 244L765 248L762 248L759 246L756 244L755 242L753 240L751 238L749 234L747 231L746 229L745 227L742 225L741 223L739 221L736 218L735 217L737 217L742 217L744 220L746 222L748 223L750 226L753 226L756 228L757 230L759 232L758 234L760 235ZM278 379L280 382L284 384L288 385L284 386L282 385L281 385L278 385L278 379ZM308 316L308 318L307 321L307 324L306 327L306 328L309 330L309 332L311 334L308 339L304 340L298 341L295 340L296 342L295 344L296 345L294 346L291 347L288 346L288 349L290 350L291 349L292 351L289 352L287 353L287 356L286 358L283 358L281 359L280 361L283 363L286 364L285 366L282 368L280 371L277 372L277 376L279 378L275 377L268 377L267 375L267 373L265 374L264 370L266 368L267 367L267 365L268 363L269 359L269 357L270 356L270 354L268 350L268 346L269 343L270 341L271 340L271 337L271 334L273 332L273 330L274 327L274 325L272 319L274 317L274 314L275 311L277 309L279 307L278 305L278 300L281 299L282 296L284 293L288 294L289 296L291 293L294 293L299 299L302 299L305 301L308 302L306 308L308 308L311 309L314 308L316 306L317 304L319 305L319 307L317 309L315 310L312 312L308 316ZM278 379L278 385L281 385L282 385L279 387L276 387L274 386L271 386L267 384L265 383L261 379L263 380L267 382L271 383L272 382L273 380L276 379L278 379ZM275 281L276 283L277 285L278 286L277 289L279 292L280 296L282 295L281 299L278 300L278 305L279 307L277 309L275 311L274 314L274 317L272 319L274 324L274 327L273 330L273 332L271 334L271 337L271 340L270 341L269 343L268 346L269 349L268 353L269 355L270 357L269 359L268 363L267 365L267 367L266 368L264 370L264 373L267 373L267 375L268 377L275 377L278 378L275 378L271 380L271 382L267 381L263 379L260 378L259 376L260 374L258 373L258 368L259 365L262 363L258 362L261 360L262 355L265 356L266 350L264 349L263 353L262 353L263 349L263 343L265 342L264 339L264 336L267 331L269 327L270 322L269 318L270 316L270 312L271 309L272 304L273 298L273 292L273 287L273 283L274 282L275 281ZM551 244L552 247L551 248L552 250L554 252L555 255L550 255L549 257L549 262L549 265L551 266L552 269L550 269L549 267L546 266L545 264L543 265L541 265L539 263L537 262L535 262L533 263L531 263L531 259L530 257L531 255L530 252L527 252L524 252L523 253L521 254L518 254L517 253L516 250L515 248L507 248L505 249L503 248L504 247L506 245L507 244L509 244L512 244L513 243L514 239L515 237L516 235L518 234L519 232L519 229L519 227L520 225L521 224L521 222L521 220L522 219L524 218L526 219L528 220L530 220L532 221L533 219L534 219L537 218L539 218L541 217L543 217L545 218L547 220L549 219L552 219L555 222L555 225L554 227L553 229L553 232L552 236L551 238L550 240L551 244ZM585 237L584 234L584 224L586 221L589 220L591 218L595 218L603 209L605 207L606 205L606 204L606 201L608 199L610 199L612 198L612 201L612 202L610 206L609 209L607 213L605 217L603 220L599 224L597 226L592 229L590 231L587 234L586 236ZM579 245L575 242L575 240L564 235L564 232L566 229L567 227L566 223L564 220L566 218L568 216L569 217L569 219L572 219L576 222L577 222L580 222L583 220L586 221L584 224L584 234L585 237L583 238L582 239L581 241L580 244ZM538 209L536 208L535 206L535 204L533 202L533 200L532 198L531 197L532 194L532 192L532 190L534 188L536 188L536 177L539 176L539 170L550 170L561 170L572 170L573 173L573 177L574 180L577 182L575 183L573 184L572 186L571 190L571 194L569 197L568 198L567 200L565 202L564 205L564 208L564 205L564 204L562 202L562 200L562 198L561 198L559 198L560 201L558 202L557 204L555 205L553 203L550 205L547 206L545 205L543 205L542 204L539 203L538 207L536 208L538 209ZM536 177L536 188L534 188L532 190L532 192L531 193L531 196L532 198L532 199L533 201L531 201L530 202L528 205L525 207L523 206L521 209L516 211L514 211L512 211L512 208L510 207L508 205L510 204L512 204L511 201L511 200L511 198L510 196L508 195L508 193L508 188L512 185L512 182L513 176L513 174L511 172L511 168L514 166L525 172L536 177ZM269 177L269 178L268 180L269 181L267 181L264 181L261 181L264 180L266 180L266 178L264 177L267 176L269 177ZM269 181L268 180L269 178L269 177L271 176L273 177L276 178L278 180L276 180L274 180L272 181L270 183ZM731 6L737 5L743 6L749 9L748 12L742 12L735 11L730 10L728 8L724 7L731 6ZM757 10L764 12L747 14L752 11L754 10L757 10ZM857 19L864 19L875 21L872 23L862 23L857 23L852 22L853 20L857 19ZM883 21L890 22L887 23L883 23L877 22L883 21ZM860 27L863 26L866 26L870 27L866 27L860 27ZM595 7L600 6L604 6L606 6L609 6L613 6L608 7L606 7L602 8L599 8L601 7L595 7ZM533 80L528 80L524 80L529 78L532 78L533 80ZM619 26L625 23L631 21L640 19L649 18L654 17L660 17L662 18L660 19L650 20L641 22L633 24L628 27L624 30L625 32L630 34L628 35L619 34L613 32L613 31L616 30L616 29L621 26L619 26ZM868 82L869 85L869 87L871 90L873 95L869 94L867 98L870 101L870 103L868 101L866 103L866 101L866 98L866 95L866 93L866 90L865 87L865 83L868 82L868 80L868 82ZM835 114L834 112L836 112L836 109L835 106L838 105L841 106L843 103L844 100L846 96L842 97L839 98L835 98L834 96L831 94L826 93L825 90L824 88L821 84L819 83L814 83L811 83L807 83L805 84L806 85L807 87L805 88L802 91L799 94L795 92L792 93L790 92L789 91L785 93L781 94L778 95L775 94L772 94L771 93L768 91L765 91L762 91L759 92L755 91L754 89L751 88L749 88L745 86L743 89L744 91L741 93L737 92L734 92L732 91L729 91L727 90L723 91L717 94L714 94L712 93L708 93L705 91L704 90L702 89L698 90L694 88L693 90L687 83L683 81L677 82L674 82L675 81L671 80L668 81L667 78L662 77L660 78L653 79L641 81L642 84L639 85L637 87L641 89L637 90L632 89L628 89L625 90L622 89L615 87L611 87L605 90L605 93L602 91L600 94L599 97L601 99L604 98L605 100L605 102L606 102L605 104L602 104L600 107L602 110L602 112L605 115L603 116L602 117L600 115L597 114L594 113L592 113L588 111L584 111L581 110L577 108L574 107L572 105L574 105L576 103L575 102L579 100L576 100L578 98L580 98L580 96L581 94L577 92L575 92L574 91L572 92L568 91L567 89L565 89L565 87L564 86L561 86L559 86L557 85L560 83L558 82L555 79L556 77L553 76L551 76L548 75L547 73L545 71L546 68L548 66L551 64L548 63L554 59L556 58L557 56L553 54L554 53L552 50L554 48L550 45L553 43L549 41L549 39L551 39L556 38L559 37L564 38L571 39L582 42L584 43L584 45L581 47L576 47L564 45L562 46L567 48L567 52L570 53L573 53L571 51L573 50L580 52L582 51L580 49L587 46L589 46L592 47L594 45L591 44L593 42L591 40L598 41L600 43L597 43L597 45L599 46L603 45L604 43L610 42L619 40L621 40L619 41L622 42L624 41L629 41L634 39L637 41L640 39L637 38L638 37L647 38L651 38L661 42L663 40L660 39L656 38L656 34L661 31L663 28L665 28L672 29L673 30L670 32L672 33L673 35L672 39L675 41L674 43L668 47L672 47L676 45L679 43L677 41L679 39L676 39L675 37L677 35L673 32L678 30L678 28L681 30L680 33L683 33L681 31L686 30L692 30L697 31L694 29L694 26L699 26L706 26L712 25L710 24L713 22L716 22L721 21L729 20L737 19L739 20L746 18L751 18L754 16L761 15L766 16L762 16L768 17L771 18L780 18L786 19L788 20L787 21L784 22L777 24L775 25L778 25L782 26L785 25L786 27L792 26L801 26L813 28L814 26L819 26L824 26L828 28L830 30L828 31L832 33L836 34L839 31L843 32L848 32L853 33L855 32L860 32L858 30L862 28L887 30L889 32L897 34L908 33L913 34L916 35L915 37L919 38L923 37L928 37L933 38L938 37L943 40L946 39L944 37L954 37L960 37L968 38L972 39L979 41L986 44L986 46L988 47L987 45L995 45L1000 48L998 49L993 49L993 52L989 52L987 51L983 50L980 49L977 49L975 48L972 48L972 50L968 52L965 51L967 53L969 55L971 57L965 57L957 59L954 60L950 62L946 63L941 63L934 65L930 65L926 65L925 66L922 69L925 71L925 75L922 75L921 77L917 80L916 83L912 84L911 87L907 89L906 87L905 83L903 77L905 73L907 72L912 70L917 66L921 63L926 61L929 57L925 57L924 60L917 63L914 59L907 60L900 65L902 67L896 67L892 68L892 66L888 65L884 67L876 66L866 67L857 72L847 79L851 79L852 81L855 82L857 80L860 80L864 84L864 86L862 89L862 92L861 97L856 101L855 102L852 106L848 109L846 111L842 112L841 112L839 111L835 113ZM972 32L975 32L979 33L976 34L972 34L969 34L972 32ZM563 103L565 103L567 104L571 105L568 106L564 108L562 107L560 105L563 104ZM252 156L254 158L254 160L253 158L252 156ZM251 161L253 164L253 165L251 164L251 161ZM298 377L302 375L304 376L306 375L308 376L303 378L300 378ZM512 9L517 8L520 9L529 11L522 12L521 14L518 15L517 17L514 17L508 16L510 15L506 14L501 12L498 9L506 8L508 9L512 9ZM556 38L551 39L549 39L550 37L547 36L542 37L541 39L538 40L535 39L532 40L529 38L527 39L525 39L525 41L520 40L519 42L516 42L514 44L511 47L507 51L507 53L504 53L503 56L503 59L505 61L504 64L501 66L500 67L498 66L493 69L489 70L485 68L484 65L483 59L486 57L493 55L499 52L504 48L511 42L515 40L523 37L529 36L534 36L538 33L543 34L548 33L557 35L553 36L556 38ZM546 8L542 10L534 10L525 10L521 9L518 7L526 7L530 7L533 7L540 7L546 8ZM538 14L532 16L527 15L529 14L527 13L533 13L538 14ZM339 1L348 -1L358 -1L361 -2L371 -2L394 -1L411 1L406 2L395 2L380 2L382 3L391 2L400 3L405 3L408 4L405 5L412 4L425 3L434 4L435 5L424 7L422 7L413 8L420 8L416 10L414 12L414 15L418 17L413 17L409 18L414 19L415 22L412 22L415 24L409 25L412 26L407 27L403 27L407 29L401 29L400 30L404 31L407 32L409 34L404 35L401 34L398 32L399 34L396 36L403 36L407 36L399 38L392 41L384 42L381 42L378 43L374 46L368 48L366 48L362 48L358 49L356 51L356 53L354 55L350 57L351 59L350 61L348 64L344 64L340 62L334 62L332 60L330 58L325 54L324 52L323 50L319 47L320 45L319 44L321 41L325 40L327 37L324 38L322 38L320 38L317 37L316 36L317 34L320 34L326 35L321 33L318 32L316 32L313 32L316 29L315 28L313 26L309 23L306 22L298 19L292 19L285 19L278 19L275 18L270 17L277 16L283 16L271 15L265 14L275 11L286 10L279 8L282 7L291 5L295 5L301 3L309 2L318 2L321 3L329 2L335 3L339 3L345 4L338 2ZM662 368L664 369L666 369L666 371L661 371L661 369L662 368ZM818 257L821 255L823 255L825 255L821 257L819 258ZM515 312L517 311L519 312L521 313L522 313L525 311L525 301L527 304L527 306L530 306L532 304L534 302L537 304L539 304L541 303L542 301L543 301L545 298L548 296L551 294L554 294L556 294L558 298L558 300L558 303L556 304L555 306L557 308L558 308L561 307L560 309L560 311L557 314L556 315L555 317L553 319L550 322L548 323L546 325L543 326L542 326L540 326L535 326L533 327L529 328L527 328L525 329L523 328L521 327L520 325L519 323L520 320L518 318L517 315L515 312ZM550 313L548 312L546 314L545 315L547 317L548 316L550 316L551 314ZM550 313L550 315L548 316L547 317L545 315L546 314L548 312L550 313ZM142 141L145 141L149 140L153 142L159 144L165 144L167 144L172 143L174 145L176 146L177 148L177 149L179 150L181 151L183 149L185 149L187 150L189 152L190 153L191 155L192 157L195 159L197 160L197 162L196 164L196 168L196 171L198 174L200 176L200 178L204 180L208 180L210 180L212 180L214 179L216 178L216 176L217 174L219 172L222 172L224 172L226 172L227 174L225 175L225 177L225 179L224 181L222 180L221 182L218 182L215 182L215 184L216 185L217 187L213 187L212 189L212 191L208 188L207 187L205 187L203 187L201 188L200 188L198 187L195 187L193 186L191 185L188 184L185 183L183 182L180 181L176 178L175 176L175 174L175 173L174 171L173 168L171 165L168 163L166 162L164 160L164 158L163 157L161 156L160 154L159 154L157 152L156 150L154 148L153 146L151 144L149 143L149 145L149 148L152 151L153 152L154 154L156 156L157 157L158 160L160 162L160 164L163 165L164 167L162 168L161 166L159 165L157 163L156 163L156 161L156 159L152 157L150 156L148 154L150 153L148 150L147 149L146 148L145 146L143 143L142 141ZM308 316L310 316L313 318L317 320L319 321L321 323L320 326L319 328L316 329L314 329L312 329L310 328L308 328L306 327L306 325L307 321L308 318L308 316ZM320 326L319 325L319 321L317 320L314 318L310 316L308 316L312 312L315 310L317 309L319 307L319 305L318 303L318 300L318 299L316 299L314 295L312 294L307 294L308 290L307 288L307 286L309 283L308 281L306 280L307 277L301 277L300 274L300 272L300 270L299 269L297 270L294 268L290 267L287 264L287 262L287 259L283 260L282 261L279 262L277 263L275 262L273 263L272 258L270 260L268 260L267 258L265 258L264 255L263 253L263 251L265 250L265 249L266 247L269 245L271 244L274 244L275 236L275 233L274 230L275 230L274 227L280 227L281 227L282 229L284 230L286 230L289 228L290 226L292 226L290 225L289 223L289 221L293 221L296 220L299 219L300 217L301 217L301 219L303 221L302 224L302 226L304 228L306 228L308 227L311 227L313 227L313 225L315 225L317 225L319 225L321 226L323 223L325 220L327 222L328 227L330 227L330 229L328 231L333 232L334 235L336 233L339 234L344 236L345 238L345 239L348 238L353 240L358 240L362 242L365 245L367 246L370 246L372 251L372 252L371 257L370 259L366 263L364 266L362 268L360 270L361 276L360 280L360 282L358 287L355 290L355 293L353 294L352 296L349 296L345 297L343 298L339 299L336 301L334 304L333 306L334 308L333 311L331 313L328 318L325 321L323 322L322 325L320 326ZM275 262L277 263L279 263L282 261L283 260L287 259L286 261L287 264L290 267L293 267L296 269L299 269L300 270L300 272L301 274L301 277L307 277L306 279L308 281L309 283L308 285L308 288L304 286L302 286L297 287L295 289L295 291L294 294L291 293L289 296L288 294L284 293L282 295L280 296L279 292L277 289L278 286L277 285L276 283L275 281L277 278L275 276L276 274L277 270L277 268L275 262ZM274 244L272 244L269 245L266 247L265 249L265 250L263 251L263 253L264 255L265 257L268 260L270 260L272 258L272 263L275 262L277 267L277 270L277 272L276 275L277 278L275 281L274 282L273 283L270 281L264 278L259 274L257 273L256 270L254 266L251 261L249 255L246 252L244 250L242 249L242 245L243 243L245 241L244 243L247 244L248 246L250 245L250 243L252 240L255 239L258 236L259 234L259 232L261 233L264 235L265 238L267 239L269 238L271 238L274 239L272 242L274 244ZM282 228L281 226L274 227L274 229L276 229L274 230L274 232L275 235L274 244L273 242L274 239L271 238L270 238L267 239L265 238L264 235L261 233L259 232L258 232L255 231L253 231L249 228L250 226L252 224L253 223L254 221L253 219L253 216L253 213L252 212L254 210L253 208L255 208L257 206L258 202L260 201L262 201L264 200L266 199L269 197L271 198L268 199L266 202L265 205L265 206L266 206L267 208L267 211L268 212L272 212L273 212L275 215L279 215L280 214L281 216L280 219L280 221L281 223L280 224L282 226L282 228ZM253 208L254 210L252 210L250 209L250 207L247 207L245 209L246 211L243 212L243 210L241 209L239 209L238 209L238 207L238 205L240 206L242 207L244 206L246 206L249 205L250 206L252 207ZM239 205L238 207L238 208L236 208L236 207L234 205L232 204L232 205L230 204L230 203L230 201L232 201L234 201L236 201L236 203L239 205ZM236 201L234 202L232 201L230 201L228 199L226 197L224 196L226 195L227 193L229 193L230 193L232 191L234 191L236 190L237 192L236 194L236 196L236 197L236 199L235 201ZM237 190L235 191L233 191L231 192L230 193L228 193L227 195L225 196L224 193L222 193L221 192L220 190L222 189L223 188L225 187L227 188L229 187L231 187L233 188L235 189L237 190ZM220 192L221 192L223 193L224 194L222 195L220 194L218 194L219 192ZM212 191L212 190L213 187L217 187L216 185L214 184L215 182L218 182L220 182L220 184L220 187L222 188L220 190L220 192L218 193L216 193L214 193L212 191ZM220 182L222 180L223 183L223 184L222 186L221 187L220 184L220 182ZM300 217L299 219L296 220L294 221L291 221L289 220L289 223L290 225L292 225L290 226L289 228L287 229L284 230L282 228L282 226L280 224L281 223L280 221L280 219L280 217L281 215L279 215L277 215L273 212L272 212L268 212L267 211L267 208L266 206L265 206L265 205L266 203L268 201L270 199L268 200L269 203L268 204L269 207L271 204L270 201L273 200L274 198L275 200L277 200L279 201L281 202L284 202L286 203L288 204L290 203L293 202L296 202L294 203L297 204L299 206L300 208L301 208L300 210L301 212L298 213L298 215L300 217ZM311 227L309 226L307 228L304 228L303 227L302 224L302 222L302 219L302 218L300 217L298 215L298 213L300 213L300 211L302 208L304 209L306 211L306 213L309 214L309 218L307 218L307 220L308 223L310 224L311 227ZM317 225L315 225L313 225L313 227L311 227L310 224L309 223L307 220L308 219L309 218L310 215L313 216L316 215L319 216L317 218L317 220L318 222L318 224ZM325 220L323 223L322 225L320 226L318 226L318 224L318 222L317 220L317 218L319 216L322 217L325 219ZM487 94L492 95L490 97L490 99L488 99L486 101L488 103L489 105L489 108L490 109L488 111L482 111L478 112L478 113L474 114L471 112L465 112L465 109L466 103L463 100L461 99L457 98L456 96L460 95L465 96L464 93L467 94L473 92L474 90L476 89L478 90L481 92L483 92L485 93L487 94ZM494 113L496 112L496 114L495 116L493 114ZM259 232L259 234L258 236L255 239L252 240L250 243L250 245L248 246L247 244L245 244L245 243L246 239L245 239L243 238L243 235L245 233L246 231L247 229L249 228L252 230L255 231L258 232ZM284 180L286 180L283 182L282 182L282 180L284 180ZM253 180L254 180L256 181L254 182L252 182L250 181L252 180ZM239 167L242 167L244 167L247 168L250 169L254 171L256 173L258 173L260 174L262 175L260 176L258 176L256 176L252 176L254 175L251 174L249 172L248 172L245 171L241 170L238 168L236 170L234 171L232 171L233 170L235 168L237 168L239 167ZM556 294L555 294L553 294L550 292L548 292L547 290L542 286L541 284L540 281L543 282L545 282L546 280L549 278L552 276L554 275L556 276L558 277L561 279L561 282L560 284L560 286L561 289L559 291L556 294ZM551 294L548 296L545 298L544 300L542 301L541 303L539 304L537 304L534 302L532 304L530 306L528 307L527 304L526 301L525 293L528 293L528 283L530 283L534 282L537 282L539 281L541 284L542 286L546 289L548 292L550 292L551 294ZM525 301L525 311L522 313L521 313L519 312L517 311L515 312L513 310L512 308L511 305L510 303L510 298L509 295L509 294L507 290L505 287L504 285L502 282L502 280L505 279L507 279L509 281L520 280L522 282L529 282L534 281L536 280L538 280L538 282L535 283L530 283L528 283L528 293L525 293L525 301ZM423 194L421 192L421 190L423 188L423 187L426 186L429 185L432 187L433 189L435 191L435 193L436 194L437 196L435 197L432 197L426 197L424 197L423 197L422 195L425 195L427 194L429 195L430 193L428 194L426 193L423 194ZM437 197L437 195L435 193L435 191L437 189L440 190L441 189L443 189L454 189L454 187L453 174L451 162L456 162L465 168L474 174L477 176L478 179L481 178L481 185L480 187L479 188L477 189L473 189L470 190L469 190L466 190L464 191L461 193L459 195L457 195L457 197L455 199L454 201L454 203L452 204L451 203L448 203L446 203L445 201L445 199L443 197L442 198L440 199L438 198ZM422 173L433 172L433 168L433 167L436 167L436 159L445 160L445 155L456 162L451 162L453 174L454 186L454 189L443 189L441 189L440 190L438 189L436 191L433 189L432 187L430 186L427 186L424 186L424 184L424 181L424 179L424 176L422 173ZM477 214L474 215L474 213L474 206L473 204L471 203L472 201L473 200L475 198L477 198L479 199L480 202L480 204L478 205L477 208L477 210L477 214ZM511 168L511 172L513 174L513 176L512 182L512 185L508 188L507 192L508 195L510 195L509 196L506 194L504 195L501 195L500 194L498 195L496 196L494 196L491 195L488 195L484 193L481 193L480 196L479 199L477 198L475 198L475 197L472 196L470 193L470 190L472 190L477 189L479 188L480 187L481 185L481 178L485 177L493 172L503 166L507 167L509 169L511 168ZM477 214L477 210L477 208L477 206L480 204L480 202L479 200L480 197L481 194L484 193L487 194L490 195L494 196L496 196L498 195L499 195L501 195L504 195L506 194L508 197L510 198L510 200L507 202L506 203L506 205L505 207L503 209L503 210L502 212L500 213L499 212L496 214L494 217L493 219L490 220L488 220L486 220L484 218L483 216L481 214L479 214L477 214ZM510 196L511 198L511 200L511 201L512 204L511 204L509 204L510 207L512 208L512 210L511 214L510 217L510 219L511 220L512 223L514 225L514 227L512 226L509 226L506 226L504 226L502 225L496 225L497 223L496 221L494 220L494 217L495 214L498 212L500 213L502 212L503 210L503 209L505 207L505 206L506 203L507 202L510 200L510 198L509 196ZM472 201L471 203L473 204L474 206L474 213L474 215L472 215L471 213L471 209L470 205L470 203L469 202L472 201ZM469 201L470 203L470 205L471 208L471 211L472 214L468 217L466 218L464 219L461 218L460 214L461 211L462 209L461 205L461 203L461 201L466 201L468 201ZM447 203L450 204L452 202L454 203L456 204L458 204L461 205L462 209L461 211L460 214L461 217L458 217L456 217L453 218L451 219L448 220L448 217L448 216L446 215L446 213L446 210L446 209L447 206L446 204ZM431 197L434 197L437 197L438 198L441 199L443 198L444 198L446 200L445 202L447 203L447 206L447 208L446 210L444 211L443 210L442 208L440 209L440 207L439 205L436 204L435 204L432 207L431 205L429 204L428 202L428 200L430 199L431 198ZM423 197L424 197L426 197L431 197L431 199L429 200L427 201L426 200L424 199L423 197ZM446 210L446 213L446 215L448 216L448 217L448 220L444 218L442 216L439 215L437 213L438 211L439 210L441 208L443 210L444 211L446 210ZM432 207L434 206L435 204L438 204L440 206L440 207L439 210L438 211L437 213L435 212L433 210L432 207ZM454 203L454 201L455 199L457 197L457 195L459 195L461 193L463 192L466 190L468 190L470 190L470 193L472 195L475 197L475 198L473 200L472 201L469 201L467 201L461 201L461 203L461 205L459 204L457 205L455 203ZM546 217L543 217L541 217L539 218L537 218L534 219L533 219L532 221L530 220L528 220L526 219L524 218L522 219L521 220L521 222L519 222L517 221L515 223L514 226L514 223L511 221L510 219L510 217L510 214L512 211L514 211L516 211L519 210L522 208L525 207L528 205L530 202L531 201L533 201L535 204L535 206L536 208L538 209L539 210L541 212L543 215L545 216ZM521 222L521 224L520 225L519 227L519 229L519 231L519 233L516 235L515 237L514 239L514 242L512 244L510 246L507 244L506 245L504 245L500 243L502 241L501 240L504 239L506 239L508 239L510 236L509 233L508 232L509 228L506 228L506 227L509 226L512 226L514 227L514 226L515 223L517 221L519 222L521 222ZM501 226L504 226L505 225L506 228L508 228L508 232L509 233L510 236L509 237L506 239L504 237L502 239L502 241L500 243L497 240L496 238L494 235L495 233L495 231L496 229L501 229L501 226ZM496 225L501 226L501 229L497 229L495 229L496 225ZM555 255L557 256L559 257L561 258L563 261L562 264L562 267L561 270L562 271L554 273L554 275L552 276L550 277L546 280L545 282L543 282L540 281L538 280L536 280L534 281L532 279L530 277L531 268L536 268L537 266L536 263L539 263L540 263L543 265L545 264L546 266L548 266L550 269L552 269L552 266L549 265L549 262L549 259L550 256L554 255ZM561 258L564 258L565 260L566 264L565 266L566 270L568 271L569 273L569 276L567 279L565 277L565 275L566 273L564 272L562 271L561 270L561 268L562 264L562 262L562 259ZM566 264L568 264L571 265L574 264L577 263L580 262L582 261L582 265L583 267L583 272L582 275L581 277L579 279L577 280L574 281L571 284L568 286L566 289L568 291L568 293L569 296L569 298L567 300L565 301L561 303L561 305L561 307L559 307L558 304L558 300L558 298L556 294L559 291L560 289L561 287L560 284L561 282L561 279L560 278L558 277L554 276L554 273L562 271L564 272L566 273L565 275L565 277L567 279L568 277L569 273L568 271L566 270L565 266L566 264ZM559 307L557 308L555 307L556 305L558 304L559 307ZM506 245L504 247L503 248L503 246L505 244ZM504 249L506 249L515 248L516 250L516 252L518 254L520 254L522 254L524 252L525 252L527 251L530 252L530 254L530 257L530 258L531 263L533 263L535 262L536 263L537 266L536 268L531 268L530 277L532 279L534 281L529 282L522 282L520 280L509 280L507 279L505 279L503 280L502 278L502 276L503 273L504 270L506 267L508 263L508 262L506 259L505 257L506 256L505 253L505 251L503 249ZM554 239L555 240L554 242L553 243L551 244L551 241L553 238L554 239ZM569 140L568 141L567 143L567 144L567 149L565 145L566 142L567 140L568 139ZM569 139L567 139L568 137L570 135L572 136L570 137L569 139ZM608 267L609 270L610 273L610 276L609 275L609 278L608 280L607 282L606 285L605 289L603 294L602 298L601 302L599 302L596 303L595 303L592 302L592 300L591 298L590 295L590 293L591 291L592 290L593 288L593 286L592 283L592 280L593 279L593 277L596 276L599 276L600 274L603 273L603 271L606 268L606 267L608 267ZM423 194L426 194L427 193L429 194L431 194L428 195L426 195L422 195ZM496 147L495 142L493 141L491 139L490 137L492 135L493 133L492 130L493 129L496 128L498 128L498 129L500 128L499 130L500 132L499 135L498 136L498 137L500 138L501 139L501 141L499 143L497 144L497 147ZM445 155L445 151L450 149L452 149L455 148L459 146L459 143L461 143L466 142L465 140L464 137L464 135L463 134L466 132L469 132L471 130L473 130L478 129L483 129L484 129L487 128L490 128L493 129L492 130L493 133L492 135L490 137L491 139L493 140L495 142L496 147L497 150L496 153L496 156L496 158L497 161L498 164L502 165L503 166L493 172L485 177L481 178L478 179L478 177L475 176L465 168L456 162L445 155ZM569 141L572 142L578 139L579 142L573 144L575 147L574 148L572 148L570 150L567 150L568 145L569 143L569 141ZM613 164L616 164L618 164L620 164L622 163L624 161L626 159L627 162L625 162L625 164L624 166L623 168L615 168L613 165ZM611 163L611 161L612 159L613 160L613 161L613 163L611 163ZM603 148L604 150L605 152L603 152L599 151L601 148L603 148ZM579 142L578 139L584 136L585 132L585 130L586 130L588 128L592 128L594 128L596 131L598 132L598 134L596 137L598 140L601 141L603 143L602 145L603 147L605 148L603 148L601 148L599 151L594 150L586 145L582 143L579 142ZM623 168L624 166L626 164L625 162L627 162L628 164L630 165L632 166L633 166L635 168L636 169L635 171L634 173L633 175L631 175L630 177L631 179L629 179L627 180L626 182L625 182L624 184L621 184L619 185L617 183L615 179L623 176L625 170L623 168ZM756 198L755 194L757 192L761 192L763 192L765 193L767 191L769 192L770 194L770 197L765 200L766 201L763 201L761 203L758 202L757 201L756 198ZM763 192L761 192L757 192L755 194L756 198L753 197L751 197L751 194L749 194L749 197L747 202L746 204L746 206L748 206L749 209L750 211L751 213L753 213L755 214L752 216L752 215L749 213L748 213L746 210L744 210L743 209L744 207L745 204L746 201L747 199L746 196L746 193L744 191L745 189L746 187L744 185L743 183L741 180L744 177L746 177L747 175L749 175L750 177L752 177L751 180L752 183L755 181L757 182L760 181L762 183L762 186L764 188L764 191ZM769 192L767 191L765 193L763 192L764 188L762 186L762 183L760 181L758 181L755 182L752 183L751 180L752 177L750 177L750 176L750 174L752 172L754 173L753 170L755 169L756 171L758 174L761 174L762 176L760 177L763 180L765 183L767 185L769 187L770 189L769 192ZM749 175L747 175L746 177L744 177L742 180L743 183L744 185L746 187L745 189L744 191L746 193L746 195L747 199L746 201L745 204L744 202L745 200L744 198L744 195L743 194L742 190L742 187L741 185L739 186L736 188L734 188L732 187L733 184L733 181L731 178L727 174L727 172L728 170L729 168L730 165L732 165L733 163L735 159L735 158L739 156L741 156L740 154L741 153L743 153L744 154L745 157L745 159L742 162L742 165L745 165L746 167L747 168L746 170L749 171L752 171L750 174ZM761 203L763 201L766 201L765 200L770 197L770 194L769 192L770 189L769 187L767 185L765 183L763 180L759 178L762 176L761 174L758 174L756 171L755 169L756 168L758 168L761 168L763 167L767 168L767 170L771 172L767 174L765 177L764 179L767 182L769 185L772 187L773 189L775 194L774 199L772 201L769 203L766 205L763 208L762 206L763 204L761 203ZM834 113L832 115L832 118L830 118L829 120L827 120L825 122L828 124L826 125L824 125L822 126L820 126L818 126L818 124L820 122L818 121L819 119L822 117L824 115L827 116L827 115L831 113L832 112L834 113ZM822 126L823 126L826 125L828 124L830 127L831 129L831 132L830 134L827 134L825 136L823 136L822 134L823 132L822 129L824 129L822 126ZM714 94L717 94L723 91L727 90L729 91L732 91L734 92L737 92L741 93L744 91L743 89L745 86L749 88L751 88L754 89L755 91L759 92L762 91L765 91L768 91L771 93L772 94L775 94L778 95L781 94L785 93L789 91L790 92L792 93L795 92L794 95L792 97L794 98L797 99L799 98L801 98L804 100L801 101L797 101L795 102L793 104L789 105L786 107L783 106L782 106L780 108L782 110L780 111L778 112L774 113L770 113L766 114L762 116L758 115L754 113L751 113L747 113L741 112L738 112L737 111L735 108L734 108L730 106L727 106L723 105L723 101L721 99L717 98L715 96L714 94ZM741 153L740 154L741 156L739 156L735 158L735 159L734 162L732 165L730 165L730 167L730 170L727 166L725 168L724 166L725 165L727 162L726 162L723 162L720 161L720 159L717 158L716 160L718 161L716 162L717 164L717 166L718 168L718 170L716 171L712 172L712 174L711 176L707 177L704 181L702 182L699 184L697 186L695 187L693 190L693 193L694 196L692 198L692 203L691 203L690 205L688 207L687 209L683 207L682 203L681 200L678 196L678 193L677 191L675 187L674 182L673 178L673 175L672 172L668 174L666 174L662 170L663 168L660 166L662 164L668 164L667 161L666 160L665 158L663 157L667 154L670 154L673 151L674 148L677 145L677 143L679 142L677 140L676 138L675 136L681 135L684 135L687 133L690 136L689 138L691 140L690 141L688 141L689 144L692 146L696 148L694 149L693 151L696 152L698 154L702 155L706 156L707 157L710 157L713 158L715 158L715 155L717 153L717 156L720 157L722 157L724 157L726 157L727 155L730 152L733 150L736 151L738 150L739 151L741 153ZM728 170L728 172L727 174L726 173L726 171L725 168L722 168L721 171L720 171L718 170L718 168L717 166L717 164L715 163L718 161L716 160L717 158L719 159L720 161L723 162L726 162L727 162L726 164L724 166L725 168L726 166L728 170ZM725 154L726 157L724 157L722 157L720 157L717 156L719 154L721 153L723 153L724 154ZM715 154L716 157L713 158L710 157L707 157L706 156L702 155L698 154L696 152L693 151L694 149L696 148L699 148L702 150L704 150L707 152L709 153L712 154L715 154ZM687 133L684 135L681 135L677 135L676 138L677 140L679 142L677 143L677 145L674 148L673 151L670 154L667 154L663 157L665 158L666 160L667 161L668 164L662 164L660 166L658 165L657 163L655 161L650 161L645 161L641 162L642 159L646 157L645 155L644 153L642 152L641 150L639 149L644 150L647 150L648 150L651 150L655 148L655 146L656 144L658 144L661 143L663 143L663 141L664 139L666 139L665 137L667 137L668 135L669 132L670 130L673 129L676 129L678 128L679 128L681 129L682 132L687 133ZM655 127L657 127L659 128L662 128L663 127L665 127L666 125L669 125L669 128L671 129L674 127L676 127L679 127L676 129L673 129L670 130L668 131L669 134L668 136L665 137L666 139L664 139L663 141L663 143L661 143L659 144L656 144L655 146L655 148L651 150L649 149L647 150L644 150L639 149L642 146L642 144L640 144L639 142L638 140L640 138L639 136L640 132L643 133L645 133L648 131L650 130L650 128L652 128L654 127ZM659 128L660 125L660 123L658 123L661 121L662 120L663 118L667 117L666 119L664 120L663 121L666 121L670 122L675 122L676 124L678 125L679 127L676 127L674 127L672 128L670 129L669 126L667 124L666 126L663 127L662 128L660 128ZM667 114L670 112L675 113L675 111L677 111L681 112L686 112L690 112L692 113L693 114L689 116L684 117L683 119L680 119L678 119L675 120L670 122L666 121L663 121L664 120L667 120L670 120L673 118L670 116L668 117L666 116L668 114ZM616 115L620 114L622 114L624 117L626 116L629 116L628 115L631 114L633 112L637 114L637 116L641 117L644 120L647 122L649 123L651 125L655 126L655 127L653 127L650 128L650 130L648 131L646 132L643 133L640 132L640 130L638 130L635 127L633 127L629 126L627 125L624 126L622 127L620 128L619 126L620 123L618 122L618 120L616 120L617 118L620 118L622 117L620 116L619 114L617 115L617 117L616 115ZM605 148L603 147L603 145L603 143L601 141L598 140L596 137L597 135L598 132L596 131L594 128L593 126L592 122L594 121L596 123L598 124L602 121L604 122L605 125L607 127L609 127L611 129L615 129L620 129L622 127L624 126L626 126L629 126L633 127L635 127L638 130L640 130L640 132L639 136L638 138L638 140L639 142L640 144L642 144L642 146L639 149L641 150L642 152L644 153L645 155L646 157L642 159L641 162L636 161L633 160L630 160L628 157L625 157L622 158L619 157L616 155L613 154L611 151L609 148L608 148L606 147ZM569 140L569 139L570 137L572 136L570 135L570 133L571 131L572 129L576 129L577 129L580 129L583 128L584 128L588 128L586 130L585 130L585 132L584 136L578 139L572 142L569 140ZM599 124L597 122L595 121L593 120L591 119L591 117L595 117L597 118L597 119L598 121L599 124ZM500 67L501 66L504 64L505 61L503 59L503 56L504 53L507 53L507 51L511 47L514 44L516 42L519 42L520 40L525 41L525 39L527 39L531 40L535 42L535 46L531 48L529 50L529 52L525 54L519 57L517 61L519 62L522 64L519 67L516 68L515 73L514 75L510 75L509 77L505 77L505 75L502 71L500 67ZM548 75L551 76L553 76L556 77L555 79L557 81L560 82L557 83L558 86L556 86L555 88L551 88L549 88L546 88L543 87L540 87L538 87L536 88L534 85L536 85L535 82L538 81L541 80L541 79L544 78L545 76L548 75ZM558 86L560 86L564 86L565 87L565 89L567 89L568 91L572 92L574 91L575 92L577 92L581 93L580 96L581 97L578 98L576 99L574 100L572 101L569 102L567 103L567 104L565 103L563 103L558 102L555 102L554 103L552 105L549 105L549 104L550 102L552 102L552 101L550 99L549 97L546 96L544 97L542 97L540 98L537 98L536 98L534 97L531 97L532 95L535 91L536 90L535 88L538 87L540 87L543 87L546 88L548 88L550 88L554 88L556 86L558 86ZM535 81L536 84L534 85L535 88L536 90L535 91L532 94L530 94L528 94L525 94L523 93L521 92L519 92L516 91L514 91L513 90L510 87L510 85L509 83L509 82L511 81L515 80L519 79L521 79L524 80L528 80L533 80L534 80ZM517 97L515 99L515 101L512 102L510 102L508 102L504 101L500 101L498 101L497 101L496 99L498 100L501 99L503 99L505 99L505 97L507 95L509 96L511 95L514 96L517 96ZM531 97L533 97L531 99L530 101L528 102L526 103L524 103L522 104L519 103L516 102L515 101L515 99L517 97L518 98L521 98L524 97L526 97L527 96L530 97ZM544 97L546 96L548 97L551 98L551 100L553 101L551 102L549 104L548 104L548 101L546 99L544 97ZM548 105L551 105L551 107L549 110L547 109L545 108L542 109L537 110L534 109L533 108L531 108L530 107L528 105L526 103L528 102L530 101L531 99L533 98L536 98L537 98L540 98L542 98L544 97L545 98L548 101L548 104ZM543 76L541 79L541 80L538 81L535 81L533 80L533 79L529 78L528 75L531 74L536 75L539 74L541 75L543 76ZM545 71L547 73L548 75L545 76L543 76L541 75L539 75L536 75L531 74L528 75L528 73L530 71L532 71L534 73L537 73L537 70L540 70L543 71L545 71ZM547 66L546 68L547 70L543 71L541 70L537 70L538 69L535 68L534 67L538 66L542 65L545 66L547 66ZM509 82L509 83L510 85L510 86L511 89L509 89L507 90L503 91L504 93L506 94L507 95L505 97L506 99L503 99L501 99L499 99L497 99L493 98L490 99L490 97L492 95L488 94L487 92L486 90L486 87L488 87L489 83L489 82L491 82L494 81L493 78L495 79L497 78L500 80L503 80L504 80L507 81ZM533 108L534 109L537 110L541 110L545 108L547 109L549 110L548 111L547 113L547 115L545 114L542 115L540 117L538 116L535 116L533 116L533 115L532 113L533 111L532 109ZM543 133L538 134L535 133L537 133L539 133L541 133L543 133ZM533 116L535 116L538 116L540 117L542 116L542 118L540 118L539 117L536 118L537 120L536 120L534 120L533 119L533 121L533 123L535 124L536 127L534 126L535 127L533 128L534 130L532 130L530 129L529 127L528 125L526 122L527 120L528 118L530 118L532 117ZM594 128L592 128L589 127L584 128L583 128L580 129L577 129L576 129L573 130L571 131L569 131L566 129L564 131L560 131L558 129L555 129L552 131L550 129L546 129L545 127L543 125L544 123L542 122L545 119L550 119L551 117L556 117L560 115L563 114L568 114L572 116L576 117L580 117L582 117L585 116L588 116L591 117L591 119L593 120L592 122L593 125L594 128ZM542 115L545 114L547 115L550 116L546 117L543 120L542 118L544 116ZM528 118L527 120L525 121L523 119L523 116L523 114L525 113L527 115L527 117ZM516 102L519 103L521 104L523 105L522 107L519 106L517 105L515 106L513 107L515 109L518 110L521 113L518 112L517 111L514 110L512 108L511 106L509 105L507 106L510 105L511 105L513 104L516 102ZM496 99L497 101L498 101L497 102L495 102L493 103L491 104L488 103L486 103L488 100L490 99L493 99L496 99ZM486 90L486 92L485 93L483 92L481 92L479 91L477 90L479 88L481 89L483 88L485 89L486 90ZM489 82L488 86L486 87L486 90L485 89L483 88L481 89L479 88L480 88L482 84L486 82L489 82ZM444 115L446 114L449 115L451 115L450 117L450 119L450 121L449 123L449 125L449 126L448 128L446 129L444 129L445 127L445 125L443 124L443 122L444 120L445 118L444 116ZM448 128L449 126L449 125L449 123L448 121L450 120L450 117L451 115L449 115L447 115L445 114L443 112L447 110L450 110L454 110L457 111L459 110L464 111L470 113L474 114L478 113L478 115L475 117L472 117L470 120L468 122L470 124L468 125L467 127L465 127L463 129L460 129L457 129L455 130L453 131L451 129L448 128ZM452 81L452 83L450 86L445 88L441 87L444 84L442 81L446 79L448 78L449 79L448 81L450 81L452 81ZM932 291L935 292L936 294L933 294L931 292L930 291L928 289L930 289L932 291ZM921 259L918 257L918 255L920 257ZM915 254L916 256L914 255L912 254L915 254ZM963 344L962 345L961 347L959 348L957 347L959 345L958 343L955 342L957 340L957 338L957 336L956 334L955 333L953 330L951 328L954 330L956 330L957 333L959 336L959 334L961 337L963 338L965 338L967 337L968 337L967 340L966 341L964 341L964 343ZM943 354L946 352L947 351L949 349L950 346L952 345L953 347L955 346L956 349L953 352L952 353L948 355L947 357L946 360L944 361L940 362L938 361L935 361L936 358L939 355L941 355L943 354ZM882 346L883 346L884 349L882 353L880 354L877 353L876 351L875 349L874 347L875 346L878 347L880 346L882 346ZM822 322L819 323L816 324L816 325L812 327L811 327L808 326L806 327L804 327L803 328L800 329L797 330L795 330L792 328L791 327L791 326L792 325L793 322L792 320L791 317L790 316L791 314L790 312L788 310L788 308L786 306L786 303L788 305L788 304L787 302L786 300L786 298L787 296L787 295L788 293L788 295L790 293L792 292L795 290L797 290L800 289L801 288L804 288L807 287L808 286L809 284L811 283L811 280L813 278L814 280L814 278L816 277L817 275L818 274L820 272L823 271L826 272L828 273L830 273L831 274L831 272L832 270L833 268L834 267L836 266L837 266L840 266L840 264L837 263L839 263L841 264L842 265L845 265L847 266L849 265L851 265L851 268L849 269L849 272L848 274L850 275L852 276L854 277L856 279L858 280L861 281L863 280L863 279L864 276L865 274L865 272L865 270L865 268L865 267L866 265L866 263L867 262L868 265L869 266L870 268L870 269L871 272L873 271L875 274L876 277L877 279L878 281L877 283L878 285L881 286L883 288L885 289L886 291L887 294L890 295L891 297L893 299L896 302L897 305L897 306L897 308L898 310L898 313L897 317L897 318L896 320L895 323L893 324L892 326L890 330L888 334L888 335L887 337L884 337L881 339L878 341L876 340L874 339L874 338L873 338L870 340L868 339L866 339L865 339L862 338L860 336L860 334L859 333L855 331L855 328L854 330L851 330L853 329L853 327L854 324L852 326L850 327L849 329L847 328L847 327L845 325L844 324L841 321L839 321L836 320L831 320L827 321L824 322L822 322ZM698 211L697 214L694 215L692 213L692 209L693 204L695 206L696 208L698 211ZM775 181L773 180L773 178L777 176L779 176L778 178L777 180L775 181ZM693 114L693 112L695 111L693 106L698 105L700 105L702 100L707 101L709 99L709 96L711 96L713 94L715 96L717 98L721 99L723 101L722 104L727 106L730 106L734 108L735 108L737 111L738 112L741 112L747 113L751 113L754 113L758 115L761 115L766 114L770 113L774 113L778 112L780 111L782 110L780 108L782 106L783 106L786 107L789 105L793 104L795 102L797 101L801 101L804 101L801 98L799 98L797 99L794 98L793 99L794 95L795 92L799 94L802 92L805 88L807 87L806 85L805 84L807 83L811 83L814 83L819 83L821 84L823 87L825 90L826 93L831 94L834 96L835 98L839 98L842 97L846 96L845 99L843 103L841 106L838 105L835 106L836 109L836 112L834 112L834 113L832 112L831 113L827 115L827 116L825 116L822 117L819 119L816 120L812 121L810 122L807 123L809 122L811 119L809 117L807 118L803 120L802 122L799 122L798 124L799 126L801 126L804 128L807 126L809 127L811 127L812 129L808 129L806 131L804 132L802 134L805 136L806 139L808 141L810 143L810 145L808 146L809 148L810 149L810 151L809 153L808 153L806 156L803 160L801 163L797 166L793 168L790 169L788 170L786 170L782 172L779 172L778 175L776 175L775 173L772 171L768 171L767 168L765 168L761 168L758 168L756 168L755 169L753 170L754 173L752 173L752 171L750 172L746 170L747 168L746 167L745 165L742 165L742 162L745 159L745 157L745 155L743 153L741 153L738 152L738 150L736 151L733 150L730 152L728 154L725 154L723 153L721 153L719 154L717 156L717 153L715 154L712 154L709 153L707 152L705 151L702 150L699 148L697 147L692 146L689 144L688 141L690 141L691 140L689 138L690 136L687 133L682 132L681 129L679 128L678 126L677 124L675 122L678 119L680 119L683 119L684 117L688 117L693 114ZM809 164L808 168L807 170L805 168L805 166L806 163L809 161L809 164ZM498 101L500 101L503 100L508 102L508 104L506 104L504 105L504 107L504 109L507 110L508 112L512 115L514 115L516 117L518 118L521 119L520 121L519 119L516 119L515 121L517 122L517 123L514 126L514 124L513 121L512 120L510 118L509 118L505 117L503 115L501 114L499 112L498 109L494 108L491 110L489 108L488 106L488 104L491 104L493 103L494 103L497 102L498 101ZM511 125L513 125L512 127L511 130L509 129L508 128L504 127L504 125L508 126L511 125ZM494 118L497 119L496 122L494 123L493 119L492 117L494 118ZM497 78L495 79L493 78L492 77L492 74L493 72L496 72L499 71L499 72L498 74L500 74L498 75L496 77ZM504 75L503 79L500 77L504 75ZM452 81L450 81L448 81L449 79L448 78L450 78L453 79L452 81ZM461 83L461 81L459 79L456 79L456 77L454 77L454 75L452 73L453 70L455 68L458 68L461 68L458 71L461 71L464 71L463 73L461 75L463 76L466 79L468 80L470 83L474 85L474 86L472 87L473 89L471 90L467 90L462 91L459 92L457 91L455 92L453 92L457 89L460 88L455 88L457 86L456 84L456 82L461 83ZM429 46L428 48L431 50L428 52L420 54L417 54L413 54L406 53L408 52L402 51L407 50L401 49L403 47L407 46L412 48L416 47L420 48L424 46L429 46ZM599 115L602 117L603 116L605 115L606 117L608 119L610 119L608 120L607 122L606 123L605 125L603 123L604 121L599 124L599 122L597 120L596 119L595 117L598 117L599 117L598 115ZM598 124L596 123L595 122L597 122L598 124ZM581 111L584 111L588 111L591 112L594 113L596 113L599 115L600 117L598 117L596 116L591 117L588 116L585 116L585 113L583 112L582 111ZM807 196L805 194L808 194L808 198ZM812 204L813 201L814 201L814 203L816 200L816 203L814 206L811 205ZM822 208L823 210L823 212L822 214L821 211L819 213L820 215L816 215L815 213L815 210L812 211L810 213L811 209L813 209L814 208L817 208L820 207L820 205L822 206L822 207ZM800 206L797 208L798 207L800 205L802 203L803 200L804 202L802 204L800 206ZM811 181L811 184L811 186L809 187L809 190L809 192L811 192L816 193L815 195L816 197L814 195L813 194L810 193L808 194L806 192L805 190L804 186L806 183L806 180L808 180L810 181ZM810 200L813 199L812 202L810 203L810 200ZM820 198L821 201L818 200L819 203L818 202L816 200L818 200L816 197L819 197ZM749 214L752 215L752 216L754 216L755 215L757 216L758 218L758 220L758 222L758 224L760 227L758 228L756 226L752 224L752 223L751 221L750 219L749 217L749 215ZM799 220L796 220L793 220L792 223L789 228L787 228L785 228L782 229L780 229L778 230L776 228L776 226L778 227L780 227L780 224L785 223L787 221L788 219L790 221L791 220L792 218L794 215L795 213L798 214L800 216L802 217L800 218L799 220ZM792 217L791 220L790 221L788 219L792 217ZM508 102L510 102L512 102L514 101L516 102L513 103L512 104L510 104L508 105L508 103ZM549 39L549 41L553 43L550 45L554 48L552 50L554 53L553 54L557 56L556 58L554 59L548 63L543 63L538 64L533 65L532 63L529 62L529 59L528 57L529 55L532 54L538 51L540 50L536 47L535 42L531 40L527 39L529 38L532 40L535 39L538 40L541 39L542 37L547 36L550 37L549 39ZM532 95L531 97L527 96L526 97L524 97L522 98L519 98L517 97L517 95L519 95L521 94L522 94L525 94L526 94L530 94L532 95ZM511 89L515 90L516 91L518 91L521 92L521 94L519 95L517 95L515 96L512 95L509 96L507 95L506 94L504 93L503 91L505 91L509 90L510 89ZM571 192L572 186L572 184L575 183L577 182L578 185L579 187L580 189L584 191L586 193L587 195L590 196L588 197L585 194L584 192L581 191L579 191L577 191L575 190L574 192L571 192ZM866 122L863 125L863 128L862 130L861 134L857 135L853 135L849 138L847 137L847 135L842 136L838 137L835 137L838 139L836 144L834 145L834 142L832 141L831 139L833 138L835 136L838 135L840 133L845 132L848 133L851 128L853 129L857 126L859 125L860 122L860 119L861 117L864 116L866 120L866 122ZM873 109L875 108L876 111L872 112L869 115L865 113L863 116L860 116L860 113L861 111L864 111L865 107L866 105L869 108L871 108L873 109ZM839 138L841 137L842 137L845 136L844 139L842 139L841 140L839 140ZM307 288L308 290L307 294L310 294L313 294L314 298L317 298L318 300L317 302L317 304L316 306L314 308L311 309L308 308L306 308L308 303L305 301L302 299L299 299L294 294L295 291L295 289L297 287L302 286L304 286L307 287ZM615 179L617 183L618 185L616 186L615 188L612 189L608 191L605 193L603 193L602 194L600 194L597 195L595 196L594 196L591 197L590 195L590 193L589 190L589 188L589 186L590 184L592 183L596 183L599 184L601 184L604 181L606 180L615 179ZM567 150L570 150L572 148L574 148L575 147L573 144L578 142L582 143L586 145L594 150L599 151L602 151L605 152L606 154L607 156L609 157L609 159L610 161L611 163L613 163L613 165L615 168L623 169L625 170L623 176L615 179L606 180L604 181L602 184L600 184L596 183L592 183L590 183L590 185L588 185L587 183L586 182L584 180L584 177L582 175L579 172L578 170L578 169L577 166L574 164L573 162L572 160L571 158L569 155L567 153L566 152L567 150ZM333 450L335 450L339 449L343 450L347 451L348 453L348 455L344 456L339 457L334 458L328 458L322 458L318 457L324 455L327 454L329 453L332 451L333 450ZM284 456L290 456L296 456L298 455L300 454L303 455L302 457L295 458L289 458L286 457L284 456ZM263 431L265 431L268 431L269 429L269 426L270 425L273 424L275 425L276 428L278 430L278 432L274 434L271 434L267 434L265 434L262 434L260 433L263 431ZM183 433L185 432L189 433L193 433L196 433L199 433L201 434L198 434L195 434L192 434L188 434L185 434L183 433ZM127 438L131 437L134 438L138 437L136 438L133 439L130 439L127 438ZM114 437L116 436L119 437L123 438L121 438L118 438L114 437ZM12 451L14 450L19 451L22 452L24 453L19 454L16 453L14 452L12 451ZM972 468L975 467L980 468L983 467L988 468L991 467L1000 466L1003 467M3 468L11 469L17 470L28 470L36 470L48 470L54 471L62 470L70 469L59 468L50 467L48 466L40 466L42 463L42 461L38 460L36 459L31 458L38 459L44 458L48 459L53 458L58 457L60 456L56 454L52 454L46 453L41 453L35 453L34 452L30 451L28 450L27 447L31 448L35 447L40 447L42 448L47 448L50 447L54 447L57 446L61 445L60 443L64 442L66 443L70 442L74 442L78 442L81 441L85 441L88 440L92 439L94 440L96 440L100 439L104 440L107 440L111 439L115 440L119 440L123 440L127 440L131 440L135 440L138 439L141 439L145 439L148 439L151 438L153 439L156 441L158 440L162 441L166 441L169 442L173 442L176 441L181 441L184 442L188 442L190 441L188 440L183 439L181 438L180 435L182 435L185 435L189 435L192 436L195 436L200 437L204 437L208 437L211 436L214 437L218 437L220 435L222 436L226 436L229 436L231 437L235 437L238 438L242 438L244 437L248 437L252 437L254 438L256 438L260 438L263 438L266 437L269 436L273 436L277 436L279 435L281 434L281 432L280 430L278 428L278 425L280 423L280 421L281 419L283 418L285 417L287 416L289 415L292 413L293 412L296 412L298 411L300 411L302 410L304 410L306 409L308 409L309 409L306 411L302 411L300 411L298 412L296 413L294 415L296 417L294 417L291 418L290 419L288 419L286 421L287 423L288 424L291 424L293 425L294 427L297 429L298 433L299 435L299 438L298 439L296 440L292 440L290 442L285 443L282 444L278 444L274 445L272 446L268 446L263 446L258 446L254 446L259 448L262 448L264 449L260 450L256 450L252 451L251 453L255 454L259 456L265 456L270 457L274 458L279 459L286 459L293 460L297 461L303 462L305 463L310 463L315 462L319 462L325 461L330 460L337 460L344 460L350 461L352 460L355 459L362 459L368 458L373 458L379 457L385 457L390 456L388 455L386 453L381 453L375 454L370 454L369 451L375 449L379 449L383 448L386 447L389 446L392 446L396 445L398 445L402 445L407 444L410 444L413 443L416 443L420 442L423 441L425 440L423 438L426 436L429 436L432 435L435 434L437 433L441 431L444 431L449 432L450 430L453 430L457 431L461 431L464 431L467 431L472 431L475 431L478 430L481 430L484 429L487 429L489 428L491 427L493 428L496 427L498 429L499 430L503 429L507 427L510 427L514 427L517 427L520 427L523 427L526 427L529 428L532 429L535 429L539 429L542 429L545 429L548 428L551 428L553 427L556 427L559 426L561 426L562 424L564 423L567 424L570 425L573 425L575 426L577 427L580 426L584 424L586 423L589 423L592 423L595 422L597 421L599 421L602 421L604 420L606 419L609 419L611 419L614 417L616 416L619 416L622 416L624 416L627 416L629 417L632 419L633 420L637 420L639 421L641 422L644 422L646 421L648 420L651 421L654 421L656 421L659 422L662 422L664 425L664 426L661 427L659 428L662 429L660 431L661 433L664 434L668 433L669 432L672 430L673 429L676 427L677 427L681 427L683 426L686 426L688 424L690 423L693 422L695 421L697 421L698 420L700 420L703 420L706 420L709 419L712 419L714 419L715 417L717 419L720 419L722 420L725 419L728 420L731 420L732 419L735 419L737 420L739 420L742 420L745 419L748 420L750 419L751 418L753 417L757 415L758 415L760 416L762 417L766 419L769 419L771 419L774 419L777 418L779 417L781 417L785 416L787 416L789 416L790 417L792 418L795 418L797 419L801 419L804 420L807 420L809 419L811 418L813 418L816 418L819 418L822 418L824 418L826 418L829 418L832 418L835 417L837 417L841 417L843 417L846 417L847 414L848 415L850 417L853 419L856 419L860 419L863 418L866 418L869 418L873 419L876 419L878 420L879 421L882 422L885 423L889 423L892 424L895 424L898 424L900 423L903 424L905 425L907 426L911 426L914 426L918 428L921 429L924 429L927 429L930 430L933 429L937 430L940 430L943 431L946 431L948 432L946 434L943 436L938 438L937 439L933 440L930 442L928 443L926 445L926 447L928 448L929 450L935 451L931 452L926 453L921 453L919 455L917 457L916 458L919 459L921 460L923 461L927 462L930 463L935 464L941 465L942 466L951 467L953 468L961 467L967 468L972 468ZM561 134L563 133L566 132L564 133L563 134L561 134ZM561 134L563 134L564 134L561 135L559 134ZM463 134L464 135L464 137L465 140L466 142L462 142L459 143L459 146L456 147L452 149L450 149L445 151L445 155L445 156L443 156L441 157L437 157L437 159L434 163L430 166L430 170L428 172L422 172L423 170L424 168L425 166L426 164L428 162L428 160L429 159L431 157L433 155L434 154L437 153L439 151L440 151L443 148L442 145L443 142L443 141L445 139L448 138L450 137L452 134L453 132L455 132L456 133L459 133L462 134ZM572 170L561 170L550 170L539 170L539 160L539 150L538 148L539 146L540 144L543 144L546 144L549 145L552 145L556 144L558 144L559 145L561 145L564 145L567 149L566 151L565 153L565 154L563 154L560 148L561 152L562 154L565 159L566 160L566 162L569 165L569 167L572 170ZM539 170L539 176L536 176L525 172L514 166L511 168L509 169L507 167L503 166L502 165L499 163L497 162L495 159L496 156L497 155L497 151L496 147L497 145L499 143L501 141L501 139L505 140L508 140L512 142L513 144L516 145L520 146L523 147L525 145L525 143L528 140L529 140L533 141L535 142L539 143L539 145L538 148L539 150L539 160L539 170ZM603 209L595 218L591 218L589 220L587 220L584 221L581 221L578 222L576 222L572 219L570 219L569 217L568 216L566 213L564 212L563 210L561 210L562 209L564 208L564 205L565 202L567 200L568 198L569 197L571 194L571 192L574 192L575 190L577 191L578 191L581 191L584 192L585 194L587 196L587 198L586 200L587 201L589 204L591 206L600 210L603 209ZM588 197L590 196L590 198L589 199L589 201L586 201L586 199L588 197ZM606 200L606 204L606 205L605 207L603 209L600 210L591 206L589 204L588 202L590 200L591 201L594 203L597 202L600 202L602 201L604 200L606 200ZM564 234L558 235L555 235L553 236L552 233L553 230L554 227L556 226L555 222L558 222L561 221L563 221L564 220L566 222L567 227L566 229L565 230L564 234ZM554 235L555 237L555 238L553 238L552 240L550 240L551 238L551 236L553 236L554 235ZM521 113L519 112L517 110L515 108L514 105L515 106L519 106L521 106L523 107L524 109L523 110L522 111L521 113ZM532 114L533 116L531 117L528 118L526 116L527 114L529 114L530 114ZM522 104L524 103L526 103L527 104L529 106L531 108L533 107L532 109L533 111L532 113L530 114L529 112L527 111L526 112L524 111L524 109L523 107L523 105ZM525 113L523 114L521 113L522 111L523 110L525 111L525 113ZM527 115L525 113L527 111L528 112L530 113L527 114ZM555 222L553 220L551 220L549 220L546 217L543 215L542 214L539 211L538 209L536 208L538 207L539 204L541 203L543 205L545 205L547 205L550 206L552 204L555 205L557 204L558 202L560 201L560 199L561 198L562 200L562 202L563 203L564 205L564 208L562 209L561 210L563 210L564 212L566 213L568 216L566 218L564 220L563 221L561 221L558 222L557 221Z"/>
+      <g id="map-pins"></g>
+    </svg>
+    <div class="map-tip" id="map-tip" hidden></div>
   </div>
-  <p class="servers-note">Añadimos países nuevos continuamente. Los marcados como próximamente ya están en despliegue.</p>
+
+  <div class="map-legend">
+    <span class="lg"><i class="lg-dot lg-on"></i><span data-i18n="loc.available">Available now</span></span>
+    <span class="lg"><i class="lg-dot lg-lock"></i><span data-i18n="loc.premium">Premium</span></span>
+    <span class="lg"><i class="lg-dot lg-soon"></i><span data-i18n="loc.soon">Coming soon</span></span>
+  </div>
+
+  <div id="servers-list">
+    <p class="servers-fallback" data-i18n="loc.loading">Loading servers…</p>
+  </div>
+  <p class="servers-note" data-i18n="loc.note">We add new countries continuously. The ones marked coming soon are already being deployed.</p>
 </div>
 
 <!-- Download -->
-<div class="section-wrap section-centered" id="descargar">
-  <p class="eyebrow">Aplicación móvil</p>
-  <h2 class="section-title">Disponible en tu plataforma.</h2>
-  <p class="section-sub">Descarga ROK VPN y conéctate en segundos. Configuración automática con código QR incluido en la app.</p>
+<div class="section-wrap section-centered" id="download">
+  <p class="eyebrow" data-i18n="dl.eyebrow">Mobile app</p>
+  <h2 class="section-title" data-i18n="dl.title">Available on your platform.</h2>
+  <p class="section-sub" data-i18n="dl.sub">Download ROK VPN and connect in seconds. Automatic setup with the QR code built into the app.</p>
   <div class="badges-wrap">
 
     <!-- Apple App Store -->
@@ -609,7 +693,7 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
         </svg>
       </div>
       <div class="badge-text">
-        <span class="badge-sub">Disponible en</span>
+        <span class="badge-sub" data-i18n="dl.on">Download on the</span>
         <span class="badge-name">App Store</span>
       </div>
     </a>
@@ -637,57 +721,58 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
   <div class="footer-brand"><span>ROK</span> VPN</div>
   <p class="footer-tag">Secure · Reliable · Private</p>
   <div class="footer-links">
-    <a href="#planes">Planes</a>
-    <a href="#como-funciona">Cómo funciona</a>
-    <a href="#descargar">Descargar</a>
-    <a href="/login">Administración</a>
+    <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
+    <a href="#features" data-i18n="nav.features">Features</a>
+    <a href="#locations" data-i18n="nav.locations">Locations</a>
+    <a href="#download" data-i18n="nav.download">Download</a>
+    <a href="/login" data-i18n="nav.admin">Admin</a>
   </div>
-  <p class="footer-copy">© 2025 LUROK BUSINESS GROUP LLC · Florida, USA · Todos los derechos reservados</p>
+  <p class="footer-copy" data-i18n="footer.copy">© 2025 LUROK BUSINESS GROUP LLC · Florida, USA · All rights reserved</p>
 </footer>
 
 <!-- Modal -->
-<div class="backdrop" id="modal" role="dialog" aria-modal="true" aria-label="Cuenta ROK VPN">
+<div class="backdrop" id="modal" role="dialog" aria-modal="true" aria-label="ROK VPN account">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&#10005;</button>
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">&#10005;</button>
 
     <div id="pane-register">
-      <h2 class="modal-title">Crear cuenta</h2>
-      <p class="modal-sub">Gratis para siempre. Un dispositivo incluido.</p>
+      <h2 class="modal-title" data-i18n="m.reg.title">Create account</h2>
+      <p class="modal-sub" data-i18n="m.reg.sub">Free forever. One device included.</p>
       <div class="form-err" id="reg-err"></div>
       <div class="field">
-        <label class="field-label" for="reg-email">Correo electrónico</label>
-        <input class="field-input" id="reg-email" type="email" placeholder="tu@correo.com" autocomplete="email">
+        <label class="field-label" for="reg-email" data-i18n="m.email">Email address</label>
+        <input class="field-input" id="reg-email" type="email" placeholder="you@example.com" data-i18n-ph="m.email.ph" autocomplete="email">
       </div>
       <div class="field">
-        <label class="field-label" for="reg-pass">Contraseña</label>
-        <input class="field-input" id="reg-pass" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+        <label class="field-label" for="reg-pass" data-i18n="m.pass">Password</label>
+        <input class="field-input" id="reg-pass" type="password" placeholder="At least 8 characters" data-i18n-ph="m.pass.ph" autocomplete="new-password">
       </div>
-      <button class="btn-submit" id="reg-btn" onclick="doRegister()">Crear cuenta gratis</button>
-      <div class="toggle-row">¿Ya tienes cuenta? <button onclick="switchPane('login')">Iniciar sesión</button></div>
+      <button class="btn-submit" id="reg-btn" onclick="doRegister()" data-i18n="m.reg.btn">Create free account</button>
+      <div class="toggle-row"><span data-i18n="m.have">Already have an account?</span> <button onclick="switchPane('login')" data-i18n="nav.login">Log in</button></div>
     </div>
 
     <div id="pane-login" style="display:none">
-      <h2 class="modal-title">Bienvenido</h2>
-      <p class="modal-sub">Accede a tu panel de dispositivos.</p>
+      <h2 class="modal-title" data-i18n="m.log.title">Welcome back</h2>
+      <p class="modal-sub" data-i18n="m.log.sub">Access your device dashboard.</p>
       <div class="form-err" id="log-err"></div>
       <div class="field">
-        <label class="field-label" for="log-email">Correo electrónico</label>
-        <input class="field-input" id="log-email" type="email" placeholder="tu@correo.com" autocomplete="email">
+        <label class="field-label" for="log-email" data-i18n="m.email">Email address</label>
+        <input class="field-input" id="log-email" type="email" placeholder="you@example.com" data-i18n-ph="m.email.ph" autocomplete="email">
       </div>
       <div class="field">
-        <label class="field-label" for="log-pass">Contraseña</label>
-        <input class="field-input" id="log-pass" type="password" placeholder="Tu contraseña" autocomplete="current-password">
+        <label class="field-label" for="log-pass" data-i18n="m.pass">Password</label>
+        <input class="field-input" id="log-pass" type="password" placeholder="Your password" data-i18n-ph="m.pass.ph2" autocomplete="current-password">
       </div>
-      <button class="btn-submit" id="log-btn" onclick="doLogin()">Iniciar sesión</button>
-      <div class="toggle-row">¿Sin cuenta aún? <button onclick="switchPane('register')">Crear una gratis</button></div>
+      <button class="btn-submit" id="log-btn" onclick="doLogin()" data-i18n="nav.login">Log in</button>
+      <div class="toggle-row"><span data-i18n="m.no">No account yet?</span> <button onclick="switchPane('register')" data-i18n="m.createone">Create one free</button></div>
     </div>
 
     <div id="pane-success" style="display:none">
       <div class="success-panel">
         <div class="icon">&#128273;</div>
-        <h3>Acceso activado</h3>
-        <p>Tu cuenta está lista. Agrega tu primer dispositivo desde el panel de usuario.</p>
-        <a href="#" id="dash-link">Ir a mi panel</a>
+        <h3 data-i18n="m.ok.title">Access activated</h3>
+        <p data-i18n="m.ok.sub">Your account is ready. Add your first device from the user dashboard.</p>
+        <a href="#" id="dash-link" data-i18n="m.ok.cta">Go to my dashboard</a>
       </div>
     </div>
   </div>
@@ -706,50 +791,205 @@ function switchPane(name) {
 function clearErrors() { document.querySelectorAll('.form-err').forEach(function(el){ el.classList.remove('on'); el.textContent=''; }); }
 function showError(id,msg){ var el=document.getElementById(id); el.textContent=msg; el.classList.add('on'); }
 function setLoading(btnId,loading){
-  var btn=document.getElementById(btnId); btn.disabled=loading;
-  btn.textContent=loading?(btnId==='reg-btn'?'Creando cuenta…':'Verificando…'):(btnId==='reg-btn'?'Crear cuenta gratis':'Iniciar sesión');
+  var btn=document.getElementById(btnId);
+  btn.disabled=loading;
+  var key = loading ? (btnId==='reg-btn'?'m.reg.busy':'m.log.busy')
+                    : (btnId==='reg-btn'?'m.reg.btn':'nav.login');
+  btn.textContent = t(key);
 }
 async function doRegister(){
   var email=document.getElementById('reg-email').value.trim();
   var pass=document.getElementById('reg-pass').value;
-  if(!email||!pass){showError('reg-err','Completa todos los campos.');return;}
-  if(pass.length<8){showError('reg-err','La contraseña debe tener al menos 8 caracteres.');return;}
+  if(!email||!pass){showError('reg-err',t('err.fields'));return;}
+  if(pass.length<8){showError('reg-err',t('err.short'));return;}
   setLoading('reg-btn',true);
   try{
     var res=await fetch('/api/v1/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})});
     var data=await res.json();
-    if(!res.ok){showError('reg-err',data.error||'Error al registrar.');return;}
+    if(!res.ok){showError('reg-err',data.error||t('err.register'));return;}
     localStorage.setItem('rok_token',data.token);
     document.getElementById('dash-link').href='/download';
     switchPane('success');
-  }catch(e){showError('reg-err','No se pudo conectar al servidor. Intenta de nuevo.');}
+    loadServers();
+  }catch(e){showError('reg-err',t('err.network'));}
   finally{setLoading('reg-btn',false);}
 }
 async function doLogin(){
   var email=document.getElementById('log-email').value.trim();
   var pass=document.getElementById('log-pass').value;
-  if(!email||!pass){showError('log-err','Completa todos los campos.');return;}
+  if(!email||!pass){showError('log-err',t('err.fields'));return;}
   setLoading('log-btn',true);
   try{
     var res=await fetch('/api/v1/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})});
     var data=await res.json();
-    if(!res.ok){showError('log-err',data.error||'Credenciales incorrectas.');return;}
+    if(!res.ok){showError('log-err',data.error||t('err.creds'));return;}
     localStorage.setItem('rok_token',data.token);
     document.getElementById('dash-link').href='/download';
     switchPane('success');
-  }catch(e){showError('log-err','No se pudo conectar al servidor. Intenta de nuevo.');}
+    loadServers();
+  }catch(e){showError('log-err',t('err.network'));}
   finally{setLoading('log-btn',false);}
 }
 
-/* ── Servidores por país ──────────────────────────────────────────────────── */
-var STATUS_TAG = {
-  online:      'Disponible',
-  locked:      'Plan pago',
-  coming_soon: 'Próximamente'
+/* ══ i18n ══════════════════════════════════════════════════════════════════
+   Inglés es el idioma por defecto del producto; el español se activa con el
+   botón del nav y se recuerda en localStorage. */
+var I18N = {
+  en: {},   /* el HTML ya está escrito en inglés: en = los textos por defecto */
+  es: {
+    'nav.login':'Iniciar sesión', 'nav.start':'Empezar',
+    'nav.pricing':'Precios', 'nav.features':'Características',
+    'nav.locations':'Ubicaciones', 'nav.download':'Descargar', 'nav.admin':'Administración',
+    'hero.eyebrow':'WireGuard® · Sin registros · Privado por diseño',
+    'hero.title':'Privado<br>por <em>defecto.</em>',
+    'hero.sub':'Un dispositivo, gratis para siempre. Sin tarjeta de crédito, sin trampas. Solo tráfico cifrado desde el primer segundo.',
+    'hero.cta1':'Empezar gratis', 'hero.cta2':'Ver planes',
+    'hero.t1':'Protocolo WireGuard®', 'hero.t2':'Cero registros de actividad',
+    'hero.t3':'Cifrado extremo a extremo',
+    'price.eyebrow':'Planes', 'price.title':'Simple. Honesto. Justo.',
+    'price.sub':'Sin sorpresas ni límites artificiales de velocidad en los planes pagos. El plan gratuito existe para que lo juzgues tú mismo.',
+    'plan.free':'Gratis', 'plan.free.period':'para siempre', 'plan.free.cta':'Crear cuenta gratis',
+    'plan.monthly':'Mensual', 'plan.monthly.period':'al mes · cancela cuando quieras',
+    'plan.monthly.cta':'Suscribirme mensualmente',
+    'plan.annual':'Anual', 'plan.annual.period':'al año · solo $2.50 al mes',
+    'plan.annual.cta':'Obtener acceso anual', 'plan.badge':'Mejor valor — ahorra 50%',
+    'f.dev1':'1 dispositivo incluido', 'f.speed5':'Hasta 5 Mbps garantizados',
+    'f.wg':'Protocolo WireGuard®', 'f.nolog':'Cero registros de actividad',
+    'f.kill':'Kill switch incluido', 'f.panel':'Panel web de gestión',
+    'f.conf':'Archivo .conf descargable', 'f.us':'Ubicación en Estados Unidos',
+    'f.nowst':'Sin acceso wstunnel', 'f.community':'Soporte comunitario',
+    'f.dev5':'Hasta 5 dispositivos', 'f.unlimited':'Velocidad sin límite',
+    'f.allc':'Todos los países desbloqueados', 'f.wst':'Modo wstunnel (TCP 443)',
+    'f.killauto':'Kill switch automático', 'f.panelapp':'Panel web + app móvil',
+    'f.qr':'Configuración con código QR', 'f.nocontract':'Sin contrato de permanencia',
+    'f.priority':'Soporte prioritario por correo', 'f.save':'Ahorras $29.89 frente al mensual',
+    'f.2free':'Equivale a 2 meses gratis', 'f.vip':'Soporte prioritario VIP',
+    'strip.title':'Un dispositivo.<br><em>Gratis para siempre.</em> Sin límite de tiempo.',
+    'strip.cta':'Crear mi cuenta',
+    'feat.eyebrow':'Por qué ROK VPN', 'feat.title':'Construido diferente.',
+    'feat.sub':'No somos un revendedor que alquila capacidad ajena. Nuestros propios servidores, nuestras propias reglas.',
+    'feat.1.t':'WireGuard® nativo',
+    'feat.1.b':'El protocolo VPN más moderno: más rápido, más seguro y mucho más sencillo que OpenVPN o IPSec.',
+    'feat.2.t':'Cero registros',
+    'feat.2.b':'No guardamos tu IP, los sitios que visitas ni tus tiempos de conexión. No hay nada que entregar porque no hay nada registrado.',
+    'feat.3.t':'wstunnel (TCP 443)',
+    'feat.3.b':'En redes que bloquean UDP, wstunnel encapsula WireGuard dentro de WebSocket sobre HTTPS para atravesar cualquier firewall.',
+    'feat.4.t':'Apps iOS y Android',
+    'feat.4.b':'Disponibles en App Store y Google Play. Configuración automática con código QR. Conéctate en segundos desde cualquier dispositivo.',
+    'feat.5.t':'Kill switch automático',
+    'feat.5.b':'Si la VPN se cae, el kill switch corta todo el tráfico al instante. Tu IP real nunca queda expuesta, ni un segundo.',
+    'feat.6.t':'Velocidad real garantizada',
+    'feat.6.b':'Sin throttling artificial en los planes pagos. Servidores dedicados con ancho de banda real, sin sobreventa ni congestión.',
+    'feat.7.t':'LLC registrada en Florida',
+    'feat.7.b':'LUROK BUSINESS GROUP LLC. Empresa real y responsable, sujeta a la ley de Estados Unidos. No somos anónimos.',
+    'feat.8.t':'Pago seguro con Square',
+    'feat.8.b':'Los pagos los procesa Square. Nunca almacenamos los datos de tu tarjeta. Cancela cuando quieras sin penalización.',
+    'loc.eyebrow':'Red global', 'loc.title':'Elige tu país.',
+    'loc.sub':'Conéctate desde Norteamérica, Sudamérica, Europa o Asia. El plan gratis incluye Estados Unidos; los planes pagos abren toda la red.',
+    'loc.available':'Disponible ahora', 'loc.premium':'Premium', 'loc.soon':'Próximamente',
+    'loc.loading':'Cargando servidores…',
+    'loc.note':'Añadimos países nuevos continuamente. Los marcados como próximamente ya están en despliegue.',
+    'loc.error':'No se pudo cargar la lista de servidores. Recarga la página.',
+    'loc.empty':'Todavía no hay servidores publicados.',
+    'loc.of':'de', 'loc.active':'activos', 'loc.locations':'ubicaciones',
+    'region.north_america':'Norteamérica', 'region.south_america':'Sudamérica',
+    'region.europe':'Europa', 'region.asia':'Asia',
+    'st.online':'Disponible', 'st.locked':'Plan pago', 'st.coming_soon':'Próximamente',
+    'dl.eyebrow':'Aplicación móvil', 'dl.title':'Disponible en tu plataforma.',
+    'dl.sub':'Descarga ROK VPN y conéctate en segundos. Configuración automática con el código QR incluido en la app.',
+    'dl.on':'Descárgala en',
+    'footer.copy':'© 2025 LUROK BUSINESS GROUP LLC · Florida, USA · Todos los derechos reservados',
+    'm.reg.title':'Crear cuenta', 'm.reg.sub':'Gratis para siempre. Un dispositivo incluido.',
+    'm.reg.btn':'Crear cuenta gratis', 'm.reg.busy':'Creando cuenta…',
+    'm.log.title':'Bienvenido de nuevo', 'm.log.sub':'Accede a tu panel de dispositivos.',
+    'm.log.busy':'Verificando…',
+    'm.email':'Correo electrónico', 'm.email.ph':'tu@correo.com',
+    'm.pass':'Contraseña', 'm.pass.ph':'Mínimo 8 caracteres', 'm.pass.ph2':'Tu contraseña',
+    'm.have':'¿Ya tienes cuenta?', 'm.no':'¿Sin cuenta aún?', 'm.createone':'Crear una gratis',
+    'm.ok.title':'Acceso activado',
+    'm.ok.sub':'Tu cuenta está lista. Agrega tu primer dispositivo desde el panel de usuario.',
+    'm.ok.cta':'Ir a mi panel',
+    'err.fields':'Completa todos los campos.',
+    'err.short':'La contraseña debe tener al menos 8 caracteres.',
+    'err.register':'No se pudo completar el registro.',
+    'err.creds':'Credenciales incorrectas.',
+    'err.network':'No se pudo conectar al servidor. Inténtalo de nuevo.'
+  }
 };
-var STATUS_CLASS = {
-  online: 'is-online', locked: 'is-locked', coming_soon: 'is-soon'
-};
+
+var LANG = localStorage.getItem('rok_lang') === 'es' ? 'es' : 'en';
+
+/* Los textos en inglés viven en el propio HTML, así que la primera pasada los
+   captura como diccionario `en` y el cambio de idioma es reversible. */
+function captureEnglish(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    I18N.en[el.getAttribute('data-i18n')] = el.textContent;
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(function(el){
+    I18N.en[el.getAttribute('data-i18n-html')] = el.innerHTML;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+    I18N.en[el.getAttribute('data-i18n-ph')] = el.placeholder;
+  });
+  Object.assign(I18N.en, {
+    'loc.error':'Could not load the server list. Please reload the page.',
+    'loc.empty':'No servers published yet.',
+    'loc.of':'of', 'loc.active':'active', 'loc.locations':'locations',
+    'region.north_america':'North America', 'region.south_america':'South America',
+    'region.europe':'Europe', 'region.asia':'Asia',
+    'st.online':'Available', 'st.locked':'Premium', 'st.coming_soon':'Coming soon',
+    'm.reg.busy':'Creating account…', 'm.log.busy':'Signing in…',
+    'err.fields':'Please fill in every field.',
+    'err.short':'Password must be at least 8 characters.',
+    'err.register':'Registration failed.',
+    'err.creds':'Incorrect credentials.',
+    'err.network':'Could not reach the server. Please try again.'
+  });
+}
+
+function t(key){
+  var dict = I18N[LANG] || I18N.en;
+  return (dict[key] !== undefined ? dict[key] : I18N.en[key]) || key;
+}
+
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(function(el){
+    el.innerHTML = t(el.getAttribute('data-i18n-html'));
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+    el.placeholder = t(el.getAttribute('data-i18n-ph'));
+  });
+  /* El botón anuncia el idioma al que se puede cambiar, no el actual. */
+  document.getElementById('lang-btn').textContent = LANG === 'en' ? 'ES' : 'EN';
+  if (LAST_SERVERS) renderServers(LAST_SERVERS);
+}
+
+function toggleLang(){
+  LANG = LANG === 'en' ? 'es' : 'en';
+  localStorage.setItem('rok_lang', LANG);
+  try { REGION_NAMES = new Intl.DisplayNames([LANG], { type:'region' }); } catch(e) {}
+  applyLang();
+}
+
+/* ══ Mapa y lista de servidores ════════════════════════════════════════════ */
+/* Misma proyección equirectangular con la que se generó el trazado del mapa. */
+var MAP_W = 1000, MAP_H = 388;
+var LON_MIN = -168, SPAN_LON = 358, LAT_MAX = 83, SPAN_LAT = 139;
+var CLUSTER_PX = 17;           /* radio de agrupación en unidades del viewBox */
+var LAST_SERVERS = null;
+
+function project(lon, lat){
+  if (lon < LON_MIN) lon += 360;
+  return { x:(lon - LON_MIN)/SPAN_LON*MAP_W, y:(LAT_MAX - lat)/SPAN_LAT*MAP_H };
+}
+
+var STATUS_RANK = { online:3, locked:2, coming_soon:1 };
+var STATUS_CLASS = { online:'is-online', locked:'is-locked', coming_soon:'is-soon' };
+var PIN_CLASS    = { online:'pin-on',    locked:'pin-lock',  coming_soon:'pin-soon' };
 
 function esc(s){
   return String(s).replace(/[&<>"']/g, function(c){
@@ -757,49 +997,143 @@ function esc(s){
   });
 }
 
-function renderServers(data){
+/* La API devuelve los nombres en inglés (idioma por defecto del producto).
+   Intl.DisplayNames los traduce a partir del código ISO sin tablas propias;
+   si el navegador no lo soporta, se queda con el nombre que vino de la API. */
+var REGION_NAMES = null;
+try { REGION_NAMES = new Intl.DisplayNames([LANG], { type:'region' }); } catch(e) {}
+
+function countryName(sv){
+  if (LANG === 'en' || !REGION_NAMES) return sv.country;
+  try { return REGION_NAMES.of(sv.code) || sv.country; } catch(e) { return sv.country; }
+}
+
+/* Las ciudades no las cubre Intl: sólo las que cambian de grafía en español. */
+var CITY_ES = {
+  'New York':'Nueva York', 'Los Angeles':'Los Ángeles', 'Mexico City':'Ciudad de México',
+  'London':'Londres', 'Frankfurt':'Fráncfort', 'Paris':'París', 'Amsterdam':'Ámsterdam',
+  'Zurich':'Zúrich', 'Tokyo':'Tokio', 'Seoul':'Seúl', 'Mumbai':'Bombay',
+  'Singapore':'Singapur', 'Dubai':'Dubái'
+};
+function cityName(sv){
+  return LANG === 'es' ? (CITY_ES[sv.city] || sv.city) : sv.city;
+}
+
+/* Agrupa nodos que caerían uno encima de otro (Europa occidental, por ejemplo)
+   en un solo pin con contador, como hace el mapa de NordVPN. */
+function clusterPins(servers){
+  var clusters = [];
+  servers.forEach(function(sv){
+    var p = project(sv.lon, sv.lat);
+    var hit = null;
+    for (var i = 0; i < clusters.length; i++){
+      var c = clusters[i];
+      if (Math.hypot(c.x - p.x, c.y - p.y) <= CLUSTER_PX){ hit = c; break; }
+    }
+    if (hit){
+      hit.items.push(sv);
+      hit.x = hit.items.reduce(function(a,s){ return a + project(s.lon,s.lat).x; },0)/hit.items.length;
+      hit.y = hit.items.reduce(function(a,s){ return a + project(s.lon,s.lat).y; },0)/hit.items.length;
+      if (STATUS_RANK[sv.status] > STATUS_RANK[hit.status]) hit.status = sv.status;
+    } else {
+      clusters.push({ x:p.x, y:p.y, status:sv.status, items:[sv] });
+    }
+  });
+  return clusters;
+}
+
+function renderMap(regions){
+  var servers = [];
+  regions.forEach(function(r){ servers = servers.concat(r.servers); });
+  var host = document.getElementById('map-pins');
+  var tip  = document.getElementById('map-tip');
+  var wrap = document.querySelector('.map-wrap');
+
+  host.innerHTML = clusterPins(servers).map(function(c){
+    var n = c.items.length;
+    var label = n > 1
+      ? '<b>' + n + ' ' + esc(t('loc.locations')) + '</b><span> — ' +
+        esc(c.items.map(countryName).join(', ')) + '</span>'
+      : '<b>' + esc(c.items[0].flag + ' ' + countryName(c.items[0])) + '</b><span> — ' +
+        esc(cityName(c.items[0])) + ' · ' + esc(t('st.' + c.items[0].status)) + '</span>';
+    var core = n > 1 ? 8 : 4;
+    return '<g class="pin ' + PIN_CLASS[c.status] + '" data-tip="' + esc(label) + '"'
+         +   ' transform="translate(' + c.x.toFixed(1) + ',' + c.y.toFixed(1) + ')">'
+         +   '<circle class="pin-halo" r="15"/>'
+         +   '<circle class="pin-ring" r="' + (core + 4) + '"/>'
+         +   '<circle class="pin-core" r="' + core + '"/>'
+         +   (n > 1 ? '<text class="pin-count" y="0.5">' + n + '</text>' : '')
+         +   '<circle class="pin-hit" r="16"/>'
+         + '</g>';
+  }).join('');
+
+  host.querySelectorAll('.pin').forEach(function(pin){
+    pin.addEventListener('mouseenter', function(){
+      var box  = pin.getBoundingClientRect();
+      var host = wrap.getBoundingClientRect();
+      tip.innerHTML = pin.getAttribute('data-tip');
+      tip.style.left = (box.left + box.width/2 - host.left) + 'px';
+      tip.style.top  = (box.top - host.top) + 'px';
+      tip.hidden = false;
+    });
+    pin.addEventListener('mouseleave', function(){ tip.hidden = true; });
+  });
+}
+
+function renderList(regions){
   var host = document.getElementById('servers-list');
-  if(!data.regions || !data.regions.length){
-    host.innerHTML = '<p class="servers-fallback">No hay servidores publicados todavía.</p>';
+  if (!regions || !regions.length){
+    host.innerHTML = '<p class="servers-fallback">' + esc(t('loc.empty')) + '</p>';
     return;
   }
-  host.innerHTML = data.regions.map(function(region){
-    var online = region.servers.filter(function(s){ return s.status !== 'coming_soon'; }).length;
+  host.innerHTML = regions.map(function(region){
+    var active = region.servers.filter(function(s){ return s.status !== 'coming_soon'; }).length;
     var cards = region.servers.map(function(s){
       return '<div class="country ' + STATUS_CLASS[s.status] + '">'
            +   '<span class="country-flag">' + esc(s.flag) + '</span>'
            +   '<span class="country-text">'
-           +     '<span class="country-name">' + esc(s.country) + '</span>'
-           +     '<span class="country-city">' + esc(s.city) + '</span>'
+           +     '<span class="country-name">' + esc(countryName(s)) + '</span>'
+           +     '<span class="country-city">' + esc(cityName(s)) + '</span>'
            +   '</span>'
-           +   '<span class="country-tag">' + STATUS_TAG[s.status] + '</span>'
+           +   '<span class="country-tag">' + esc(t('st.' + s.status)) + '</span>'
            + '</div>';
     }).join('');
     return '<div class="region">'
          +   '<div class="region-head">'
-         +     '<span class="region-name">' + esc(region.label) + '</span>'
-         +     '<span class="region-count">' + online + ' de ' + region.servers.length + ' activos</span>'
+         +     '<span class="region-name">' + esc(t('region.' + region.region)) + '</span>'
+         +     '<span class="region-count">' + active + ' ' + esc(t('loc.of')) + ' '
+         +       region.servers.length + ' ' + esc(t('loc.active')) + '</span>'
          +   '</div>'
          +   '<div class="country-grid">' + cards + '</div>'
          + '</div>';
   }).join('');
 }
 
+function renderServers(data){
+  LAST_SERVERS = data;
+  renderMap(data.regions || []);
+  renderList(data.regions || []);
+}
+
 /* Con sesión iniciada la misma llamada devuelve el tier real, así los países
    de pago aparecen desbloqueados en vez de con candado. */
-(async function loadServers(){
-  var host = document.getElementById('servers-list');
+async function loadServers(){
   var headers = {};
   var token = localStorage.getItem('rok_token');
-  if(token){ headers['Authorization'] = 'Bearer ' + token; }
-  try{
-    var res = await fetch('/api/v1/servers', {headers: headers});
-    if(!res.ok){ throw new Error('HTTP ' + res.status); }
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  try {
+    var res = await fetch('/api/v1/servers', { headers: headers });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     renderServers(await res.json());
-  }catch(e){
-    host.innerHTML = '<p class="servers-fallback">No se pudo cargar la lista de servidores. Recarga la página.</p>';
+  } catch (e) {
+    document.getElementById('servers-list').innerHTML =
+      '<p class="servers-fallback">' + esc(t('loc.error')) + '</p>';
   }
-})();
+}
+
+captureEnglish();
+applyLang();
+loadServers();
 </script>
 </body>
 </html>

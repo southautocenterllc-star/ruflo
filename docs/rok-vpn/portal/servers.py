@@ -23,38 +23,38 @@ AGENT_TIMEOUT = int(os.environ.get("ROK_AGENT_TIMEOUT", "10"))
 #   tier_required: 'free' = accesible a todos | 'paid' = sólo plan pago
 SERVER_CATALOG = [
     # ── North America ──────────────────────────────────────────────────────────
-    {"code": "US", "country": "Estados Unidos", "city": "Nueva York",   "region": "north_america", "tier_required": "free"},
-    {"code": "US", "country": "Estados Unidos", "city": "Los Ángeles",  "region": "north_america", "tier_required": "paid"},
-    {"code": "CA", "country": "Canadá",         "city": "Toronto",      "region": "north_america", "tier_required": "paid"},
-    {"code": "MX", "country": "México",         "city": "Ciudad de México", "region": "north_america", "tier_required": "paid"},
+    {"code": "US", "country": "United States", "city": "New York",   "region": "north_america", "tier_required": "free", "lon": -74.0, "lat": 40.7},
+    {"code": "US", "country": "United States", "city": "Los Angeles",  "region": "north_america", "tier_required": "paid", "lon": -118.2, "lat": 34.1},
+    {"code": "CA", "country": "Canada",         "city": "Toronto",      "region": "north_america", "tier_required": "paid", "lon": -79.4, "lat": 43.7},
+    {"code": "MX", "country": "Mexico",         "city": "Mexico City", "region": "north_america", "tier_required": "paid", "lon": -99.1, "lat": 19.4},
 
     # ── South America ──────────────────────────────────────────────────────────
-    {"code": "BR", "country": "Brasil",         "city": "São Paulo",    "region": "south_america", "tier_required": "paid"},
-    {"code": "AR", "country": "Argentina",      "city": "Buenos Aires", "region": "south_america", "tier_required": "paid"},
-    {"code": "CL", "country": "Chile",          "city": "Santiago",     "region": "south_america", "tier_required": "paid"},
-    {"code": "CO", "country": "Colombia",       "city": "Bogotá",       "region": "south_america", "tier_required": "paid"},
+    {"code": "BR", "country": "Brazil",         "city": "São Paulo",    "region": "south_america", "tier_required": "paid", "lon": -46.6, "lat": -23.6},
+    {"code": "AR", "country": "Argentina",      "city": "Buenos Aires", "region": "south_america", "tier_required": "paid", "lon": -58.4, "lat": -34.6},
+    {"code": "CL", "country": "Chile",          "city": "Santiago",     "region": "south_america", "tier_required": "paid", "lon": -70.7, "lat": -33.5},
+    {"code": "CO", "country": "Colombia",       "city": "Bogotá",       "region": "south_america", "tier_required": "paid", "lon": -74.1, "lat": 4.7},
 
     # ── Europe ─────────────────────────────────────────────────────────────────
-    {"code": "GB", "country": "Reino Unido",    "city": "Londres",      "region": "europe", "tier_required": "paid"},
-    {"code": "DE", "country": "Alemania",       "city": "Fráncfort",    "region": "europe", "tier_required": "paid"},
-    {"code": "FR", "country": "Francia",        "city": "París",        "region": "europe", "tier_required": "paid"},
-    {"code": "ES", "country": "España",         "city": "Madrid",       "region": "europe", "tier_required": "paid"},
-    {"code": "NL", "country": "Países Bajos",   "city": "Ámsterdam",    "region": "europe", "tier_required": "paid"},
-    {"code": "CH", "country": "Suiza",          "city": "Zúrich",       "region": "europe", "tier_required": "paid"},
+    {"code": "GB", "country": "United Kingdom",    "city": "London",      "region": "europe", "tier_required": "paid", "lon": -0.1, "lat": 51.5},
+    {"code": "DE", "country": "Germany",       "city": "Frankfurt",    "region": "europe", "tier_required": "paid", "lon": 8.7, "lat": 50.1},
+    {"code": "FR", "country": "France",        "city": "Paris",        "region": "europe", "tier_required": "paid", "lon": 2.4, "lat": 48.9},
+    {"code": "ES", "country": "Spain",         "city": "Madrid",       "region": "europe", "tier_required": "paid", "lon": -3.7, "lat": 40.4},
+    {"code": "NL", "country": "Netherlands",   "city": "Amsterdam",    "region": "europe", "tier_required": "paid", "lon": 4.9, "lat": 52.4},
+    {"code": "CH", "country": "Switzerland",          "city": "Zurich",       "region": "europe", "tier_required": "paid", "lon": 8.5, "lat": 47.4},
 
     # ── Asia ───────────────────────────────────────────────────────────────────
-    {"code": "JP", "country": "Japón",          "city": "Tokio",        "region": "asia", "tier_required": "paid"},
-    {"code": "SG", "country": "Singapur",       "city": "Singapur",     "region": "asia", "tier_required": "paid"},
-    {"code": "KR", "country": "Corea del Sur",  "city": "Seúl",         "region": "asia", "tier_required": "paid"},
-    {"code": "IN", "country": "India",          "city": "Bombay",       "region": "asia", "tier_required": "paid"},
-    {"code": "HK", "country": "Hong Kong",      "city": "Hong Kong",    "region": "asia", "tier_required": "paid"},
-    {"code": "AE", "country": "Emiratos Árabes","city": "Dubái",        "region": "asia", "tier_required": "paid"},
+    {"code": "JP", "country": "Japan",          "city": "Tokyo",        "region": "asia", "tier_required": "paid", "lon": 139.7, "lat": 35.7},
+    {"code": "SG", "country": "Singapore",       "city": "Singapore",     "region": "asia", "tier_required": "paid", "lon": 103.8, "lat": 1.4},
+    {"code": "KR", "country": "South Korea",  "city": "Seoul",         "region": "asia", "tier_required": "paid", "lon": 127.0, "lat": 37.6},
+    {"code": "IN", "country": "India",          "city": "Mumbai",       "region": "asia", "tier_required": "paid", "lon": 72.9, "lat": 19.1},
+    {"code": "HK", "country": "Hong Kong",      "city": "Hong Kong",    "region": "asia", "tier_required": "paid", "lon": 114.2, "lat": 22.3},
+    {"code": "AE", "country": "United Arab Emirates","city": "Dubai",        "region": "asia", "tier_required": "paid", "lon": 55.3, "lat": 25.2},
 ]
 
 REGION_LABELS = {
-    "north_america": "Norteamérica",
-    "south_america": "Sudamérica",
-    "europe":        "Europa",
+    "north_america": "North America",
+    "south_america": "South America",
+    "europe":        "Europe",
     "asia":          "Asia",
 }
 
@@ -94,9 +94,16 @@ def init_schema(conn) -> None:
             is_local       INTEGER NOT NULL DEFAULT 0,
             active         INTEGER NOT NULL DEFAULT 0,
             load_percent   INTEGER NOT NULL DEFAULT 0,
-            sort_order     INTEGER NOT NULL DEFAULT 0
+            sort_order     INTEGER NOT NULL DEFAULT 0,
+            lon            REAL    NOT NULL DEFAULT 0,
+            lat            REAL    NOT NULL DEFAULT 0
         )
     """)
+    # Instalaciones previas a la vista de mapa no tienen las columnas geográficas.
+    server_cols = {row[1] for row in conn.execute("PRAGMA table_info(servers)")}
+    for col in ("lon", "lat"):
+        if col not in server_cols:
+            conn.execute(f"ALTER TABLE servers ADD COLUMN {col} REAL NOT NULL DEFAULT 0")
     conn.execute("""
         CREATE UNIQUE INDEX IF NOT EXISTS idx_servers_code_city
             ON servers(code, city)
@@ -106,14 +113,56 @@ def init_schema(conn) -> None:
         conn.execute("ALTER TABLE peers ADD COLUMN server_id INTEGER REFERENCES servers(id)")
 
 
+# El catálogo se sembró originalmente en español. La clave única es (code, city),
+# así que sin renombrar antes de sembrar cada ciudad traducida crearía una fila
+# nueva y dejaría huérfana la anterior (con su endpoint y su token de agente).
+LEGACY_CITY_RENAMES = {
+    ("US", "Nueva York"):        "New York",
+    ("US", "Los Ángeles"):       "Los Angeles",
+    ("MX", "Ciudad de México"):  "Mexico City",
+    ("GB", "Londres"):           "London",
+    ("DE", "Fráncfort"):         "Frankfurt",
+    ("FR", "París"):             "Paris",
+    ("NL", "Ámsterdam"):         "Amsterdam",
+    ("CH", "Zúrich"):            "Zurich",
+    ("JP", "Tokio"):             "Tokyo",
+    ("SG", "Singapur"):          "Singapore",
+    ("KR", "Seúl"):              "Seoul",
+    ("IN", "Bombay"):            "Mumbai",
+    ("AE", "Dubái"):             "Dubai",
+}
+
+
+def migrate_to_english(conn) -> None:
+    """Traduce al inglés las filas sembradas por versiones anteriores."""
+    for (code, old_city), new_city in LEGACY_CITY_RENAMES.items():
+        conn.execute(
+            "UPDATE OR IGNORE servers SET city = ? WHERE code = ? AND city = ?",
+            (new_city, code, old_city),
+        )
+    for entry in SERVER_CATALOG:
+        conn.execute(
+            "UPDATE servers SET country = ? WHERE code = ? AND country <> ?",
+            (entry["country"], entry["code"], entry["country"]),
+        )
+
+
 def seed_catalog(conn) -> None:
     """Inserta el catálogo. Idempotente: no toca filas ya provisionadas."""
+    migrate_to_english(conn)
     for order, entry in enumerate(SERVER_CATALOG):
         conn.execute(
-            "INSERT OR IGNORE INTO servers (code,country,city,region,tier_required,sort_order)"
-            " VALUES (?,?,?,?,?,?)",
-            (entry["code"], entry["country"], entry["city"],
-             entry["region"], entry["tier_required"], order),
+            "INSERT OR IGNORE INTO servers"
+            " (code,country,city,region,tier_required,sort_order,lon,lat)"
+            " VALUES (?,?,?,?,?,?,?,?)",
+            (entry["code"], entry["country"], entry["city"], entry["region"],
+             entry["tier_required"], order, entry["lon"], entry["lat"]),
+        )
+        # Las coordenadas son geografía fija: se refrescan siempre para que las
+        # filas creadas antes de la vista de mapa también queden ubicadas.
+        conn.execute(
+            "UPDATE servers SET lon = ?, lat = ? WHERE code = ? AND city = ?",
+            (entry["lon"], entry["lat"], entry["code"], entry["city"]),
         )
 
 
@@ -173,6 +222,8 @@ def list_servers(conn, tier: str = "free"):
             "load_percent":  row["load_percent"],
             "status":        status,
             "available":     provisioned and tier_ok,
+            "lon":           row["lon"],
+            "lat":           row["lat"],
         })
 
     return [

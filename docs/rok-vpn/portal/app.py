@@ -13,6 +13,8 @@ import qrcode
 from flask import (Flask, Response, flash, jsonify, redirect,
                    render_template, request, send_file, session, url_for)
 
+import servers as srv
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("ROK_SECRET_KEY") or secrets.token_hex(32)
 
@@ -88,6 +90,9 @@ def init_db():
                 expires_at            TEXT
             )
         """)
+        srv.init_schema(conn)
+        srv.seed_catalog(conn)
+        srv.ensure_local_server(conn, VPS_ENDPOINT, WG_SUBNET)
 
 
 init_db()
@@ -117,16 +122,59 @@ def wg_remove_peer(public_key: str):
     subprocess.check_call(["wg-quick", "save", WG_IFACE])
 
 
-# ── IP allocation ──────────────────────────────────────────────────────────────
-def allocate_ip():
+# ── Despacho local / remoto ────────────────────────────────────────────────────
+# El servidor donde corre este portal se opera con comandos `wg` locales.
+# El resto de países se operan por HTTP contra su agente (`agent/agent.py`).
+def server_add_peer(server, public_key: str, ip: str) -> None:
+    if server["is_local"]:
+        wg_add_peer(public_key, ip)
+    else:
+        srv.remote_add_peer(server, public_key, ip)
+
+
+def server_remove_peer(server, public_key: str) -> None:
+    if server["is_local"]:
+        wg_remove_peer(public_key)
+    else:
+        srv.remote_remove_peer(server, public_key)
+
+
+def server_public_key(server) -> str:
+    """Clave pública WireGuard del servidor, cacheada en DB para los remotos."""
+    if server["is_local"]:
+        return wg_get_server_pubkey()
+    if server["wg_public_key"]:
+        return server["wg_public_key"]
+    key = srv.remote_public_key(server)
     with get_db() as conn:
-        rows = conn.execute("SELECT ip_address FROM peers WHERE revoked = 0").fetchall()
-    used = {r["ip_address"] for r in rows}
-    for last_octet in range(2, 255):
-        candidate = f"{WG_SUBNET}.{last_octet}"
-        if candidate not in used:
-            return candidate
-    raise RuntimeError("No available IPs in subnet")
+        conn.execute("UPDATE servers SET wg_public_key = ? WHERE id = ?",
+                     (key, server["id"]))
+    return key
+
+
+def server_endpoint(server) -> str:
+    return f"{server['endpoint_host']}:{server['wg_port']}"
+
+
+def resolve_server(conn, server_id, tier: str):
+    """Valida el servidor pedido contra el tier del usuario.
+
+    Devuelve (row, None) si está permitido, o (None, mensaje_error).
+    Sin server_id, cae al servidor por defecto.
+    """
+    if server_id is None:
+        server = srv.default_server(conn)
+        if not server:
+            return None, "No hay servidores disponibles"
+        return server, None
+    server = srv.get_server(conn, server_id)
+    if not server:
+        return None, "Servidor no encontrado"
+    if not (server["active"] and server["endpoint_host"]):
+        return None, f"{server['country']} aún no está disponible"
+    if tier != "paid" and server["tier_required"] == "paid":
+        return None, f"{server['country']} requiere plan pago"
+    return server, None
 
 
 # ── Config builders ────────────────────────────────────────────────────────────
@@ -178,37 +226,54 @@ def generate_qr_png(config_text: str) -> bytes:
     return buf.getvalue()
 
 
-def _provision_peer(name: str, user_id: int = None):
-    """Create WireGuard peer, save to DB and disk. Returns peer row dict."""
+def _provision_peer(name: str, server, user_id: int = None):
+    """Crea el peer WireGuard en `server`, lo guarda en DB. Devuelve dict del peer."""
     priv, pub = wg_genkey()
-    ip        = allocate_ip()
     token     = secrets.token_urlsafe(32)
     now       = datetime.now(timezone.utc).isoformat()
-    wg_add_peer(pub, ip)
     with get_db() as conn:
-        conn.execute(
-            "INSERT INTO peers (name,email,public_key,private_key,ip_address,"
-            "download_token,created_at,user_id) VALUES (?,NULL,?,?,?,?,?,?)",
-            (name, pub, priv, ip, token, now, user_id),
-        )
-        row = conn.execute(
-            "SELECT * FROM peers WHERE download_token = ?", (token,)
-        ).fetchone()
-    _save_peer_configs(name, priv, ip)
+        ip = srv.allocate_ip(conn, server)
+    server_add_peer(server, pub, ip)
+    try:
+        with get_db() as conn:
+            conn.execute(
+                "INSERT INTO peers (name,email,public_key,private_key,ip_address,"
+                "download_token,created_at,user_id,server_id) VALUES (?,NULL,?,?,?,?,?,?,?)",
+                (name, pub, priv, ip, token, now, user_id, server["id"]),
+            )
+            row = conn.execute(
+                "SELECT * FROM peers WHERE download_token = ?", (token,)
+            ).fetchone()
+    except Exception:
+        # No dejar el peer huérfano en WireGuard si falla el INSERT.
+        try:
+            server_remove_peer(server, pub)
+        except Exception:
+            pass
+        raise
+    if server["is_local"]:
+        _save_peer_configs(name, priv, ip)
     return dict(row)
 
 
 # ── JWT helpers ────────────────────────────────────────────────────────────────
 def _make_token(user_id: int) -> str:
     payload = {
-        "sub": user_id,
+        # RFC 7519 exige que `sub` sea string. PyJWT >= 2.10 lo valida al
+        # decodificar y rechaza los enteros con InvalidSubjectError.
+        "sub": str(user_id),
         "exp": datetime.now(timezone.utc) + timedelta(days=JWT_EXP_DAYS),
     }
     return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
 
-def _decode_token(token: str):
-    return jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+def _decode_token(token: str) -> dict:
+    payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+    try:
+        payload["sub"] = int(payload["sub"])
+    except (TypeError, ValueError) as exc:
+        raise jwt.InvalidTokenError("sub inválido") from exc
+    return payload
 
 
 def require_user(f):
@@ -275,29 +340,94 @@ def admin_add():
     if not name:
         flash("El nombre es obligatorio", "danger")
         return redirect(url_for("admin"))
+    with get_db() as conn:
+        server = srv.default_server(conn)
+    if not server:
+        flash("No hay servidores activos", "danger")
+        return redirect(url_for("admin"))
     priv, pub = wg_genkey()
-    ip        = allocate_ip()
     token     = secrets.token_urlsafe(32)
     now       = datetime.now(timezone.utc).isoformat()
+    with get_db() as conn:
+        ip = srv.allocate_ip(conn, server)
     try:
-        wg_add_peer(pub, ip)
-    except subprocess.CalledProcessError as exc:
+        server_add_peer(server, pub, ip)
+    except (subprocess.CalledProcessError, srv.AgentError) as exc:
         flash(f"Error al añadir peer en WireGuard: {exc}", "danger")
         return redirect(url_for("admin"))
     with get_db() as conn:
         try:
             conn.execute(
                 "INSERT INTO peers (name,email,public_key,private_key,ip_address,"
-                "download_token,created_at) VALUES (?,?,?,?,?,?,?)",
-                (name, email, pub, priv, ip, token, now),
+                "download_token,created_at,server_id) VALUES (?,?,?,?,?,?,?,?)",
+                (name, email, pub, priv, ip, token, now, server["id"]),
             )
         except sqlite3.IntegrityError:
-            wg_remove_peer(pub)
+            server_remove_peer(server, pub)
             flash(f"Ya existe un cliente con el nombre «{name}»", "danger")
             return redirect(url_for("admin"))
     _save_peer_configs(name, priv, ip)
     flash(f"Cliente «{name}» creado — IP {ip}", "success")
     return redirect(url_for("admin"))
+
+
+@app.route("/admin/servers")
+@require_admin
+def admin_servers():
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT id,code,country,city,region,tier_required,endpoint_host,"
+            "       wg_port,ws_port,agent_url,is_local,active,"
+            "       (SELECT COUNT(*) FROM peers WHERE peers.server_id = servers.id"
+            "        AND peers.revoked = 0) AS peers"
+            "  FROM servers ORDER BY sort_order, id"
+        ).fetchall()
+    return jsonify(servers=[
+        dict(r, flag=srv.flag_emoji(r["code"]), agent_token_set=bool(r["agent_url"]))
+        for r in rows
+    ])
+
+
+@app.route("/admin/servers/<int:server_id>", methods=["POST"])
+@require_admin
+def admin_server_update(server_id: int):
+    """Da de alta (o actualiza) un país ya provisionado.
+
+    Body JSON: endpoint_host, agent_url, agent_token, wg_port?, ws_port?,
+               wg_subnet?, active?
+    El token del agente se guarda tal cual: nunca se devuelve por la API.
+    """
+    data = request.get_json(silent=True) or {}
+    with get_db() as conn:
+        if not srv.get_server(conn, server_id):
+            return jsonify(error="Servidor no encontrado"), 404
+        fields, values = [], []
+        for key in ("endpoint_host", "agent_url", "agent_token", "wg_subnet"):
+            if key in data:
+                fields.append(f"{key} = ?")
+                values.append((data[key] or "").strip() or None)
+        for key in ("wg_port", "ws_port", "active", "load_percent"):
+            if key in data:
+                fields.append(f"{key} = ?")
+                values.append(int(data[key]))
+        if not fields:
+            return jsonify(error="Nada que actualizar"), 400
+        values.append(server_id)
+        conn.execute(f"UPDATE servers SET {', '.join(fields)} WHERE id = ?", values)
+        server = srv.get_server(conn, server_id)
+
+    # Verifica que el agente responde y cachea su clave pública.
+    warning = None
+    if server["active"] and not server["is_local"]:
+        try:
+            key = srv.remote_public_key(server)
+            with get_db() as conn:
+                conn.execute("UPDATE servers SET wg_public_key = ? WHERE id = ?",
+                             (key, server_id))
+        except srv.AgentError as exc:
+            warning = str(exc)
+
+    return jsonify(ok=True, id=server_id, country=server["country"], warning=warning)
 
 
 @app.route("/admin/revoke/<name>", methods=["POST"])
@@ -332,6 +462,16 @@ def _get_active_peer(token: str):
         ).fetchone()
 
 
+def _peer_server(peer):
+    """Servidor donde vive el peer; cae al por defecto para peers antiguos."""
+    with get_db() as conn:
+        if peer["server_id"]:
+            server = srv.get_server(conn, peer["server_id"])
+            if server:
+                return server
+        return srv.default_server(conn)
+
+
 @app.route("/download/<token>")
 def download_page(token: str):
     peer = _get_active_peer(token)
@@ -345,8 +485,9 @@ def download_config(token: str):
     peer = _get_active_peer(token)
     if not peer:
         return "Enlace inválido o revocado", 404
+    server = _peer_server(peer)
     cfg = build_config(peer["private_key"], peer["ip_address"],
-                       wg_get_server_pubkey(), VPS_ENDPOINT)
+                       server_public_key(server), server_endpoint(server))
     return send_file(io.BytesIO(cfg.encode()), mimetype="text/plain",
                      as_attachment=True, download_name=f"rok-vpn-{peer['name']}.conf")
 
@@ -357,7 +498,7 @@ def download_wstunnel_config(token: str):
     if not peer:
         return "Enlace inválido o revocado", 404
     cfg = build_wstunnel_config(peer["private_key"], peer["ip_address"],
-                                wg_get_server_pubkey())
+                                server_public_key(_peer_server(peer)))
     return send_file(io.BytesIO(cfg.encode()), mimetype="text/plain",
                      as_attachment=True,
                      download_name=f"rok-vpn-{peer['name']}-wstunnel.conf")
@@ -368,8 +509,9 @@ def download_qr(token: str):
     peer = _get_active_peer(token)
     if not peer:
         return "Enlace inválido o revocado", 404
+    server = _peer_server(peer)
     cfg = build_config(peer["private_key"], peer["ip_address"],
-                       wg_get_server_pubkey(), VPS_ENDPOINT)
+                       server_public_key(server), server_endpoint(server))
     return send_file(io.BytesIO(generate_qr_png(cfg)), mimetype="image/png")
 
 
@@ -432,10 +574,19 @@ def api_me(user):
 def api_devices_list(user):
     with get_db() as conn:
         rows = conn.execute(
-            "SELECT id,name,ip_address,download_token,created_at FROM peers "
-            "WHERE user_id = ? AND revoked = 0 ORDER BY created_at DESC", (user["id"],)
+            "SELECT p.id, p.name, p.ip_address, p.download_token, p.created_at,"
+            "       p.server_id, s.code AS server_code, s.country AS server_country,"
+            "       s.city AS server_city"
+            "  FROM peers p LEFT JOIN servers s ON s.id = p.server_id"
+            " WHERE p.user_id = ? AND p.revoked = 0"
+            " ORDER BY p.created_at DESC", (user["id"],)
         ).fetchall()
-    return jsonify(devices=[dict(r) for r in rows])
+    devices = []
+    for row in rows:
+        item = dict(row)
+        item["server_flag"] = srv.flag_emoji(row["server_code"] or "")
+        devices.append(item)
+    return jsonify(devices=devices)
 
 
 @app.route("/api/v1/devices", methods=["POST"])
@@ -452,17 +603,39 @@ def api_devices_add(user):
     data        = request.get_json(silent=True) or {}
     device_name = (data.get("name") or "dispositivo").strip()[:20]
     peer_name   = f"u{user['id']}-{device_name}"[:40]
+
+    with get_db() as conn:
+        server, err = resolve_server(conn, data.get("server_id"), user["tier"])
+    if err:
+        return jsonify(error=err), 403
+
     try:
-        peer = _provision_peer(peer_name, user_id=user["id"])
+        peer = _provision_peer(peer_name, server, user_id=user["id"])
     except sqlite3.IntegrityError:
         return jsonify(error="Ya tienes un dispositivo con ese nombre"), 409
+    except srv.AgentError as exc:
+        return jsonify(error=str(exc)), 502
     except subprocess.CalledProcessError as exc:
         return jsonify(error=f"Error al crear peer WireGuard: {exc}"), 500
-    server_pubkey = wg_get_server_pubkey()
-    config = build_wstunnel_config(peer["private_key"], peer["ip_address"], server_pubkey)
+
+    try:
+        pubkey = server_public_key(server)
+    except srv.AgentError as exc:
+        return jsonify(error=str(exc)), 502
+    config = build_wstunnel_config(peer["private_key"], peer["ip_address"], pubkey)
     return jsonify(
         id=peer["id"], name=device_name, ip=peer["ip_address"],
         download_token=peer["download_token"], config=config,
+        direct_config=build_config(peer["private_key"], peer["ip_address"],
+                                   pubkey, server_endpoint(server)),
+        server={
+            "id":      server["id"],
+            "code":    server["code"],
+            "flag":    srv.flag_emoji(server["code"]),
+            "country": server["country"],
+            "city":    server["city"],
+            "wstunnel_target": f"wss://{server['endpoint_host']}:{server['ws_port']}",
+        },
     ), 201
 
 
@@ -476,8 +649,15 @@ def api_devices_delete(user, device_id):
         ).fetchone()
     if not row:
         return jsonify(error="Dispositivo no encontrado"), 404
+    with get_db() as conn:
+        server = (srv.get_server(conn, row["server_id"]) if row["server_id"]
+                  else srv.default_server(conn))
+    if not server:
+        return jsonify(error="Servidor del dispositivo no encontrado"), 500
     try:
-        wg_remove_peer(row["public_key"])
+        server_remove_peer(server, row["public_key"])
+    except srv.AgentError as exc:
+        return jsonify(error=str(exc)), 502
     except subprocess.CalledProcessError as exc:
         return jsonify(error=f"Error al revocar: {exc}"), 500
     now = datetime.now(timezone.utc).isoformat()
@@ -486,6 +666,45 @@ def api_devices_delete(user, device_id):
                      (now, row["id"]))
     _delete_peer_configs(row["name"])
     return jsonify(ok=True)
+
+
+# ── API v1: servidores por país ────────────────────────────────────────────────
+def _tier_from_optional_auth() -> str:
+    """Lee el tier del Bearer token si viene; si no, asume 'free'.
+
+    Permite que la landing pública liste países sin login, mostrando los de
+    pago como bloqueados en vez de ocultarlos.
+    """
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return "free"
+    try:
+        payload = _decode_token(auth[7:])
+    except jwt.PyJWTError:
+        return "free"
+    with get_db() as conn:
+        user = conn.execute("SELECT tier FROM users WHERE id = ?",
+                            (payload["sub"],)).fetchone()
+    return user["tier"] if user else "free"
+
+
+@app.route("/api/v1/servers")
+def api_servers():
+    """Catálogo de países agrupado por región.
+
+    Misma respuesta alimenta app móvil, web y desktop. Cada servidor trae su
+    código ISO y el emoji de bandera; los clientes que prefieran SVG usan el
+    código con flag-icons.
+    """
+    tier = _tier_from_optional_auth()
+    with get_db() as conn:
+        regions = srv.list_servers(conn, tier)
+        default = srv.default_server(conn)
+    return jsonify(
+        tier=tier,
+        default_server_id=default["id"] if default else None,
+        regions=regions,
+    )
 
 
 # ── API v1: plans & payments ───────────────────────────────────────────────────
@@ -559,15 +778,31 @@ def api_subscription_cancel(user):
         )
         conn.execute("UPDATE users SET tier = 'free' WHERE id = ?", (user["id"],))
         # Revoke extra devices beyond free limit
-        extra = conn.execute(
-            "SELECT id,public_key,name FROM peers WHERE user_id = ? AND revoked = 0 "
+        rows = conn.execute(
+            "SELECT id,public_key,name,server_id FROM peers WHERE user_id = ? AND revoked = 0 "
             "ORDER BY created_at DESC", (user["id"],)
         ).fetchall()
-    for row in extra[FREE_DEVICE_LIMIT:]:
+        server_by_id = {s["id"]: s for s in conn.execute("SELECT * FROM servers")}
+
+    # Se revocan los que exceden el límite gratis y, además, los que están en
+    # países que sólo cubre el plan pago.
+    def _needs_revoke(index, row):
+        if index >= FREE_DEVICE_LIMIT:
+            return True
+        server = server_by_id.get(row["server_id"])
+        return bool(server and server["tier_required"] == "paid")
+
+    for idx, row in enumerate(rows):
+        if not _needs_revoke(idx, row):
+            continue
+        server = server_by_id.get(row["server_id"])
         try:
-            wg_remove_peer(row["public_key"])
-        except Exception:
-            pass
+            if server:
+                server_remove_peer(server, row["public_key"])
+            else:
+                wg_remove_peer(row["public_key"])
+        except Exception as exc:
+            app.logger.warning("No se pudo revocar peer %s: %s", row["name"], exc)
         with get_db() as conn:
             conn.execute("UPDATE peers SET revoked = 1, revoked_at = ? WHERE id = ?",
                          (now, row["id"]))

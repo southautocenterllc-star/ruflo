@@ -235,6 +235,59 @@ nav {
 .feat-title { font-family:var(--font-u); font-weight:700; font-size:.9rem; letter-spacing:.02em; }
 .feat-body { font-size:.85rem; color:var(--muted); line-height:1.55; }
 
+/* ── Servidores por país ── */
+.region { margin-top:2.75rem; }
+.region-head {
+  display:flex; align-items:baseline; gap:.85rem;
+  padding-bottom:.7rem; border-bottom:1px solid var(--border);
+}
+.region-name {
+  font-family:var(--font-u); font-weight:700; font-size:.82rem;
+  letter-spacing:.14em; text-transform:uppercase;
+}
+.region-count { font-family:var(--font-u); font-size:.72rem; color:var(--muted); }
+/* 300px asegura que "Emiratos Árabes" y "Estados Unidos" quepan junto a la
+   etiqueta sin recortarse; por debajo de eso el nombre se trunca. */
+.country-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:.6rem; margin-top:1.1rem;
+}
+.country {
+  display:flex; align-items:center; gap:.7rem;
+  padding:.7rem .85rem; border:1px solid var(--border);
+  background:var(--surface); border-radius:var(--r);
+}
+.country-flag { font-size:1.35rem; line-height:1; flex-shrink:0; }
+/* min-width:0 permite que el texto se recorte en vez de empujar la etiqueta. */
+.country-text { min-width:0; flex:1; display:flex; flex-direction:column; gap:.12rem; }
+.country-name, .country-city {
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-family:var(--font-u);
+}
+.country-name { font-weight:600; font-size:.84rem; }
+.country-city { font-size:.72rem; color:var(--muted); }
+.country-tag {
+  font-family:var(--font-u); font-size:.62rem; letter-spacing:.09em;
+  text-transform:uppercase; padding:.2rem .45rem; border-radius:4px;
+  flex-shrink:0; white-space:nowrap; align-self:center;
+}
+/* online */
+.country.is-online { border-color:var(--border-2); }
+.country.is-online .country-tag { color:#5FCB8B; background:rgba(95,203,139,.11); }
+/* requiere plan pago */
+.country.is-locked .country-flag { filter:saturate(.45); opacity:.75; }
+.country.is-locked .country-tag { color:var(--blue-lt); background:rgba(138,180,204,.11); }
+/* aún no provisionado */
+.country.is-soon { opacity:.44; }
+.country.is-soon .country-flag { filter:grayscale(1); }
+.country.is-soon .country-tag { color:var(--muted); background:rgba(92,126,156,.12); }
+
+.servers-note {
+  font-family:var(--font-u); font-size:.78rem; color:var(--muted);
+  margin-top:2.25rem; text-align:center;
+}
+.servers-fallback { font-family:var(--font-u); font-size:.85rem; color:var(--muted); }
+
 /* ── App Store Badges ── */
 .badges-wrap {
   display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2.25rem;
@@ -530,6 +583,17 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
   </div>
 </div>
 
+<!-- Servidores por país -->
+<div class="section-wrap" id="paises">
+  <p class="eyebrow">Red global</p>
+  <h2 class="section-title">Elige tu país.</h2>
+  <p class="section-sub">Conéctate desde Norteamérica, Sudamérica, Europa o Asia. El plan gratis incluye Estados Unidos; los planes pagos abren toda la red.</p>
+  <div id="servers-list">
+    <p class="servers-fallback">Cargando servidores…</p>
+  </div>
+  <p class="servers-note">Añadimos países nuevos continuamente. Los marcados como próximamente ya están en despliegue.</p>
+</div>
+
 <!-- Download -->
 <div class="section-wrap section-centered" id="descargar">
   <p class="eyebrow">Aplicación móvil</p>
@@ -676,6 +740,66 @@ async function doLogin(){
   }catch(e){showError('log-err','No se pudo conectar al servidor. Intenta de nuevo.');}
   finally{setLoading('log-btn',false);}
 }
+
+/* ── Servidores por país ──────────────────────────────────────────────────── */
+var STATUS_TAG = {
+  online:      'Disponible',
+  locked:      'Plan pago',
+  coming_soon: 'Próximamente'
+};
+var STATUS_CLASS = {
+  online: 'is-online', locked: 'is-locked', coming_soon: 'is-soon'
+};
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function renderServers(data){
+  var host = document.getElementById('servers-list');
+  if(!data.regions || !data.regions.length){
+    host.innerHTML = '<p class="servers-fallback">No hay servidores publicados todavía.</p>';
+    return;
+  }
+  host.innerHTML = data.regions.map(function(region){
+    var online = region.servers.filter(function(s){ return s.status !== 'coming_soon'; }).length;
+    var cards = region.servers.map(function(s){
+      return '<div class="country ' + STATUS_CLASS[s.status] + '">'
+           +   '<span class="country-flag">' + esc(s.flag) + '</span>'
+           +   '<span class="country-text">'
+           +     '<span class="country-name">' + esc(s.country) + '</span>'
+           +     '<span class="country-city">' + esc(s.city) + '</span>'
+           +   '</span>'
+           +   '<span class="country-tag">' + STATUS_TAG[s.status] + '</span>'
+           + '</div>';
+    }).join('');
+    return '<div class="region">'
+         +   '<div class="region-head">'
+         +     '<span class="region-name">' + esc(region.label) + '</span>'
+         +     '<span class="region-count">' + online + ' de ' + region.servers.length + ' activos</span>'
+         +   '</div>'
+         +   '<div class="country-grid">' + cards + '</div>'
+         + '</div>';
+  }).join('');
+}
+
+/* Con sesión iniciada la misma llamada devuelve el tier real, así los países
+   de pago aparecen desbloqueados en vez de con candado. */
+(async function loadServers(){
+  var host = document.getElementById('servers-list');
+  var headers = {};
+  var token = localStorage.getItem('rok_token');
+  if(token){ headers['Authorization'] = 'Bearer ' + token; }
+  try{
+    var res = await fetch('/api/v1/servers', {headers: headers});
+    if(!res.ok){ throw new Error('HTTP ' + res.status); }
+    renderServers(await res.json());
+  }catch(e){
+    host.innerHTML = '<p class="servers-fallback">No se pudo cargar la lista de servidores. Recarga la página.</p>';
+  }
+})();
 </script>
 </body>
 </html>

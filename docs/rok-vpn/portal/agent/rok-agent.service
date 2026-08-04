@@ -1,0 +1,28 @@
+[Unit]
+Description=ROK VPN Node Agent
+After=network-online.target wg-quick@wg0.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/rok-vpn/agent
+
+# provision-country.sh inyecta el token real durante la instalación.
+Environment="ROK_AGENT_TOKEN=REPLACE_ME_AT_INSTALL"
+Environment="ROK_WG_IFACE=wg0"
+Environment="ROK_AGENT_PORT=8081"
+
+ExecStart=/opt/rok-vpn/agent/venv/bin/gunicorn \
+  --bind 0.0.0.0:8081 \
+  --workers 1 \
+  --timeout 30 \
+  --access-logfile - \
+  --error-logfile - \
+  agent:app
+
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target

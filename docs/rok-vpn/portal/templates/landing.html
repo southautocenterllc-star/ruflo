@@ -89,22 +89,14 @@ nav {
 }
 .logo-pedestal {
   position:relative; z-index:1;
-  width:200px; height:200px; background:#fff; border-radius:50%;
+  width:200px; height:200px; background:transparent;
   display:flex; align-items:center; justify-content:center;
   animation:rokSpin 14s linear infinite;
-  box-shadow:
-    0 0 0 1px rgba(74,128,168,.15),
-    0 8px 32px rgba(0,0,0,.55),
-    0 28px 70px rgba(0,0,0,.35),
-    inset 0 1px 0 rgba(255,255,255,.95);
-  overflow:hidden;
+  overflow:visible;
 }
-.logo-pedestal::before {
-  content:''; position:absolute; inset:0; border-radius:50%;
-  background:linear-gradient(135deg,rgba(255,255,255,.65) 0%,rgba(255,255,255,.1) 38%,transparent 55%);
-  z-index:2; pointer-events:none;
-}
-.logo-pedestal svg { width:130px; height:130px; position:relative; z-index:1; }
+.logo-pedestal::before { display:none; }
+.logo-pedestal svg { width:180px; height:198px; position:relative; z-index:1; }
+.loc-brand { display:flex; justify-content:center; margin-bottom:1.2rem; }
 @keyframes rokSpin { from{transform:rotateY(0deg)} to{transform:rotateY(360deg)} }
 @media (prefers-reduced-motion:reduce) { .logo-pedestal{animation:none;} }
 
@@ -528,7 +520,7 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
   .section-wrap { padding:4rem 1.25rem; }
   .hero-trust { gap:1.1rem; }
   .logo-pedestal { width:160px; height:160px; }
-  .logo-pedestal svg { width:104px; height:104px; }
+  .logo-pedestal svg { width:144px; height:158px; }
 }
 </style>
 </head>
@@ -537,20 +529,21 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
 <!-- Nav -->
 <nav>
   <a class="nav-brand" href="#">
-    <svg class="nav-hex" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="100,6 175,46 175,154 100,194 25,154 25,46" fill="#1A3A5C"/>
-      <polygon points="100,6 175,46 128,72 100,32 72,72 25,46" fill="#4A80A8"/>
-      <polygon points="175,46 175,154 148,124 128,72" fill="#2D5F8A"/>
-      <polygon points="25,46 72,72 52,124 25,154" fill="#2D5F8A"/>
-      <polygon points="148,124 175,154 100,194 100,144 112,126" fill="#122A42"/>
-      <polygon points="52,124 88,144 100,194 25,154" fill="#1A3A5C"/>
-      <polygon points="100,32 128,72 100,94 72,72" fill="#5B9BC4"/>
-      <polygon points="128,72 148,124 112,126 100,94" fill="#1E4A72"/>
-      <polygon points="72,72 100,94 88,144 52,124" fill="#254E78"/>
-      <circle cx="100" cy="92" r="26" fill="white" opacity=".96"/>
-      <path d="M89,112 L89,144 Q89,149 100,149 Q111,149 111,144 L111,112 Z" fill="white" opacity=".96"/>
-      <circle cx="100" cy="92" r="12" fill="#1A3A5C"/>
-      <rect x="95" y="100" width="10" height="26" rx="2" fill="#1A3A5C"/>
+    <svg class="nav-hex" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- ROK VPN rock shape — irregular stone polygon -->
+      <polygon points="100,5 162,30 188,88 180,152 148,192 100,200 52,192 20,152 12,88 38,30"
+               fill="#0D1C2E" stroke="white" stroke-width="7" stroke-linejoin="round"/>
+      <!-- Lightning cracks from vertices -->
+      <line x1="100" y1="5"   x2="96"  y2="48"  stroke="white" stroke-width="3"/>
+      <line x1="162" y1="30"  x2="136" y2="66"  stroke="white" stroke-width="3"/>
+      <line x1="188" y1="88"  x2="148" y2="100" stroke="white" stroke-width="2.5"/>
+      <line x1="38"  y1="30"  x2="64"  y2="66"  stroke="white" stroke-width="3"/>
+      <line x1="12"  y1="88"  x2="52"  y2="100" stroke="white" stroke-width="2.5"/>
+      <!-- Keyhole circle -->
+      <circle cx="100" cy="98" r="28" fill="none" stroke="white" stroke-width="5"/>
+      <circle cx="100" cy="98" r="12" fill="#0D1C2E"/>
+      <!-- Keyhole stem -->
+      <rect x="91" y="118" width="18" height="30" rx="3" fill="white"/>
     </svg>
     <span class="nav-name">ROK VPN</span>
   </a>
@@ -566,21 +559,21 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
   <div class="logo-scene" aria-hidden="true">
     <div class="logo-glow"></div>
     <div class="logo-pedestal">
-      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="100,6 175,46 175,154 100,194 25,154 25,46" fill="#1A3A5C"/>
-        <polygon points="100,6 175,46 128,72 100,32 72,72 25,46" fill="#4A80A8"/>
-        <polygon points="175,46 175,154 148,124 128,72" fill="#2D5F8A"/>
-        <polygon points="25,46 72,72 52,124 25,154" fill="#2D5F8A"/>
-        <polygon points="148,124 175,154 100,194 100,144 112,126" fill="#122A42"/>
-        <polygon points="52,124 88,144 100,194 25,154" fill="#1A3A5C"/>
-        <polygon points="100,32 128,72 100,94 72,72" fill="#5B9BC4"/>
-        <polygon points="128,72 148,124 112,126 100,94" fill="#1E4A72"/>
-        <polygon points="72,72 100,94 88,144 52,124" fill="#254E78"/>
-        <circle cx="100" cy="92" r="26" fill="white" opacity=".96"/>
-        <path d="M89,112 L89,144 Q89,149 100,149 Q111,149 111,144 L111,112 Z" fill="white" opacity=".96"/>
-        <circle cx="100" cy="92" r="12" fill="#1A3A5C"/>
-        <rect x="95" y="100" width="10" height="26" rx="2" fill="#1A3A5C"/>
-        <polygon points="100,6 175,46 128,72 100,32 72,72 25,46" fill="white" opacity=".07"/>
+      <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- ROK VPN rock shape — irregular stone polygon -->
+        <polygon points="100,5 162,30 188,88 180,152 148,192 100,200 52,192 20,152 12,88 38,30"
+                 fill="#0D1C2E" stroke="white" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Lightning cracks from vertices -->
+        <line x1="100" y1="5"   x2="96"  y2="48"  stroke="white" stroke-width="3"/>
+        <line x1="162" y1="30"  x2="136" y2="66"  stroke="white" stroke-width="3"/>
+        <line x1="188" y1="88"  x2="148" y2="100" stroke="white" stroke-width="2.5"/>
+        <line x1="38"  y1="30"  x2="64"  y2="66"  stroke="white" stroke-width="3"/>
+        <line x1="12"  y1="88"  x2="52"  y2="100" stroke="white" stroke-width="2.5"/>
+        <!-- Keyhole circle -->
+        <circle cx="100" cy="98" r="28" fill="none" stroke="white" stroke-width="5"/>
+        <circle cx="100" cy="98" r="12" fill="#0D1C2E"/>
+        <!-- Keyhole stem -->
+        <rect x="91" y="118" width="18" height="30" rx="3" fill="white"/>
       </svg>
     </div>
   </div>
@@ -732,6 +725,20 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
 
 <!-- Locations -->
 <div class="section-wrap" id="locations">
+  <div class="loc-brand" aria-hidden="true">
+    <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" width="48" height="52">
+      <polygon points="100,5 162,30 188,88 180,152 148,192 100,200 52,192 20,152 12,88 38,30"
+               fill="#0D1C2E" stroke="white" stroke-width="7" stroke-linejoin="round"/>
+      <line x1="100" y1="5"   x2="96"  y2="48"  stroke="white" stroke-width="3"/>
+      <line x1="162" y1="30"  x2="136" y2="66"  stroke="white" stroke-width="3"/>
+      <line x1="188" y1="88"  x2="148" y2="100" stroke="white" stroke-width="2.5"/>
+      <line x1="38"  y1="30"  x2="64"  y2="66"  stroke="white" stroke-width="3"/>
+      <line x1="12"  y1="88"  x2="52"  y2="100" stroke="white" stroke-width="2.5"/>
+      <circle cx="100" cy="98" r="28" fill="none" stroke="white" stroke-width="5"/>
+      <circle cx="100" cy="98" r="12" fill="#0D1C2E"/>
+      <rect x="91" y="118" width="18" height="30" rx="3" fill="white"/>
+    </svg>
+  </div>
   <p class="eyebrow" data-i18n="loc.eyebrow">Global network</p>
   <h2 class="section-title" data-i18n="loc.title">Pick your country.</h2>
   <p class="section-sub" data-i18n="loc.sub">Connect from North America, South America, Europe or Asia. The free plan includes the United States; paid plans unlock the whole network.</p>

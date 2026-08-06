@@ -529,21 +529,19 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
 <!-- Nav -->
 <nav>
   <a class="nav-brand" href="#">
-    <svg class="nav-hex" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
-      <!-- ROK VPN rock shape — irregular stone polygon -->
-      <polygon points="100,5 162,30 188,88 180,152 148,192 100,200 52,192 20,152 12,88 38,30"
-               fill="#0D1C2E" stroke="white" stroke-width="7" stroke-linejoin="round"/>
-      <!-- Lightning cracks from vertices -->
-      <line x1="100" y1="5"   x2="96"  y2="48"  stroke="white" stroke-width="3"/>
-      <line x1="162" y1="30"  x2="136" y2="66"  stroke="white" stroke-width="3"/>
-      <line x1="188" y1="88"  x2="148" y2="100" stroke="white" stroke-width="2.5"/>
-      <line x1="38"  y1="30"  x2="64"  y2="66"  stroke="white" stroke-width="3"/>
-      <line x1="12"  y1="88"  x2="52"  y2="100" stroke="white" stroke-width="2.5"/>
-      <!-- Keyhole circle -->
-      <circle cx="100" cy="98" r="28" fill="none" stroke="white" stroke-width="5"/>
-      <circle cx="100" cy="98" r="12" fill="#0D1C2E"/>
-      <!-- Keyhole stem -->
-      <rect x="91" y="118" width="18" height="30" rx="3" fill="white"/>
+    <svg class="nav-hex" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
+      <!-- ROK VPN rock — irregular polygon, thick white border -->
+      <polygon points="70,8 118,8 162,32 178,88 168,152 142,186 100,196 58,186 32,152 22,88 32,32 55,18"
+               fill="#2E4A72" stroke="white" stroke-width="9" stroke-linejoin="round"/>
+      <!-- Internal crack lines (fracture pattern) -->
+      <polyline points="38,52 65,85 78,120 70,192" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="65" y1="85" x2="28" y2="108" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <polyline points="155,45 125,82 112,118 120,192" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="125" y1="82" x2="164" y2="102" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Classic keyhole: white filled shape + dark inner circle -->
+      <circle cx="100" cy="78" r="27" fill="white"/>
+      <path d="M86,97 L80,142 Q80,154 100,154 Q120,154 120,142 L114,97 Z" fill="white"/>
+      <circle cx="100" cy="78" r="13" fill="#2E4A72"/>
     </svg>
     <span class="nav-name">ROK VPN</span>
   </a>
@@ -559,21 +557,19 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
   <div class="logo-scene" aria-hidden="true">
     <div class="logo-glow"></div>
     <div class="logo-pedestal">
-      <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
-        <!-- ROK VPN rock shape — irregular stone polygon -->
-        <polygon points="100,5 162,30 188,88 180,152 148,192 100,200 52,192 20,152 12,88 38,30"
-                 fill="#0D1C2E" stroke="white" stroke-width="7" stroke-linejoin="round"/>
-        <!-- Lightning cracks from vertices -->
-        <line x1="100" y1="5"   x2="96"  y2="48"  stroke="white" stroke-width="3"/>
-        <line x1="162" y1="30"  x2="136" y2="66"  stroke="white" stroke-width="3"/>
-        <line x1="188" y1="88"  x2="148" y2="100" stroke="white" stroke-width="2.5"/>
-        <line x1="38"  y1="30"  x2="64"  y2="66"  stroke="white" stroke-width="3"/>
-        <line x1="12"  y1="88"  x2="52"  y2="100" stroke="white" stroke-width="2.5"/>
-        <!-- Keyhole circle -->
-        <circle cx="100" cy="98" r="28" fill="none" stroke="white" stroke-width="5"/>
-        <circle cx="100" cy="98" r="12" fill="#0D1C2E"/>
-        <!-- Keyhole stem -->
-        <rect x="91" y="118" width="18" height="30" rx="3" fill="white"/>
+      <svg viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
+        <!-- ROK VPN rock — irregular polygon, thick white border -->
+        <polygon points="70,8 118,8 162,32 178,88 168,152 142,186 100,196 58,186 32,152 22,88 32,32 55,18"
+                 fill="#2E4A72" stroke="white" stroke-width="9" stroke-linejoin="round"/>
+        <!-- Internal crack lines (fracture pattern) -->
+        <polyline points="38,52 65,85 78,120 70,192" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="65" y1="85" x2="28" y2="108" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <polyline points="155,45 125,82 112,118 120,192" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="125" y1="82" x2="164" y2="102" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Classic keyhole: white filled shape + dark inner circle -->
+        <circle cx="100" cy="78" r="27" fill="white"/>
+        <path d="M86,97 L80,142 Q80,154 100,154 Q120,154 120,142 L114,97 Z" fill="white"/>
+        <circle cx="100" cy="78" r="13" fill="#2E4A72"/>
       </svg>
     </div>
   </div>
@@ -726,17 +722,16 @@ footer { border-top:1px solid var(--border); padding:2.75rem 2rem; text-align:ce
 <!-- Locations -->
 <div class="section-wrap" id="locations">
   <div class="loc-brand" aria-hidden="true">
-    <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" width="48" height="52">
-      <polygon points="100,5 162,30 188,88 180,152 148,192 100,200 52,192 20,152 12,88 38,30"
-               fill="#0D1C2E" stroke="white" stroke-width="7" stroke-linejoin="round"/>
-      <line x1="100" y1="5"   x2="96"  y2="48"  stroke="white" stroke-width="3"/>
-      <line x1="162" y1="30"  x2="136" y2="66"  stroke="white" stroke-width="3"/>
-      <line x1="188" y1="88"  x2="148" y2="100" stroke="white" stroke-width="2.5"/>
-      <line x1="38"  y1="30"  x2="64"  y2="66"  stroke="white" stroke-width="3"/>
-      <line x1="12"  y1="88"  x2="52"  y2="100" stroke="white" stroke-width="2.5"/>
-      <circle cx="100" cy="98" r="28" fill="none" stroke="white" stroke-width="5"/>
-      <circle cx="100" cy="98" r="12" fill="#0D1C2E"/>
-      <rect x="91" y="118" width="18" height="30" rx="3" fill="white"/>
+    <svg viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg" width="52" height="55">
+      <polygon points="70,8 118,8 162,32 178,88 168,152 142,186 100,196 58,186 32,152 22,88 32,32 55,18"
+               fill="#2E4A72" stroke="white" stroke-width="9" stroke-linejoin="round"/>
+      <polyline points="38,52 65,85 78,120 70,192" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="65" y1="85" x2="28" y2="108" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <polyline points="155,45 125,82 112,118 120,192" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="125" y1="82" x2="164" y2="102" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="100" cy="78" r="27" fill="white"/>
+      <path d="M86,97 L80,142 Q80,154 100,154 Q120,154 120,142 L114,97 Z" fill="white"/>
+      <circle cx="100" cy="78" r="13" fill="#2E4A72"/>
     </svg>
   </div>
   <p class="eyebrow" data-i18n="loc.eyebrow">Global network</p>

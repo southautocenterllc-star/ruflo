@@ -857,6 +857,20 @@ def index():
     return render_template("landing.html", site_url=site_url())
 
 
+@app.route("/mobile-screens")
+def mobile_screens():
+    """Escaparate de las pantallas de la app: el build de Claude Design tal cual.
+
+    NO pasa por Jinja. El bundle lleva ~40 expresiones `{{ ... }}` propias de su
+    runtime y Jinja las evaluaría como variables suyas, vaciándolas y rompiendo
+    la página. Sólo se sustituye un token literal para la URL absoluta del OG.
+    """
+    path = os.path.join(app.root_path, "templates", "mobile-screens.html")
+    with open(path, encoding="utf-8") as fh:
+        html = fh.read().replace("__SITE_URL__", site_url())
+    return Response(html, mimetype="text/html")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("ROK_PORTAL_PORT", 8080))
     app.run(host="0.0.0.0", port=port, debug=False)

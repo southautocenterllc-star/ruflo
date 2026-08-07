@@ -12,20 +12,29 @@ import jwt
 import qrcode
 from flask import (Flask, Response, flash, jsonify, redirect,
                    render_template, request, send_file, session, url_for)
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 import servers as srv
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("ROK_SECRET_KEY") or secrets.token_hex(32)
 
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["100 per minute"],
+    storage_uri="memory://",
+)
+
 # ── Config from environment ────────────────────────────────────────────────────
 DB_PATH      = os.environ.get("ROK_DB_PATH",        "/opt/rok-vpn/db/peers.db")
 PEERS_DIR    = os.environ.get("ROK_PEERS_DIR",      "/opt/rok-vpn/peers")
-VPS_ENDPOINT = os.environ.get("ROK_VPS_ENDPOINT",   "74.208.44.254:1194")
+VPS_ENDPOINT = os.environ.get("ROK_VPS_ENDPOINT",   "")
 WG_IFACE     = os.environ.get("ROK_WG_IFACE",       "wg0")
 WG_SUBNET    = os.environ.get("ROK_WG_SUBNET",      "10.100.0")
 DNS          = os.environ.get("ROK_DNS",             "10.100.0.1")
-PORTAL_PASS  = os.environ.get("ROK_PORTAL_PASSWORD","changeme")
+PORTAL_PASS  = os.environ.get("ROK_PORTAL_PASSWORD", "")
 JWT_SECRET   = os.environ.get("ROK_JWT_SECRET",     secrets.token_hex(32))
 JWT_EXP_DAYS = int(os.environ.get("ROK_JWT_EXP_DAYS", "30"))
 SQUARE_TOKEN       = os.environ.get("ROK_SQUARE_TOKEN", "")
@@ -308,6 +317,7 @@ def require_admin(f):
 
 # ── Routes: admin auth ─────────────────────────────────────────────────────────
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def login():
     if request.method == "POST":
         if request.form.get("password") == PORTAL_PASS:
@@ -517,6 +527,7 @@ def download_qr(token: str):
 
 # ── API v1: auth ───────────────────────────────────────────────────────────────
 @app.route("/api/v1/register", methods=["POST"])
+@limiter.limit("5 per minute")
 def api_register():
     data = request.get_json(silent=True) or {}
     email    = (data.get("email") or "").strip().lower()
@@ -538,6 +549,7 @@ def api_register():
 
 
 @app.route("/api/v1/login", methods=["POST"])
+@limiter.limit("5 per minute")
 def api_login():
     data = request.get_json(silent=True) or {}
     email    = (data.get("email") or "").strip().lower()
@@ -719,6 +731,7 @@ def api_plans():
 
 
 @app.route("/api/v1/subscribe", methods=["POST"])
+@limiter.limit("5 per minute")
 @require_user
 def api_subscribe(user):
     data = request.get_json(silent=True) or {}
@@ -808,6 +821,12 @@ def api_subscription_cancel(user):
                          (now, row["id"]))
         _delete_peer_configs(row["name"])
     return jsonify(ok=True, tier="free")
+
+
+# ── Error handlers ─────────────────────────────────────────────────────────────
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify(error="Too many requests. Please slow down and try again later."), 429
 
 
 # ── Health & root ──────────────────────────────────────────────────────────────

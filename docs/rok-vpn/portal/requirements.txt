@@ -3,3 +3,4 @@ gunicorn>=21.2
 qrcode[pil]>=7.4
 bcrypt>=4.1
 PyJWT>=2.8
+flask-limiter>=3.5

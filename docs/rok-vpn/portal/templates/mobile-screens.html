@@ -2,8 +2,16 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ROK VPN — Pantallas Móviles</title>
+<meta name="description" content="Pantallas de la app móvil de ROK VPN: acceso, panel, planes, ajustes y ubicaciones.">
+<meta name="theme-color" content="#0A1420">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ROK VPN">
+<meta property="og:title" content="ROK VPN — Pantallas Móviles">
+<meta property="og:description" content="Pantallas de la app móvil de ROK VPN: acceso, panel, planes, ajustes y ubicaciones.">
+<meta property="og:image" content="/static/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 @font-face {
   font-family: 'Inter';
@@ -615,6 +623,23 @@ h1.page-title {
   background: #3E8BFF;
 }
 .srv-dot.active { background: #00C896; }
+/* Estado por servidor: mismo vocabulario que el selector de la web
+   (activo / premium / próximamente) para que ambas superficies coincidan. */
+.srv-region {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #55768F;
+  margin: 14px 0 7px; padding-left: 2px;
+}
+.srv-region:first-child { margin-top: 2px; }
+.srv-tag {
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 3px 7px; border-radius: 20px;
+  white-space: nowrap; flex: 0 0 auto;
+}
+.srv-online { color: #00C896; background: rgba(0,200,150,0.14); }
+.srv-locked { color: #6BA8D8; background: rgba(107,168,216,0.14); }
+.srv-soon   { color: #55768F; background: rgba(85,118,143,0.16); }
+.srv-empty  { font-size: 13px; color: #55768F; padding: 18px 2px; }
 </style>
 </head>
 <body>
@@ -882,24 +907,44 @@ h1.page-title {
 </div>
 
 <script>
-const SERVERS = [{"flag": "\ud83c\uddfa\ud83c\uddf8", "city": "New York", "ping": "12ms", "load": "45%"}, {"flag": "\ud83c\uddec\ud83c\udde7", "city": "London", "ping": "28ms", "load": "32%"}, {"flag": "\ud83c\udde9\ud83c\uddea", "city": "Frankfurt", "ping": "35ms", "load": "28%"}, {"flag": "\ud83c\uddef\ud83c\uddf5", "city": "Tokyo", "ping": "85ms", "load": "61%"}, {"flag": "\ud83c\uddf8\ud83c\uddec", "city": "Singapore", "ping": "95ms", "load": "54%"}, {"flag": "\ud83c\udde6\ud83c\uddfa", "city": "Sydney", "ping": "120ms", "load": "38%"}, {"flag": "\ud83c\udde8\ud83c\udde6", "city": "Toronto", "ping": "18ms", "load": "41%"}, {"flag": "\ud83c\uddeb\ud83c\uddf7", "city": "Paris", "ping": "32ms", "load": "29%"}, {"flag": "\ud83c\uddf3\ud83c\uddf1", "city": "Amsterdam", "ping": "33ms", "load": "36%"}, {"flag": "\ud83c\udde7\ud83c\uddf7", "city": "S\u00e3o Paulo", "ping": "95ms", "load": "47%"}];
+const SERVERS = [{"flag": "🇺🇸", "city": "Nueva York", "country": "Estados Unidos", "region": "Norteamérica", "status": "online"}, {"flag": "🇺🇸", "city": "Los Ángeles", "country": "Estados Unidos", "region": "Norteamérica", "status": "locked"}, {"flag": "🇨🇦", "city": "Toronto", "country": "Canadá", "region": "Norteamérica", "status": "locked"}, {"flag": "🇲🇽", "city": "Ciudad de México", "country": "México", "region": "Norteamérica", "status": "locked"}, {"flag": "🇧🇷", "city": "São Paulo", "country": "Brasil", "region": "Sudamérica", "status": "locked"}, {"flag": "🇦🇷", "city": "Buenos Aires", "country": "Argentina", "region": "Sudamérica", "status": "locked"}, {"flag": "🇨🇱", "city": "Santiago", "country": "Chile", "region": "Sudamérica", "status": "locked"}, {"flag": "🇨🇴", "city": "Bogotá", "country": "Colombia", "region": "Sudamérica", "status": "locked"}, {"flag": "🇬🇧", "city": "Londres", "country": "Reino Unido", "region": "Europa", "status": "locked"}, {"flag": "🇩🇪", "city": "Fráncfort", "country": "Alemania", "region": "Europa", "status": "locked"}, {"flag": "🇫🇷", "city": "París", "country": "Francia", "region": "Europa", "status": "locked"}, {"flag": "🇪🇸", "city": "Madrid", "country": "España", "region": "Europa", "status": "locked"}, {"flag": "🇳🇱", "city": "Ámsterdam", "country": "Países Bajos", "region": "Europa", "status": "locked"}, {"flag": "🇨🇭", "city": "Zúrich", "country": "Suiza", "region": "Europa", "status": "locked"}, {"flag": "🇯🇵", "city": "Tokio", "country": "Japón", "region": "Asia", "status": "locked"}, {"flag": "🇸🇬", "city": "Singapur", "country": "Singapur", "region": "Asia", "status": "locked"}, {"flag": "🇰🇷", "city": "Seúl", "country": "Corea del Sur", "region": "Asia", "status": "locked"}, {"flag": "🇮🇳", "city": "Bombay", "country": "India", "region": "Asia", "status": "locked"}, {"flag": "🇭🇰", "city": "Hong Kong", "country": "Hong Kong", "region": "Asia", "status": "locked"}, {"flag": "🇦🇪", "city": "Dubái", "country": "Emiratos Árabes Unidos", "region": "Asia", "status": "locked"}];
 let activeServer = 0;
 let currentScreen = 0;
 let authMode = 'register';
 
+const STATUS_LABEL = { online: 'Activo', locked: 'Premium', soon: 'Próximamente' };
+
+/* Buscar «mexico» debe encontrar «México»: se compara sin diacríticos, igual
+   que el buscador de la web, para que ambas superficies filtren igual. */
+function norm(str) {
+  return String(str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 function renderServers(query) {
-  const q = (query || '').toLowerCase();
-  const list = SERVERS.filter(s => s.city.toLowerCase().includes(q) || s.flag.includes(q));
-  document.getElementById('server-list').innerHTML = list.map((s, i) => `
+  const q = norm(query);
+  const list = SERVERS.filter(s =>
+    !q || norm(s.city).includes(q) || norm(s.country).includes(q) || norm(s.region).includes(q));
+  const host = document.getElementById('server-list');
+  if (!list.length) {
+    host.innerHTML = '<div class="srv-empty">Sin resultados</div>';
+    return;
+  }
+  let lastRegion = null;
+  host.innerHTML = list.map(s => {
+    const i = SERVERS.indexOf(s);
+    const head = s.region !== lastRegion
+      ? `<div class="srv-region">${(lastRegion = s.region, s.region)}</div>` : '';
+    return head + `
     <div class="server-row ${activeServer === i ? 'active' : ''}" onclick="selectServer(${i})">
       <span class="srv-flag">${s.flag}</span>
       <div class="srv-info">
-        <div class="srv-city">${s.city}</div>
-        <div class="srv-ping">${s.ping} · ${s.load} carga</div>
+        <div class="srv-city">${s.country}</div>
+        <div class="srv-ping">${s.city}</div>
       </div>
+      <span class="srv-tag srv-${s.status}">${STATUS_LABEL[s.status]}</span>
       <div class="srv-dot ${activeServer === i ? 'active' : ''}"></div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function filterServers(q) { renderServers(q); }

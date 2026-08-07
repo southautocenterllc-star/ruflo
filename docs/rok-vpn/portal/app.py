@@ -40,6 +40,10 @@ JWT_EXP_DAYS = int(os.environ.get("ROK_JWT_EXP_DAYS", "30"))
 SQUARE_TOKEN       = os.environ.get("ROK_SQUARE_TOKEN", "")
 SQUARE_ENV         = os.environ.get("ROK_SQUARE_ENV",   "sandbox")
 SQUARE_LOCATION_ID = os.environ.get("ROK_SQUARE_LOCATION_ID", "")
+# Base absoluta para las etiquetas Open Graph. Los scrapers de WhatsApp y
+# iMessage no resuelven rutas relativas ni siguen redirecciones http→https,
+# así que en producción esto debe apuntar al dominio final con https://.
+SITE_URL = os.environ.get("ROK_SITE_URL", "").rstrip("/")
 
 FREE_DEVICE_LIMIT = 1
 PAID_DEVICE_LIMIT = 5
@@ -829,6 +833,19 @@ def ratelimit_handler(e):
     return jsonify(error="Too many requests. Please slow down and try again later."), 429
 
 
+def site_url() -> str:
+    """Base absoluta del sitio para Open Graph.
+
+    Prefiere ROK_SITE_URL; si no está definida cae a la petición actual y
+    fuerza https cuando nginx lo indica por X-Forwarded-Proto, porque los
+    scrapers descartan una og:image servida por http desde una página https.
+    """
+    if SITE_URL:
+        return SITE_URL
+    proto = request.headers.get("X-Forwarded-Proto", request.scheme)
+    return f"{proto}://{request.host}"
+
+
 # ── Health & root ──────────────────────────────────────────────────────────────
 @app.route("/health")
 def health():
@@ -837,7 +854,7 @@ def health():
 
 @app.route("/")
 def index():
-    return render_template("landing.html")
+    return render_template("landing.html", site_url=site_url())
 
 
 if __name__ == "__main__":

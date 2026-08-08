@@ -349,6 +349,11 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
+
+
 # ── Routes: admin ──────────────────────────────────────────────────────────────
 @app.route("/admin")
 @require_admin

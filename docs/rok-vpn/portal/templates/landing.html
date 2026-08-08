@@ -458,9 +458,53 @@
 </div>
 
 <script>
-var _tab = 'register';
-var _plan = null;
-var _loading = null;
+const backdrop = document.getElementById('modal');
+function openModal(pane) { backdrop.classList.add('open'); switchPane(pane||'register'); document.body.style.overflow='hidden'; }
+function closeModal() { backdrop.classList.remove('open'); document.body.style.overflow=''; }
+backdrop.addEventListener('click',function(e){ if(e.target===backdrop) closeModal(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); });
+function switchPane(name) {
+  ['register','login','success'].forEach(function(p){ document.getElementById('pane-'+p).style.display=p===name?'':'none'; });
+  clearErrors();
+}
+function clearErrors() { document.querySelectorAll('.form-err').forEach(function(el){ el.classList.remove('on'); el.textContent=''; }); }
+function showError(id,msg){ var el=document.getElementById(id); el.textContent=msg; el.classList.add('on'); }
+function setLoading(btnId,loading){
+  var btn=document.getElementById(btnId);
+  btn.disabled=loading;
+  var key = loading ? (btnId==='reg-btn'?'m.reg.busy':'m.log.busy')
+                    : (btnId==='reg-btn'?'m.reg.btn':'nav.login');
+  btn.textContent = t(key);
+}
+async function doRegister(){
+  var email=document.getElementById('reg-email').value.trim();
+  var pass=document.getElementById('reg-pass').value;
+  if(!email||!pass){showError('reg-err',t('err.fields'));return;}
+  if(pass.length<8){showError('reg-err',t('err.short'));return;}
+  setLoading('reg-btn',true);
+  try{
+    var res=await fetch('/api/v1/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})});
+    var data=await res.json();
+    if(!res.ok){showError('reg-err',data.error||t('err.register'));return;}
+    localStorage.setItem('rok_token',data.token);
+    window.location.href='/dashboard';
+  }catch(e){showError('reg-err',t('err.network'));}
+  finally{setLoading('reg-btn',false);}
+}
+async function doLogin(){
+  var email=document.getElementById('log-email').value.trim();
+  var pass=document.getElementById('log-pass').value;
+  if(!email||!pass){showError('log-err',t('err.fields'));return;}
+  setLoading('log-btn',true);
+  try{
+    var res=await fetch('/api/v1/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})});
+    var data=await res.json();
+    if(!res.ok){showError('log-err',data.error||t('err.creds'));return;}
+    localStorage.setItem('rok_token',data.token);
+    window.location.href='/dashboard';
+  }catch(e){showError('log-err',t('err.network'));}
+  finally{setLoading('log-btn',false);}
+}
 
 function checkoutUrl(plan) { return '/checkout?plan=' + plan; }
 

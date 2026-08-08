@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ROK VPN — Mi cuenta</title>
+  <style>
+    :root {
+      --bg:       #050D18;
+      --surface:  #0F2030;
+      --elevated: #0B1820;
+      --text:     #F0F2F5;
+      --muted:    #5C7A94;
+      --accent:   #4A80A8;
+      --green:    #00FF88;
+      --amber:    #F5A623;
+      --red:      #EC3013;
+      --border:   rgba(74,128,168,0.2);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      min-height: 100vh; line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 14px 24px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 10;
+    }
+    .logo { font-weight: 800; font-size: 1.15rem; letter-spacing: .06em; }
+    .logo span { color: var(--accent); }
+    .hdr-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .user-email { color: var(--muted); font-size: .85rem; }
+    .badge {
+      padding: 3px 10px; border-radius: 20px;
+      font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .badge-free { background: rgba(74,128,168,.18); color: var(--accent); }
+    .badge-paid { background: rgba(245,166,35,.18); color: var(--amber); }
+    .btn-logout {
+      padding: 6px 16px; border-radius: 8px;
+      border: 1px solid rgba(236,48,19,.35); background: transparent;
+      color: var(--red); font-size: .82rem; cursor: pointer; white-space: nowrap;
+    }
+    .btn-logout:hover { background: rgba(236,48,19,.1); }
+
+    /* ── Layout ── */
+    main { max-width: 680px; margin: 0 auto; padding: 28px 16px 72px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; margin-bottom: 18px;
+    }
+    .card-label {
+      font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px; background: var(--elevated); border-radius: 12px;
+      margin-bottom: 18px;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .dot-on  { background: var(--green); box-shadow: 0 0 7px var(--green); }
+    .dot-off { background: var(--muted); }
+    .st-title { font-weight: 600; }
+    .st-sub   { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 20px; border-radius: 10px;
+      font-size: .875rem; font-weight: 600; cursor: pointer;
+      border: none; text-decoration: none; transition: opacity .15s, background .15s;
+      white-space: nowrap;
+    }
+    .btn:hover { opacity: .88; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-green   { background: var(--green); color: #050D18; width: 100%; }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-danger  {
+      background: rgba(236,48,19,.12); color: var(--red);
+      border: 1px solid rgba(236,48,19,.28);
+    }
+    .btn-sm { padding: 7px 14px; font-size: .8rem; border-radius: 8px; }
+    .btn-add {
+      margin-top: 10px; background: transparent;
+      color: var(--accent); border: 1px dashed rgba(74,128,168,.4);
+      width: 100%; border-radius: 10px; padding: 11px;
+      font-size: .85rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-add:hover { background: rgba(74,128,168,.07); }
+
+    /* ── Device row ── */
+    .device-row {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+      padding: 14px 18px; background: var(--elevated); border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    .device-info { flex: 1; min-width: 120px; }
+    .device-name { font-weight: 600; font-size: .9rem; }
+    .device-meta { font-size: .75rem; color: var(--muted); font-family: monospace; margin-top: 2px; }
+    .device-actions { display: flex; gap: 8px; }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center; padding: 28px 0;
+    }
+    .empty-shield {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(74,128,168,.1); border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .empty-shield svg { stroke: var(--accent); }
+    .empty-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 8px; }
+    .empty-sub   { color: var(--muted); font-size: .875rem; margin-bottom: 22px; }
+
+    /* ── Platform grid ── */
+    .platform-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    @media (max-width: 440px) { .platform-grid { grid-template-columns: 1fr; } }
+    .platform-card {
+      display: flex; flex-direction: column;
+      padding: 16px 18px; background: var(--elevated);
+      border: 1px solid var(--border); border-radius: 12px;
+      text-decoration: none; color: var(--text);
+      transition: border-color .15s;
+    }
+    .platform-card:hover { border-color: var(--accent); }
+    .plat-name { font-weight: 700; font-size: .9rem; }
+    .plat-sub  { font-size: .75rem; color: var(--muted); margin-top: 3px; }
+    .plat-tag  {
+      display: inline-block; margin-top: 8px; padding: 2px 8px;
+      border-radius: 6px; font-size: .65rem; font-weight: 700;
+      background: rgba(74,128,168,.18); color: var(--accent);
+      align-self: flex-start;
+    }
+
+    /* ── Plan bar ── */
+    .plan-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; background: var(--elevated); border-radius: 12px;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .plan-name    { font-weight: 700; }
+    .plan-devices { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── Accordion ── */
+    details { border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+    summary {
+      padding: 13px 18px; background: var(--elevated); cursor: pointer;
+      font-weight: 600; font-size: .88rem; list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
+      user-select: none;
+    }
+    summary::after { content: '+'; font-size: 1.15rem; color: var(--muted); }
+    details[open] summary::after { content: '-'; }
+    .acc-body {
+      padding: 16px 18px; background: var(--elevated);
+      border-top: 1px solid var(--border);
+    }
+    .acc-body ol { padding-left: 18px; }
+    .acc-body li, .acc-body p {
+      font-size: .84rem; color: var(--muted); margin-bottom: 6px;
+    }
+    .acc-body strong { color: var(--text); }
+    pre.cmd {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px; font-size: .78rem;
+      color: #8AB4CC; overflow-x: auto; margin: 8px 0; white-space: pre-wrap;
+    }
+
+    /* ── Spinner ── */
+    #loading {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 40vh;
+    }
+    .spin {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: sp .75s linear infinite;
+    }
+    @keyframes sp { to { transform: rotate(360deg); } }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1a2a3a; border: 1px solid var(--border);
+      padding: 11px 22px; border-radius: 12px;
+      font-size: .875rem; display: none; z-index: 50;
+      box-shadow: 0 4px 20px rgba(0,0,0,.45);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ROK <span>VPN</span></div>
+  <div class="hdr-right">
+    <span class="user-email" id="hdr-email"></span>
+    <span class="badge badge-free" id="hdr-badge">Gratis</span>
+    <button class="btn-logout" onclick="logout()">Cerrar sesion</button>
+  </div>
+</header>
+
+<main>
+  <div id="loading"><div class="spin"></div></div>
+
+  <div id="content" style="display:none">
+
+    <!-- ── Conexion VPN ── -->
+    <div class="card">
+      <p class="card-label">Mi configuracion VPN</p>
+      <div class="status-bar">
+        <div class="dot dot-off" id="st-dot"></div>
+        <div>
+          <div class="st-title" id="st-title">Sin configuracion</div>
+          <div class="st-sub"   id="st-sub">Crea tu configuracion para empezar</div>
+        </div>
+      </div>
+      <div id="devices-area"></div>
+    </div>
+
+    <!-- ── Mi plan ── -->
+    <div class="card">
+      <p class="card-label">Mi plan</p>
+      <div class="plan-row">
+        <div>
+          <div class="plan-name"    id="plan-name">Plan Gratuito</div>
+          <div class="plan-devices" id="plan-devices">0 de 1 dispositivo en uso</div>
+        </div>
+        <a href="/#pricing" class="btn btn-outline btn-sm">Ver planes</a>
+      </div>
+    </div>
+
+    <!-- ── Descargar WireGuard ── -->
+    <div class="card">
+      <p class="card-label">Instalar cliente VPN en tu dispositivo</p>
+      <p style="font-size:.84rem; color:var(--muted); margin-bottom:16px">
+        Descarga WireGuard, luego importa tu archivo de configuracion personal desde el panel de arriba.
+      </p>
+      <div class="platform-grid">
+        <a href="https://download.wireguard.com/windows-client/wireguard-installer.exe"
+           class="platform-card" target="_blank" rel="noopener">
+          <span class="plat-name">Windows</span>
+          <span class="plat-sub">Instalador .exe</span>
+          <span class="plat-tag">Descargar</span>
+        </a>
+        <a href="https://apps.apple.com/us/app/wireguard/id1451685025"
+           class="platform-card" target="_blank" rel="noopener">
+          <span class="plat-name">macOS</span>
+          <span class="plat-sub">App Store</span>
+          <span class="plat-tag">Descargar</span>
+        </a>
+        <a href="https://apps.apple.com/us/app/wireguard/id1441195209"
+           class="platform-card" target="_blank" rel="noopener">
+          <span class="plat-name">iPhone / iOS</span>
+          <span class="plat-sub">App Store</span>
+          <span class="plat-tag">Descargar</span>
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=com.wireguard.android"
+           class="platform-card" target="_blank" rel="noopener">
+          <span class="plat-name">Android</span>
+          <span class="plat-sub">Google Play</span>
+          <span class="plat-tag">Descargar</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ── Instrucciones ── -->
+    <div class="card">
+      <p class="card-label">Como conectarse paso a paso</p>
+
+      <details>
+        <summary>iPhone y Android</summary>
+        <div class="acc-body">
+          <ol>
+            <li>Instala <strong>WireGuard</strong> desde App Store o Google Play.</li>
+            <li>En este panel, toca <strong>Ver configuracion</strong> en tu dispositivo.</li>
+            <li>En WireGuard toca <strong>+</strong> y elige <em>Crear desde codigo QR</em>.</li>
+            <li>Escanea el codigo QR que aparece en pantalla.</li>
+            <li>Activa el tunel. Listo.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details>
+        <summary>Windows y macOS</summary>
+        <div class="acc-body">
+          <ol>
+            <li>Descarga e instala WireGuard desde el boton de arriba.</li>
+            <li>En este panel, toca <strong>Ver configuracion</strong> y descarga el archivo <strong>.conf</strong>.</li>
+            <li>En WireGuard elige <em>Importar tunel desde archivo</em>.</li>
+            <li>Activa el tunel.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details>
+        <summary>Linux</summary>
+        <div class="acc-body">
+<pre class="cmd">sudo apt install wireguard -y
+# Descarga tu archivo .conf y copialo:
+sudo cp rok-vpn.conf /etc/wireguard/wg0.conf
+sudo wg-quick up wg0</pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>Si tu red bloquea UDP — modo wstunnel (TCP 443)</summary>
+        <div class="acc-body">
+          <p>Descarga la <strong>config wstunnel</strong> en vez de la directa. Funciona en redes empresariales, aeropuertos y hoteles.</p>
+<pre class="cmd">wstunnel client \
+  -L "udp://127.0.0.1:51820:127.0.0.1:1194?timeout_sec=0" \
+  wss://74.208.44.254:443</pre>
+          <p>Luego importa la config wstunnel en WireGuard y activa el tunel.</p>
+        </div>
+      </details>
+
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<div id="toast"></div>
+
+<script>
+const API = '';
+
+function tok() { return localStorage.getItem('rok_token'); }
+
+function logout() {
+  localStorage.removeItem('rok_token');
+  window.location.href = '/';
+}
+
+function toast(msg, ms) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display = 'none'; }, ms || 3500);
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+async function api(path, opts) {
+  opts = opts || {};
+  var res = await fetch(API + path, Object.assign({}, opts, {
+    headers: Object.assign(
+      {'Content-Type':'application/json', 'Authorization': 'Bearer ' + (tok() || '')},
+      opts.headers || {}
+    )
+  }));
+  var data = await res.json().catch(function(){ return {}; });
+  return { ok: res.ok, status: res.status, data: data };
+}
+
+function renderDevices(devices, limit) {
+  var area  = document.getElementById('devices-area');
+  var dot   = document.getElementById('st-dot');
+  var title = document.getElementById('st-title');
+  var sub   = document.getElementById('st-sub');
+
+  if (!devices.length) {
+    dot.className   = 'dot dot-off';
+    title.textContent = 'Sin configuracion activa';
+    sub.textContent   = 'Crea tu configuracion VPN para empezar a navegar de forma privada';
+    area.innerHTML =
+      '<div class="empty">' +
+        '<div class="empty-shield">' +
+          '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="empty-title">Activa tu VPN</div>' +
+        '<div class="empty-sub">Genera tu configuracion personal con un solo clic y empieza a navegar seguro</div>' +
+        '<button class="btn btn-green" id="btn-create" onclick="createDevice()">Activar VPN ahora</button>' +
+      '</div>';
+    return;
+  }
+
+  dot.className   = 'dot dot-on';
+  title.textContent = 'Configuracion lista — importa el archivo en WireGuard para conectarte';
+  sub.textContent   = devices[0].server_city
+    ? 'Servidor: ' + devices[0].server_city
+    : 'Importa el archivo .conf en WireGuard y activa el tunel';
+
+  var html = '';
+  devices.forEach(function(d) {
+    html +=
+      '<div class="device-row">' +
+        '<div class="device-info">' +
+          '<div class="device-name">' + esc(d.name || 'Mi dispositivo') + '</div>' +
+          '<div class="device-meta">' + esc(d.ip_address || '') +
+            (d.server_city ? '  —  ' + esc(d.server_city) : '') + '</div>' +
+        '</div>' +
+        '<div class="device-actions">' +
+          '<a href="/download/' + esc(d.download_token) + '" class="btn btn-primary btn-sm">Ver configuracion</a>' +
+          '<button class="btn btn-danger btn-sm" onclick="delDevice(' + d.id + ')">Eliminar</button>' +
+        '</div>' +
+      '</div>';
+  });
+
+  if (devices.length < limit) {
+    html +=
+      '<button class="btn-add" onclick="createDevice()">' +
+        'Agregar otro dispositivo (' + devices.length + ' / ' + limit + ')' +
+      '</button>';
+  }
+
+  area.innerHTML = html;
+}
+
+async function createDevice() {
+  var btn = document.getElementById('btn-create') || event.currentTarget;
+  if (btn) { btn.disabled = true; btn.textContent = 'Creando...'; }
+  var r = await api('/api/v1/devices', {
+    method: 'POST',
+    body: JSON.stringify({ name: 'mi-dispositivo' })
+  });
+  if (r.ok) {
+    window.location.href = '/download/' + r.data.download_token;
+  } else {
+    toast(r.data.error || 'No se pudo crear la configuracion');
+    if (btn) { btn.disabled = false; btn.textContent = 'Activar VPN ahora'; }
+  }
+}
+
+async function delDevice(id) {
+  if (!confirm('Eliminar este dispositivo? No podras deshacer esta accion.')) return;
+  var r = await api('/api/v1/devices/' + id, { method: 'DELETE' });
+  if (r.ok) { toast('Dispositivo eliminado'); load(); }
+  else toast(r.data.error || 'Error al eliminar');
+}
+
+async function load() {
+  if (!tok()) { window.location.href = '/'; return; }
+
+  var results = await Promise.all([api('/api/v1/me'), api('/api/v1/devices')]);
+  var me  = results[0];
+  var dev = results[1];
+
+  if (!me.ok) { logout(); return; }
+
+  var user    = me.data;
+  var devices = dev.ok ? (dev.data.devices || []) : [];
+
+  document.getElementById('hdr-email').textContent = user.email || '';
+  var badge = document.getElementById('hdr-badge');
+  if (user.tier === 'paid') {
+    badge.textContent  = 'Premium';
+    badge.className    = 'badge badge-paid';
+  } else {
+    badge.textContent  = 'Gratis';
+    badge.className    = 'badge badge-free';
+  }
+
+  document.getElementById('plan-name').textContent =
+    user.tier === 'paid' ? 'Plan Premium' : 'Plan Gratuito';
+  document.getElementById('plan-devices').textContent =
+    user.devices + ' de ' + user.device_limit +
+    ' dispositivo' + (user.device_limit !== 1 ? 's' : '') + ' en uso';
+
+  renderDevices(devices, user.device_limit);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = '';
+}
+
+load();
+</script>
+</body>
+</html>

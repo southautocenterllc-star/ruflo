@@ -139,6 +139,12 @@ server {
 
 # ── HTTPS (${HTTPS_PORT}) — panel admin y API ─────────────────────────────────────
 server {
+    listen 80;
+    server_name rokvpn.com www.rokvpn.com ${VPS_IP};
+    return 301 https://rokvpn.com:${HTTPS_PORT}\$request_uri;
+}
+
+server {
     listen ${HTTPS_PORT} ssl;
     server_name ${SERVER_NAME} www.${SERVER_NAME:-};
 

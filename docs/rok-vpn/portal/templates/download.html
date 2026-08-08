@@ -1,158 +1,282 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ROK VPN — Setup</title>
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <style>
-    body    { background: #0d1117; }
-    .card   { border: 1px solid #30363d; background: #161b22; }
-    .brand  { font-weight: 700; letter-spacing: .05em; }
-    .qr-img { max-width: 220px; border-radius: 12px; background: #fff; padding: 10px; }
-    pre     { background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
-              padding: 1rem; font-size: .82rem; white-space: pre-wrap; }
+    :root {
+      --bg:       #050D18;
+      --surface:  #0F2030;
+      --elevated: #0B1820;
+      --border:   #1A3A55;
+      --accent:   #4A80A8;
+      --accent-h: #5B96C2;
+      --text:     #C8D8E8;
+      --muted:    #6A8AA8;
+      --green:    #00C46A;
+      --radius:   10px;
+      --mono:     'Courier New', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 40px 16px 60px;
+    }
+    .wrap { max-width: 600px; margin: 0 auto; }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .brand h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      color: #fff;
+    }
+    .brand h1 span { color: var(--accent); }
+    .brand p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .brand code {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent-h);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .qr-wrap {
+      text-align: center;
+    }
+    .qr-wrap p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .qr-wrap img {
+      max-width: 200px;
+      border-radius: 8px;
+      background: #fff;
+      padding: 10px;
+      display: block;
+      margin: 0 auto 24px;
+    }
+
+    .notice {
+      background: rgba(0,196,106,.08);
+      border: 1px solid rgba(0,196,106,.25);
+      border-radius: 6px;
+      color: var(--green);
+      font-size: 13px;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+    }
+
+    .btn-stack { display: flex; flex-direction: column; gap: 10px; }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-outline {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { color: var(--text); border-color: var(--accent); }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .accordion-item {
+      border-top: 1px solid var(--border);
+    }
+    .accordion-item:first-child { border-top: none; }
+    .accordion-btn {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+      padding: 14px 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .accordion-btn::after {
+      content: '+';
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .accordion-btn.open::after { content: '-'; }
+    .accordion-body {
+      display: none;
+      padding: 0 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .accordion-body.open { display: block; }
+    .accordion-body ol { padding-left: 18px; }
+    .accordion-body li { margin-bottom: 6px; }
+    .accordion-body a { color: var(--accent-h); }
+
+    pre {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-top: 8px;
+    }
+    .warn {
+      color: #F5A623;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 28px;
+    }
+    .footer-note a { color: var(--accent-h); text-decoration: none; }
   </style>
 </head>
-<body class="py-5">
-<div class="container" style="max-width:640px">
+<body>
+<div class="wrap">
 
-  <div class="text-center mb-4">
-    <h4 class="brand text-light">ROK <span class="text-primary">VPN</span></h4>
-    <p class="text-secondary">Your personal configuration · <code>{{ peer.ip_address }}</code></p>
+  <div class="brand">
+    <h1>ROK <span>VPN</span></h1>
+    <p>Your configuration &mdash; <code>{{ peer.ip_address }}</code></p>
   </div>
 
-  <!-- QR + descargas -->
-  <div class="card p-4 mb-4 text-center">
-    <p class="small text-secondary mb-3">
-      Escanea con la app <strong>WireGuard</strong> en tu móvil:
-    </p>
-    <img src="/download/{{ token }}/qr.png" alt="QR WireGuard"
-         class="qr-img mx-auto d-block mb-4">
+  <div class="card qr-wrap">
+    <p>Scan with the <strong>WireGuard</strong> app on your phone:</p>
+    <img src="/download/{{ token }}/qr.png" alt="WireGuard QR code">
 
-    <p class="small text-info mb-2">
-      ✅ <strong>Recommended:</strong> la config wstunnel funciona en cualquier red,
-      incluso si tu ISP bloquea UDP.
-    </p>
-    <div class="d-grid gap-2">
-      <a href="/download/{{ token }}/wstunnel-config"
-         class="btn btn-primary">
-        ⬇ Descargar config wstunnel (TCP 443 — recomendada)
+    <div class="notice">
+      Recommended: the wstunnel config works on any network, even if your ISP blocks UDP.
+    </div>
+
+    <div class="btn-stack">
+      <a href="/download/{{ token }}/wstunnel-config" class="btn btn-primary">
+        Download wstunnel config (TCP 443 &mdash; recommended)
       </a>
-      <a href="/download/{{ token }}/config"
-         class="btn btn-outline-secondary">
-        ⬇ Descargar config directa (UDP 1194)
+      <a href="/download/{{ token }}/config" class="btn btn-outline">
+        Download direct config (UDP 1194)
       </a>
     </div>
   </div>
 
-  <!-- Instrucciones -->
-  <div class="card p-4">
-    <h6 class="text-secondary text-uppercase small mb-3">Setup instructions</h6>
+  <div class="card">
+    <div class="section-label">Setup instructions</div>
 
-    <div class="accordion accordion-flush" id="acc">
-
-      <!-- iOS / Android -->
-      <div class="accordion-item bg-transparent border-secondary">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed bg-transparent text-light"
-                  type="button" data-bs-toggle="collapse"
-                  data-bs-target="#acc1">
-            📱 iOS / Android
-          </button>
-        </h2>
-        <div id="acc1" class="accordion-collapse collapse" data-bs-parent="#acc">
-          <div class="accordion-body text-secondary small">
-            <ol>
-              <li>Install <strong>WireGuard</strong> from the App Store / Google Play.</li>
-              <li>Tap the <strong>+</strong> button and choose <em>Create from QR code</em>.</li>
-              <li>Scan the QR code above.</li>
-              <li>Turn the tunnel on.</li>
-            </ol>
-          </div>
-        </div>
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggle(this)">iPhone / Android</button>
+      <div class="accordion-body">
+        <ol>
+          <li>Install <strong>WireGuard</strong> from the App Store or Google Play.</li>
+          <li>Tap the <strong>+</strong> button and choose <em>Create from QR code</em>.</li>
+          <li>Scan the QR code above.</li>
+          <li>Turn the tunnel on.</li>
+        </ol>
       </div>
+    </div>
 
-      <!-- Windows / macOS -->
-      <div class="accordion-item bg-transparent border-secondary">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed bg-transparent text-light"
-                  type="button" data-bs-toggle="collapse"
-                  data-bs-target="#acc2">
-            💻 Windows / macOS
-          </button>
-        </h2>
-        <div id="acc2" class="accordion-collapse collapse" data-bs-parent="#acc">
-          <div class="accordion-body text-secondary small">
-            <ol>
-              <li>Download and install <strong>WireGuard</strong> desde
-                  <a href="https://www.wireguard.com/install/" target="_blank"
-                     class="text-info">wireguard.com/install</a>.</li>
-              <li>Download the <strong>.conf (direct connection)</strong>.</li>
-              <li>In WireGuard, choose <em>Import tunnel from file</em>.</li>
-              <li>Turn the tunnel on.</li>
-            </ol>
-          </div>
-        </div>
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggle(this)">Windows / macOS</button>
+      <div class="accordion-body">
+        <ol>
+          <li>Download and install <strong>WireGuard</strong> from
+              <a href="https://www.wireguard.com/install/" target="_blank" rel="noopener">wireguard.com/install</a>.</li>
+          <li>Download the <strong>direct config</strong> file above.</li>
+          <li>In WireGuard, choose <em>Import tunnel from file</em>.</li>
+          <li>Turn the tunnel on.</li>
+        </ol>
       </div>
+    </div>
 
-      <!-- Linux -->
-      <div class="accordion-item bg-transparent border-secondary">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed bg-transparent text-light"
-                  type="button" data-bs-toggle="collapse"
-                  data-bs-target="#acc3">
-            🐧 Linux
-          </button>
-        </h2>
-        <div id="acc3" class="accordion-collapse collapse" data-bs-parent="#acc">
-          <div class="accordion-body small">
-            <pre>sudo apt install wireguard -y
-# descarga rok-vpn-{{ peer.name }}.conf y cópialo a /etc/wireguard/wg0.conf
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggle(this)">Linux</button>
+      <div class="accordion-body">
+<pre>sudo apt install wireguard -y
+# download rok-vpn-{{ peer.name }}.conf and copy it to /etc/wireguard/wg0.conf
 sudo wg-quick up wg0</pre>
-          </div>
-        </div>
       </div>
+    </div>
 
-      <!-- wstunnel (UDP bloqueado) -->
-      <div class="accordion-item bg-transparent border-secondary">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed bg-transparent text-light"
-                  type="button" data-bs-toggle="collapse"
-                  data-bs-target="#acc4">
-            🛡️ Si UDP está bloqueado (wstunnel)
-          </button>
-        </h2>
-        <div id="acc4" class="accordion-collapse collapse" data-bs-parent="#acc">
-          <div class="accordion-body text-secondary small">
-            <ol>
-              <li>Download <strong>wstunnel</strong> desde GitHub
-                  (wstunnel v10.6.2, archivo binario para tu plataforma).</li>
-              <li>Download the <strong>.conf (wstunnel)</strong>.</li>
-              <li>Ejecuta el cliente wstunnel en segundo plano:
-                <pre>wstunnel client \
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggle(this)">If UDP is blocked (wstunnel)</button>
+      <div class="accordion-body">
+        <ol>
+          <li>Download <strong>wstunnel</strong> from GitHub (v10.6.2, binary for your platform).</li>
+          <li>Download the <strong>wstunnel config</strong> above.</li>
+          <li>Run the wstunnel client in the background:
+<pre>wstunnel client \
   -L "udp://127.0.0.1:51820:127.0.0.1:1194?timeout_sec=0" \
   ws://74.208.44.254:443</pre>
-                <span class="text-warning">El servidor escucha en
-                <code>ws://</code> (no TLS). With <code>wss://</code> falla el
-                handshake.</span>
-              </li>
-              <li>Load the wstunnel config into WireGuard.</li>
-              <li>Turn the tunnel on.</li>
-            </ol>
-          </div>
-        </div>
+            <p class="warn">The server listens on ws:// (plain WebSocket). Using wss:// will fail the handshake.</p>
+          </li>
+          <li>Load the wstunnel config into WireGuard.</li>
+          <li>Turn the tunnel on.</li>
+        </ol>
       </div>
+    </div>
 
-    </div><!-- /accordion -->
-
-    <p class="text-secondary small mt-3 mb-0">
-      ¿Problemas? Contacta a tu administrador de red.
-    </p>
   </div>
 
-</div><!-- /container -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <p class="footer-note">
+    Questions? Contact your network administrator.<br>
+    <a href="/dashboard">Back to dashboard</a>
+  </p>
+
+</div>
+<script>
+function toggle(btn) {
+  var body = btn.nextElementSibling;
+  var open = body.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+</script>
 </body>
 </html>

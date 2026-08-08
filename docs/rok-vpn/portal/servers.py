@@ -166,10 +166,11 @@ def seed_catalog(conn) -> None:
         )
 
 
-def ensure_local_server(conn, endpoint: str, wg_subnet: str) -> None:
+def ensure_local_server(conn, endpoint: str, wg_subnet: str, ws_port: int = 8443) -> None:
     """Marca el VPS que corre este portal como servidor local activo.
 
     `endpoint` llega como "host:puerto" desde ROK_VPS_ENDPOINT.
+    `ws_port` es el puerto TCP donde wstunnel escucha (ROK_WS_PORT, default 8443).
     """
     host, _, port = endpoint.partition(":")
     if not host:
@@ -177,17 +178,17 @@ def ensure_local_server(conn, endpoint: str, wg_subnet: str) -> None:
     row = conn.execute("SELECT id FROM servers WHERE is_local = 1").fetchone()
     if row:
         conn.execute(
-            "UPDATE servers SET endpoint_host = ?, wg_port = ?, wg_subnet = ?, active = 1"
-            " WHERE id = ?",
-            (host, int(port or 1194), wg_subnet, row["id"]),
+            "UPDATE servers SET endpoint_host = ?, wg_port = ?, wg_subnet = ?,"
+            " ws_port = ?, active = 1 WHERE id = ?",
+            (host, int(port or 1194), wg_subnet, ws_port, row["id"]),
         )
         return
     # Por defecto el servidor local es el primero del catálogo (US / Nueva York).
     conn.execute(
         "UPDATE servers SET endpoint_host = ?, wg_port = ?, wg_subnet = ?,"
-        " is_local = 1, active = 1"
+        " ws_port = ?, is_local = 1, active = 1"
         " WHERE id = (SELECT MIN(id) FROM servers)",
-        (host, int(port or 1194), wg_subnet),
+        (host, int(port or 1194), wg_subnet, ws_port),
     )
 
 

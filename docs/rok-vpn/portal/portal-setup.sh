@@ -7,6 +7,7 @@ set -euo pipefail
 PORTAL_DIR="/opt/rok-vpn/portal"
 DB_DIR="/opt/rok-vpn/db"
 PEERS_DIR="/opt/rok-vpn/peers"
+SECRETS_DIR="/opt/rok-vpn/secrets"
 SERVICE_NAME="rok-portal"
 PORTAL_PORT="8080"
 
@@ -19,23 +20,25 @@ apt-get install -y -q python3-pip python3-venv
 
 # ── 2. Directorios ────────────────────────────────────────────────────────────
 echo "[2/7] Creando directorios..."
-mkdir -p "$PORTAL_DIR/templates" "$DB_DIR" "$PEERS_DIR"
+mkdir -p "$PORTAL_DIR/templates" "$DB_DIR" "$PEERS_DIR" "$SECRETS_DIR"
+chmod 700 "$SECRETS_DIR"
 
 # ── 3. Copiar archivos del portal ─────────────────────────────────────────────
 echo "[3/7] Copiando archivos..."
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-cp "$SCRIPT_DIR/app.py"                           "$PORTAL_DIR/app.py"
-cp "$SCRIPT_DIR/requirements.txt"                 "$PORTAL_DIR/requirements.txt"
+cp "$SCRIPT_DIR/app.py"          "$PORTAL_DIR/app.py"
+cp "$SCRIPT_DIR/servers.py"      "$PORTAL_DIR/servers.py"
+cp "$SCRIPT_DIR/requirements.txt" "$PORTAL_DIR/requirements.txt"
 
-# Templates
-for tmpl in login.html admin.html download.html 404.html landing.html mobile-screens.html; do
+# Templates — copia todos los que existan
+for tmpl in login.html admin.html download.html dashboard.html 404.html landing.html mobile-screens.html; do
   if [ -f "$SCRIPT_DIR/templates/$tmpl" ]; then
     cp "$SCRIPT_DIR/templates/$tmpl" "$PORTAL_DIR/templates/$tmpl"
   fi
 done
 
-# Static assets (OG image, etc.)
+# Static assets (OG image, futuros assets)
 if [ -d "$SCRIPT_DIR/static" ]; then
   mkdir -p "$PORTAL_DIR/static"
   cp -r "$SCRIPT_DIR/static/." "$PORTAL_DIR/static/"
@@ -47,24 +50,15 @@ python3 -m venv "$PORTAL_DIR/venv"
 "$PORTAL_DIR/venv/bin/pip" install --upgrade pip -q
 "$PORTAL_DIR/venv/bin/pip" install -r "$PORTAL_DIR/requirements.txt" -q
 
-# ── 5. Firewall — abrir TCP 8080 ──────────────────────────────────────────────
-echo "[5/7] Abriendo TCP $PORTAL_PORT en nftables..."
-if ! nft list ruleset | grep -q "tcp dport $PORTAL_PORT accept"; then
-  nft add rule inet filter input tcp dport "$PORTAL_PORT" accept
-  echo "    Regla añadida."
-else
-  echo "    Regla ya existe."
-fi
-
-# Persistir reglas nftables si existe el archivo de configuración
-if [ -f /etc/nftables.conf ]; then
-  nft list ruleset > /etc/nftables.conf
-  echo "    nftables.conf actualizado."
-fi
+# ── 5. Firewall — puertos 80/443 los gestiona nginx-setup.sh ─────────────────
+# Gunicorn escucha sólo en 127.0.0.1:8080 (loopback), no hace falta exponer
+# ese puerto en nftables. Los puertos 80 y 443 los abre nginx-setup.sh.
+echo "[5/7] Firewall: gestionado por nginx-setup.sh (80/443)."
 
 # ── 6. Systemd service ────────────────────────────────────────────────────────
 echo "[6/7] Instalando servicio systemd..."
 cp "$SCRIPT_DIR/rok-portal.service" "/etc/systemd/system/${SERVICE_NAME}.service"
+chmod 644 "/etc/systemd/system/${SERVICE_NAME}.service"
 
 # ── Configuración y secretos ─────────────────────────────────────────────────
 # Los secretos van a /etc/rok-vpn/portal.env, NO a la unidad de systemd: la
@@ -93,8 +87,10 @@ ROK_AGENT_TOKEN=${AGENT_TOKEN}
 ROK_AGENT_TIMEOUT=10
 ROK_DB_PATH=/opt/rok-vpn/db/peers.db
 ROK_PEERS_DIR=/opt/rok-vpn/peers
+ROK_SECRETS_DIR=/opt/rok-vpn/secrets
 ROK_WG_IFACE=wg0
 ROK_WG_SUBNET=10.100.0
+ROK_WS_PORT=8443
 ROK_DNS=10.100.0.1
 ROK_PORTAL_PORT=8080
 
@@ -126,7 +122,7 @@ fi
 systemctl daemon-reload
 systemctl enable "$SERVICE_NAME"
 
-# ── 7. Verificar contraseña de portal ────────────────────────────────────────
+# ── 7. Verificar configuración ────────────────────────────────────────────────
 echo "[7/7] Verificando configuración..."
 if ! grep -q '^ROK_VPS_ENDPOINT=.\+' "$ENV_FILE"; then
   echo ""
@@ -150,3 +146,5 @@ echo ""
 echo "==> Instalación completada."
 echo "    Logs: journalctl -u $SERVICE_NAME -f"
 echo "    Estado: systemctl status $SERVICE_NAME"
+echo ""
+echo "  Próximo paso: bash nginx-setup.sh"

@@ -18,8 +18,40 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 import servers as srv
 
+
+def _persistent_secret(env_var: str, filename: str) -> str:
+    """Return secret from env var; otherwise read or create a file-persisted secret.
+
+    Prevents JWT tokens and admin sessions from being invalidated on every
+    Gunicorn restart when the env var is not explicitly set.
+    """
+    val = os.environ.get(env_var)
+    if val:
+        return val
+    secrets_dir = os.environ.get("ROK_SECRETS_DIR", "/opt/rok-vpn/secrets")
+    path = os.path.join(secrets_dir, filename)
+    try:
+        os.makedirs(secrets_dir, exist_ok=True)
+        try:
+            with open(path) as fh:
+                secret = fh.read().strip()
+                if secret:
+                    return secret
+        except FileNotFoundError:
+            pass
+        secret = secrets.token_hex(32)
+        with open(path, "w") as fh:
+            fh.write(secret)
+        os.chmod(path, 0o600)
+        return secret
+    except Exception:
+        # Can't write to disk (read-only FS, permissions) — fall back to ephemeral.
+        # Set ROK_JWT_SECRET and ROK_SECRET_KEY in the systemd unit to avoid this.
+        return secrets.token_hex(32)
+
+
 app = Flask(__name__)
-app.secret_key = os.environ.get("ROK_SECRET_KEY") or secrets.token_hex(32)
+app.secret_key = _persistent_secret("ROK_SECRET_KEY", "flask_secret")
 
 # Detrás de nginx toda petición llega desde 127.0.0.1, así que sin esto el
 # limitador mete a todos los clientes en el mismo cubo: cinco intentos de login
@@ -45,9 +77,10 @@ PEERS_DIR    = os.environ.get("ROK_PEERS_DIR",      "/opt/rok-vpn/peers")
 VPS_ENDPOINT = os.environ.get("ROK_VPS_ENDPOINT",   "")
 WG_IFACE     = os.environ.get("ROK_WG_IFACE",       "wg0")
 WG_SUBNET    = os.environ.get("ROK_WG_SUBNET",      "10.100.0")
+WS_PORT      = int(os.environ.get("ROK_WS_PORT",    "8443"))
 DNS          = os.environ.get("ROK_DNS",             "10.100.0.1")
 PORTAL_PASS  = os.environ.get("ROK_PORTAL_PASSWORD", "")
-JWT_SECRET   = os.environ.get("ROK_JWT_SECRET",     secrets.token_hex(32))
+JWT_SECRET   = _persistent_secret("ROK_JWT_SECRET",  "jwt_secret")
 JWT_EXP_DAYS = int(os.environ.get("ROK_JWT_EXP_DAYS", "30"))
 SQUARE_TOKEN       = os.environ.get("ROK_SQUARE_TOKEN", "")
 SQUARE_ENV         = os.environ.get("ROK_SQUARE_ENV",   "sandbox")
@@ -117,7 +150,7 @@ def init_db():
         """)
         srv.init_schema(conn)
         srv.seed_catalog(conn)
-        srv.ensure_local_server(conn, VPS_ENDPOINT, WG_SUBNET)
+        srv.ensure_local_server(conn, VPS_ENDPOINT, WG_SUBNET, WS_PORT)
 
 
 init_db()
@@ -471,9 +504,15 @@ def admin_revoke(name: str):
     if not row:
         flash("Client not found or already revoked", "warning")
         return redirect(url_for("admin"))
+    with get_db() as conn:
+        server = (srv.get_server(conn, row["server_id"]) if row["server_id"]
+                  else srv.default_server(conn))
+    if not server:
+        flash("Could not determine the peer's server", "danger")
+        return redirect(url_for("admin"))
     try:
-        wg_remove_peer(row["public_key"])
-    except subprocess.CalledProcessError as exc:
+        server_remove_peer(server, row["public_key"])
+    except (srv.AgentError, subprocess.CalledProcessError) as exc:
         flash(f"Failed to revoke in WireGuard: {exc}", "danger")
         return redirect(url_for("admin"))
     now = datetime.now(timezone.utc).isoformat()

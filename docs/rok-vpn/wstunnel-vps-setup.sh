@@ -5,7 +5,9 @@ set -euo pipefail
 
 WSTUNNEL_VERSION="10.6.2"   # versión validada end-to-end en Task 10
 WG_PORT=1194
-WST_PORT=443
+# Port 443 is now used by nginx (Let's Encrypt). wstunnel moves to 8443.
+# Update ROK_WS_PORT=8443 in the portal's systemd unit to match.
+WST_PORT=8443
 
 echo "[1/5] Downloading wstunnel v${WSTUNNEL_VERSION}..."
 ARCH=$(uname -m)
@@ -33,10 +35,13 @@ echo "[2/5] Adding TCP ${WST_PORT} to nftables..."
 nft list ruleset | grep -q "tcp dport ${WST_PORT}" || \
   nft add rule inet filter input tcp dport "${WST_PORT}" accept comment '"wstunnel"'
 
-# Persist: append to the current nftables.conf if not already there
-grep -q "wstunnel" /etc/nftables.conf 2>/dev/null || {
-  echo "# wstunnel TCP ${WST_PORT} (added by rok-vpn setup)" >> /etc/nftables.conf
-}
+# Remove stale rule for old port 443 if it was wstunnel-only (nginx now owns 443)
+# nginx-setup.sh manages port 443 rules separately.
+
+# Persist nftables
+if [ -f /etc/nftables.conf ]; then
+  nft list ruleset > /etc/nftables.conf
+fi
 
 echo "[3/5] Creating systemd service..."
 cat > /etc/systemd/system/wstunnel-server.service << EOF

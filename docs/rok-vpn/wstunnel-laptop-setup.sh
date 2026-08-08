@@ -4,8 +4,9 @@
 set -euo pipefail
 
 WSTUNNEL_VERSION="10.6.2"   # versión validada end-to-end en Task 10
+VPS_HOST="${ROK_VPS_HOST:-rokvpn.com}"  # use domain for TLS hostname verification
 VPS_IP="74.208.44.254"
-VPS_WST_PORT=443       # wstunnel WebSocket port on VPS
+VPS_WST_PORT=8443      # wstunnel port (moved off 443; nginx now owns 443 for the portal)
 LOCAL_UDP_PORT=51820   # local port wstunnel listens on (WireGuard will point here)
 WG_IFACE="rok0"
 WG_CONF="/etc/wireguard/rok0.conf"
@@ -50,7 +51,7 @@ Before=wg-quick@rok0.service
 Type=simple
 ExecStart=/usr/local/bin/wstunnel client \\
   -L 'udp://127.0.0.1:${LOCAL_UDP_PORT}:127.0.0.1:1194?timeout_sec=0' \\
-  ws://${VPS_IP}:${VPS_WST_PORT}
+  ws://${VPS_HOST}:${VPS_WST_PORT}
 Restart=always
 RestartSec=5
 User=root

@@ -10,8 +10,8 @@ WorkingDirectory=/opt/rok-vpn/portal
 # ── Configuración ───────────────────────────────────────────────────────────
 # Todos los secretos viven en /etc/rok-vpn/portal.env (modo 0600, root),
 # NO en este archivo: la unidad se versiona en git y `systemctl show` la
-# expone a cualquier usuario del sistema. portal-setup.sh lo genera a partir
-# de .env.example con claves aleatorias.
+# expone a cualquier usuario del sistema. portal-setup.sh lo genera con
+# claves aleatorias (incluye ROK_WS_PORT, ROK_SECRETS_DIR, etc.).
 EnvironmentFile=/etc/rok-vpn/portal.env
 
 # Escucha sólo en loopback: nginx es la única vía de entrada. Antes se ataba a

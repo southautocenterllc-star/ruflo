@@ -1,489 +1,1342 @@
-<!doctype html>
-<html lang="es">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ROK VPN — Mi cuenta</title>
-  <style>
-    :root {
-      --bg:       #050D18;
-      --surface:  #0F2030;
-      --elevated: #0B1820;
-      --text:     #F0F2F5;
-      --muted:    #5C7A94;
-      --accent:   #4A80A8;
-      --green:    #00FF88;
-      --amber:    #F5A623;
-      --red:      #EC3013;
-      --border:   rgba(74,128,168,0.2);
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: var(--bg); color: var(--text);
-      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-      min-height: 100vh; line-height: 1.5;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROK VPN — Dashboard</title>
+<style>
+:root {
+  --bg:        #07111F;
+  --surface:   #0D1C2E;
+  --surface-2: #152538;
+  --border:    rgba(74,128,168,0.14);
+  --border-2:  rgba(74,128,168,0.28);
+  --navy:      #1A3A5C;
+  --steel:     #2D5F8A;
+  --blue-mid:  #4A80A8;
+  --blue-lt:   #8AB4CC;
+  --text:      #EFF3F8;
+  --muted:     #5C7E9C;
+  --green:     #00C46A;
+  --amber:     #F5A623;
+  --red:       #EC3013;
+  --font-d: 'Impact','Franklin Gothic Medium','Arial Narrow',Haettenschweiler,Arial,sans-serif;
+  --font-b: Georgia,'Times New Roman',serif;
+  --font-u: system-ui,-apple-system,sans-serif;
+  --r: 8px; --rl: 14px;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg); color:var(--text);
+  font-family:var(--font-b); line-height:1.6;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
 
-    /* ── Header ── */
-    header {
-      background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 14px 24px; display: flex; align-items: center;
-      justify-content: space-between; position: sticky; top: 0; z-index: 10;
-    }
-    .logo { font-weight: 800; font-size: 1.15rem; letter-spacing: .06em; }
-    .logo span { color: var(--accent); }
-    .hdr-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .user-email { color: var(--muted); font-size: .85rem; }
-    .badge {
-      padding: 3px 10px; border-radius: 20px;
-      font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
-    }
-    .badge-free { background: rgba(74,128,168,.18); color: var(--accent); }
-    .badge-paid { background: rgba(245,166,35,.18); color: var(--amber); }
-    .btn-logout {
-      padding: 6px 16px; border-radius: 8px;
-      border: 1px solid rgba(236,48,19,.35); background: transparent;
-      color: var(--red); font-size: .82rem; cursor: pointer; white-space: nowrap;
-    }
-    .btn-logout:hover { background: rgba(236,48,19,.1); }
+/* ── Nav ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:.875rem 2rem;
+  background:rgba(7,17,31,.92);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.nav-brand { display:flex; align-items:center; gap:.6rem; text-decoration:none; }
+.nav-hex { width:32px; height:32px; flex-shrink:0; }
+.nav-name {
+  font-family:var(--font-d); font-size:1.1rem; letter-spacing:.14em;
+  color:var(--text); text-transform:uppercase;
+}
+.nav-right { display:flex; align-items:center; gap:.875rem; }
+.nav-email {
+  font-family:var(--font-u); font-size:.78rem; color:var(--muted);
+  max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.btn-ghost {
+  background:none; border:1px solid var(--border); color:var(--muted);
+  padding:.375rem .9rem; border-radius:var(--r); cursor:pointer;
+  font-family:var(--font-u); font-size:.825rem;
+  transition:border-color .2s,color .2s;
+}
+.btn-ghost:hover { border-color:var(--blue-mid); color:var(--blue-lt); }
 
-    /* ── Layout ── */
-    main { max-width: 680px; margin: 0 auto; padding: 28px 16px 72px; }
+/* ── Page shell ── */
+.page { max-width:1100px; margin:0 auto; padding:5.5rem 2rem 4rem; }
 
-    /* ── Cards ── */
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px; margin-bottom: 18px;
-    }
-    .card-label {
-      font-size: .68rem; font-weight: 700; letter-spacing: .1em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
-    }
+/* ── Status hero ── */
+.status-hero {
+  display:grid; grid-template-columns:1fr auto; gap:1.5rem;
+  align-items:center;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--rl); padding:1.75rem 2rem; margin-bottom:1.5rem;
+}
+.status-left { display:flex; align-items:center; gap:1.25rem; }
+.status-indicator {
+  width:56px; height:56px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border-2);
+}
+.status-indicator.ok  { background:rgba(0,196,106,.08); border-color:rgba(0,196,106,.22); }
+.status-indicator.off { background:rgba(74,128,168,.07); border-color:var(--border-2); }
+.status-indicator svg { width:22px; height:22px; }
+.status-text .label {
+  font-family:var(--font-u); font-size:.68rem; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:.2rem;
+}
+.status-text .value {
+  font-family:var(--font-d); font-size:1.45rem; letter-spacing:-.01em;
+  text-transform:uppercase;
+}
+.status-text .sub {
+  font-family:var(--font-u); font-size:.78rem; color:var(--muted); margin-top:.15rem;
+}
+.status-dot {
+  display:inline-block; width:8px; height:8px; border-radius:50%;
+  margin-right:.4rem; flex-shrink:0;
+  vertical-align:middle; position:relative; top:-1px;
+}
+.dot-green { background:var(--green); box-shadow:0 0 0 3px rgba(0,196,106,.18); }
+.dot-blue  { background:var(--blue-mid); }
+.status-right {
+  display:flex; gap:.6rem; flex-wrap:wrap; justify-content:flex-end; align-items:center;
+}
 
-    /* ── Status bar ── */
-    .status-bar {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 18px; background: var(--elevated); border-radius: 12px;
-      margin-bottom: 18px;
-    }
-    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .dot-on  { background: var(--green); box-shadow: 0 0 7px var(--green); }
-    .dot-off { background: var(--muted); }
-    .st-title { font-weight: 600; }
-    .st-sub   { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+/* ── Section layout ── */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
 
-    /* ── Buttons ── */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 10px 20px; border-radius: 10px;
-      font-size: .875rem; font-weight: 600; cursor: pointer;
-      border: none; text-decoration: none; transition: opacity .15s, background .15s;
-      white-space: nowrap;
-    }
-    .btn:hover { opacity: .88; }
-    .btn:disabled { opacity: .45; cursor: not-allowed; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-green   { background: var(--green); color: #050D18; width: 100%; }
-    .btn-outline {
-      background: transparent; color: var(--text);
-      border: 1px solid var(--border);
-    }
-    .btn-danger  {
-      background: rgba(236,48,19,.12); color: var(--red);
-      border: 1px solid rgba(236,48,19,.28);
-    }
-    .btn-sm { padding: 7px 14px; font-size: .8rem; border-radius: 8px; }
-    .btn-add {
-      margin-top: 10px; background: transparent;
-      color: var(--accent); border: 1px dashed rgba(74,128,168,.4);
-      width: 100%; border-radius: 10px; padding: 11px;
-      font-size: .85rem; font-weight: 600; cursor: pointer;
-    }
-    .btn-add:hover { background: rgba(74,128,168,.07); }
+/* ── Cards ── */
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--rl); overflow:hidden;
+}
+.card-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1.1rem 1.5rem; border-bottom:1px solid var(--border);
+}
+.card-title {
+  font-family:var(--font-u); font-weight:700; font-size:.82rem;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+}
+.card-body { padding:1.5rem; }
+.card-body.p0 { padding:0; }
 
-    /* ── Device row ── */
-    .device-row {
-      display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
-      padding: 14px 18px; background: var(--elevated); border-radius: 12px;
-      margin-bottom: 10px;
-    }
-    .device-info { flex: 1; min-width: 120px; }
-    .device-name { font-weight: 600; font-size: .9rem; }
-    .device-meta { font-size: .75rem; color: var(--muted); font-family: monospace; margin-top: 2px; }
-    .device-actions { display: flex; gap: 8px; }
+/* ── World map ── */
+.map-wrap {
+  position:relative;
+  border-radius:var(--rl); overflow:hidden;
+  background:radial-gradient(ellipse 80% 90% at 55% 45%, rgba(45,95,138,.12) 0%, transparent 70%), #050D18;
+  border:1px solid var(--border);
+}
+#worldMap {
+  display:block; width:100%; height:auto; max-height:320px;
+}
+.map-legend {
+  position:absolute; right:1rem; bottom:.8rem;
+  display:flex; align-items:center; gap:.6rem;
+  background:rgba(10,22,38,.82); backdrop-filter:blur(8px);
+  border:1px solid var(--border); border-radius:var(--r);
+  padding:.35rem .7rem; font-family:var(--font-u); font-size:.68rem; color:var(--muted);
+}
+.map-dot { width:7px; height:7px; border-radius:50%; display:inline-block;
+           background:var(--green); box-shadow:0 0 0 3px rgba(0,196,106,.2); }
 
-    /* ── Empty state ── */
-    .empty {
-      text-align: center; padding: 28px 0;
-    }
-    .empty-shield {
-      width: 64px; height: 64px; border-radius: 50%;
-      background: rgba(74,128,168,.1); border: 2px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 16px;
-    }
-    .empty-shield svg { stroke: var(--accent); }
-    .empty-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 8px; }
-    .empty-sub   { color: var(--muted); font-size: .875rem; margin-bottom: 22px; }
+/* ── Server info card ── */
+.server-info { display:flex; flex-direction:column; gap:1rem; }
+.server-row {
+  display:flex; align-items:flex-start; gap:.875rem;
+  padding:.75rem; background:var(--surface-2); border-radius:var(--r);
+}
+.server-row-icon {
+  width:36px; height:36px; border-radius:var(--r);
+  background:rgba(74,128,168,.08); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.server-row-icon svg { width:16px; height:16px; }
+.server-row-text .row-label {
+  font-family:var(--font-u); font-size:.65rem; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:.1rem;
+}
+.server-row-text .row-val {
+  font-family:var(--font-u); font-size:.88rem; font-weight:600; color:var(--text);
+}
 
-    /* ── Platform grid ── */
-    .platform-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    }
-    @media (max-width: 440px) { .platform-grid { grid-template-columns: 1fr; } }
-    .platform-card {
-      display: flex; flex-direction: column;
-      padding: 16px 18px; background: var(--elevated);
-      border: 1px solid var(--border); border-radius: 12px;
-      text-decoration: none; color: var(--text);
-      transition: border-color .15s;
-    }
-    .platform-card:hover { border-color: var(--accent); }
-    .plat-name { font-weight: 700; font-size: .9rem; }
-    .plat-sub  { font-size: .75rem; color: var(--muted); margin-top: 3px; }
-    .plat-tag  {
-      display: inline-block; margin-top: 8px; padding: 2px 8px;
-      border-radius: 6px; font-size: .65rem; font-weight: 700;
-      background: rgba(74,128,168,.18); color: var(--accent);
-      align-self: flex-start;
-    }
+/* ── QR section ── */
+.qr-section { display:flex; flex-direction:column; align-items:center; gap:1rem; }
+.qr-frame {
+  background:#fff; border-radius:10px; padding:10px;
+  display:inline-block; line-height:0;
+}
+.qr-frame img { width:180px; height:180px; display:block; }
+.qr-placeholder {
+  width:180px; height:180px; background:var(--surface-2);
+  border-radius:var(--r); display:flex; align-items:center; justify-content:center;
+  border:1px dashed var(--border-2);
+}
+.qr-placeholder-text {
+  font-family:var(--font-u); font-size:.78rem; color:var(--muted); text-align:center; padding:.5rem;
+}
+.qr-caption {
+  font-family:var(--font-u); font-size:.75rem; color:var(--muted); text-align:center;
+  max-width:200px;
+}
 
-    /* ── Plan bar ── */
-    .plan-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 18px; background: var(--elevated); border-radius: 12px;
-      flex-wrap: wrap; gap: 10px;
-    }
-    .plan-name    { font-weight: 700; }
-    .plan-devices { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+/* ── Device list ── */
+.device-list { display:flex; flex-direction:column; }
+.device-item {
+  display:flex; align-items:center; gap:1rem;
+  padding:1rem 1.5rem; border-bottom:1px solid var(--border);
+  transition:background .15s;
+}
+.device-item:last-child { border-bottom:none; }
+.device-item:hover { background:var(--surface-2); }
+.device-icon {
+  width:38px; height:38px; border-radius:var(--r);
+  background:rgba(74,128,168,.07); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.device-icon svg { width:18px; height:18px; }
+.device-text { flex:1; min-width:0; }
+.device-name {
+  font-family:var(--font-u); font-weight:600; font-size:.88rem;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.device-meta {
+  font-family:var(--font-u); font-size:.72rem; color:var(--muted); margin-top:.1rem;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.device-actions { display:flex; gap:.5rem; flex-shrink:0; }
+.btn-icon {
+  background:none; border:1px solid var(--border); color:var(--muted);
+  width:32px; height:32px; border-radius:var(--r); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color .2s,color .2s,background .2s;
+}
+.btn-icon:hover { border-color:var(--blue-mid); color:var(--blue-lt); }
+.btn-icon.danger:hover { border-color:var(--red); color:var(--red); }
+.btn-icon svg { width:14px; height:14px; }
 
-    /* ── Accordion ── */
-    details { border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
-    summary {
-      padding: 13px 18px; background: var(--elevated); cursor: pointer;
-      font-weight: 600; font-size: .88rem; list-style: none;
-      display: flex; justify-content: space-between; align-items: center;
-      user-select: none;
-    }
-    summary::after { content: '+'; font-size: 1.15rem; color: var(--muted); }
-    details[open] summary::after { content: '-'; }
-    .acc-body {
-      padding: 16px 18px; background: var(--elevated);
-      border-top: 1px solid var(--border);
-    }
-    .acc-body ol { padding-left: 18px; }
-    .acc-body li, .acc-body p {
-      font-size: .84rem; color: var(--muted); margin-bottom: 6px;
-    }
-    .acc-body strong { color: var(--text); }
-    pre.cmd {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 12px; font-size: .78rem;
-      color: #8AB4CC; overflow-x: auto; margin: 8px 0; white-space: pre-wrap;
-    }
+/* ── Buttons ── */
+.btn-primary {
+  background:var(--steel); border:none; color:#fff;
+  padding:.65rem 1.4rem; border-radius:var(--r); cursor:pointer;
+  font-family:var(--font-u); font-size:.875rem; font-weight:700; letter-spacing:.03em;
+  transition:opacity .2s,transform .15s; text-decoration:none; display:inline-block;
+}
+.btn-primary:hover { opacity:.9; transform:translateY(-1px); }
+.btn-primary:active { transform:none; }
+.btn-outline {
+  background:none; border:1px solid var(--border-2); color:var(--text);
+  padding:.65rem 1.4rem; border-radius:var(--r); cursor:pointer;
+  font-family:var(--font-u); font-size:.875rem; font-weight:600; letter-spacing:.03em;
+  transition:border-color .2s,color .2s;
+}
+.btn-outline:hover { border-color:var(--blue-mid); color:var(--blue-lt); }
+.btn-sm { padding:.45rem 1rem; font-size:.8rem; }
+.btn-full { width:100%; display:block; text-align:center; }
 
-    /* ── Spinner ── */
-    #loading {
-      display: flex; align-items: center; justify-content: center;
-      min-height: 40vh;
-    }
-    .spin {
-      width: 28px; height: 28px;
-      border: 2px solid var(--border); border-top-color: var(--accent);
-      border-radius: 50%; animation: sp .75s linear infinite;
-    }
-    @keyframes sp { to { transform: rotate(360deg); } }
+/* ── Download grid ── */
+.dl-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.75rem;
+}
+.dl-item {
+  display:flex; flex-direction:column; align-items:center; gap:.5rem;
+  padding:1rem .75rem; background:var(--surface-2);
+  border:1px solid var(--border); border-radius:var(--r); cursor:pointer;
+  text-decoration:none; color:var(--text);
+  transition:border-color .2s,background .2s; text-align:center;
+}
+.dl-item:hover { border-color:var(--blue-mid); background:rgba(74,128,168,.06); }
+.dl-item.featured { border-color:var(--steel); background:rgba(45,95,138,.08); }
+.dl-item svg { width:28px; height:28px; flex-shrink:0; }
+.dl-name { font-family:var(--font-u); font-weight:700; font-size:.82rem; }
+.dl-sub  { font-family:var(--font-u); font-size:.66rem; color:var(--muted); }
 
-    /* ── Toast ── */
-    #toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: #1a2a3a; border: 1px solid var(--border);
-      padding: 11px 22px; border-radius: 12px;
-      font-size: .875rem; display: none; z-index: 50;
-      box-shadow: 0 4px 20px rgba(0,0,0,.45);
-    }
-  </style>
+/* ── Accordion ── */
+.acc-item { border-bottom:1px solid var(--border); }
+.acc-item:last-child { border-bottom:none; }
+.acc-btn {
+  width:100%; display:flex; align-items:center; justify-content:space-between;
+  background:none; border:none; color:var(--text); cursor:pointer;
+  padding:1rem 1.5rem; font-family:var(--font-u); font-size:.88rem; font-weight:600;
+  text-align:left; transition:background .15s;
+}
+.acc-btn:hover { background:var(--surface-2); }
+.acc-chevron { width:16px; height:16px; flex-shrink:0; transition:transform .2s; }
+.acc-btn.open .acc-chevron { transform:rotate(180deg); }
+.acc-body { display:none; padding:0 1.5rem 1.25rem; }
+.acc-btn.open + .acc-body { display:block; }
+.acc-body ol { padding-left:1.25rem; display:flex; flex-direction:column; gap:.5rem; }
+.acc-body li { font-family:var(--font-u); font-size:.84rem; color:var(--muted); }
+.acc-body li strong { color:var(--text); }
+.acc-body pre {
+  background:rgba(5,13,24,.8); border:1px solid var(--border-2); border-radius:var(--r);
+  padding:.875rem 1rem; font-size:.78rem; overflow-x:auto; white-space:pre-wrap;
+  color:var(--blue-lt); margin-top:.65rem; font-family:monospace;
+}
+.acc-body a { color:var(--blue-lt); }
+
+/* ── Plan card ── */
+.plan-card {
+  background:var(--surface-2); border:1px solid var(--border);
+  border-radius:var(--r); padding:1.25rem 1.5rem;
+  display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+}
+.plan-badge-sm {
+  font-family:var(--font-u); font-size:.65rem; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase;
+  padding:.22rem .6rem; border-radius:99px;
+}
+.badge-free { background:rgba(74,128,168,.12); color:var(--blue-lt); }
+.badge-paid { background:rgba(0,196,106,.12); color:var(--green); }
+.plan-label-sm {
+  font-family:var(--font-u); font-size:.78rem; color:var(--muted); margin-top:.15rem;
+}
+.plan-info { flex:1; }
+.plan-name {
+  font-family:var(--font-d); font-size:1.1rem; letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.meter-wrap { margin-top:.6rem; }
+.meter-track { height:4px; background:var(--border-2); border-radius:99px; }
+.meter-fill { height:4px; background:var(--steel); border-radius:99px; transition:width .4s; }
+.meter-labels {
+  display:flex; justify-content:space-between;
+  font-family:var(--font-u); font-size:.66rem; color:var(--muted); margin-top:.25rem;
+}
+
+/* ── Notices ── */
+.notice {
+  border-radius:var(--r); padding:.75rem 1rem;
+  font-family:var(--font-u); font-size:.82rem; margin-bottom:1.5rem;
+  display:flex; align-items:center; gap:.7rem;
+}
+.notice-info { background:rgba(74,128,168,.07); border:1px solid rgba(74,128,168,.18); color:var(--blue-lt); }
+.notice-success { background:rgba(0,196,106,.06); border:1px solid rgba(0,196,106,.18); color:var(--green); }
+.notice-warn { background:rgba(245,166,35,.06); border:1px solid rgba(245,166,35,.18); color:var(--amber); }
+.notice svg { width:16px; height:16px; flex-shrink:0; }
+
+/* ── Modal ── */
+.backdrop {
+  position:fixed; inset:0; z-index:200;
+  background:rgba(7,17,31,.9); backdrop-filter:blur(10px);
+  display:none; align-items:center; justify-content:center; padding:1rem;
+}
+.backdrop.open { display:flex; animation:fade-in .18s ease; }
+@keyframes fade-in { from{opacity:0} to{opacity:1} }
+.modal {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--rl); padding:2rem;
+  width:100%; max-width:400px; position:relative; animation:slide-up .2s ease;
+}
+@keyframes slide-up { from{transform:translateY(10px);opacity:.5} to{transform:none;opacity:1} }
+.modal-close {
+  position:absolute; top:1rem; right:1rem;
+  background:none; border:none; cursor:pointer; color:var(--muted);
+  font-size:1.2rem; line-height:1; font-family:var(--font-u);
+  transition:color .2s;
+}
+.modal-close:hover { color:var(--text); }
+.modal-title {
+  font-family:var(--font-d); font-size:1.5rem; letter-spacing:-.02em;
+  text-transform:uppercase; margin-bottom:.2rem;
+}
+.modal-sub { font-size:.84rem; color:var(--muted); margin-bottom:1.4rem; }
+.field { display:flex; flex-direction:column; gap:.3rem; margin-bottom:.875rem; }
+.field-label {
+  font-family:var(--font-u); font-size:.67rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--muted);
+}
+.field-input {
+  background:var(--bg); border:1px solid var(--border); border-radius:var(--r);
+  color:var(--text); font-family:var(--font-u); font-size:.9rem;
+  padding:.6rem .8rem; outline:none; transition:border-color .2s; width:100%;
+}
+.field-input:focus { border-color:var(--steel); }
+.form-err {
+  display:none; background:rgba(236,48,19,.1); border:1px solid rgba(236,48,19,.25);
+  color:#e07060; border-radius:var(--r); padding:.5rem .8rem;
+  font-family:var(--font-u); font-size:.8rem; margin-bottom:.875rem;
+}
+.form-err.on { display:block; }
+
+/* ── Empty state ── */
+.empty-state {
+  padding:2.5rem 1.5rem; text-align:center;
+  font-family:var(--font-u); color:var(--muted);
+}
+.empty-state .icon {
+  width:48px; height:48px; margin:0 auto 1rem;
+  background:rgba(74,128,168,.07); border:1px solid var(--border);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+}
+.empty-state .icon svg { width:22px; height:22px; }
+.empty-state p { font-size:.85rem; margin-bottom:1rem; }
+.empty-state strong { display:block; font-size:.95rem; color:var(--text); margin-bottom:.3rem; }
+
+/* ── Loading skeleton ── */
+.skeleton {
+  background:linear-gradient(90deg,var(--surface-2) 25%,rgba(30,60,90,.4) 50%,var(--surface-2) 75%);
+  background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:4px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── Responsive ── */
+@media (max-width:900px) {
+  .grid-2 { grid-template-columns:1fr; }
+  .grid-3 { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:600px) {
+  nav { padding:.75rem 1rem; }
+  .nav-email { display:none; }
+  .page { padding:4.5rem 1rem 3rem; }
+  .status-hero { grid-template-columns:1fr; }
+  .status-right { justify-content:flex-start; }
+  .grid-3 { grid-template-columns:1fr; }
+}
+</style>
 </head>
 <body>
 
-<header>
-  <div class="logo">ROK <span>VPN</span></div>
-  <div class="hdr-right">
-    <span class="user-email" id="hdr-email"></span>
-    <span class="badge badge-free" id="hdr-badge">Gratis</span>
-    <button class="btn-logout" onclick="logout()">Cerrar sesion</button>
+<!-- Nav -->
+<nav>
+  <a class="nav-brand" href="/">
+    <svg class="nav-hex" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="70,8 118,8 162,32 178,88 168,152 142,186 100,196 58,186 32,152 22,88 32,32 55,18"
+               fill="#2E4A72" stroke="white" stroke-width="9" stroke-linejoin="round"/>
+      <polyline points="38,52 65,85 78,120 70,192" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="65" y1="85" x2="28" y2="108" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <polyline points="155,45 125,82 112,118 120,192" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="125" y1="82" x2="164" y2="102" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="100" cy="78" r="27" fill="white"/>
+      <path d="M86,97 L80,142 Q80,154 100,154 Q120,154 120,142 L114,97 Z" fill="white"/>
+      <circle cx="100" cy="78" r="13" fill="#2E4A72"/>
+    </svg>
+    <span class="nav-name">ROK VPN</span>
+  </a>
+  <div class="nav-right">
+    <span class="nav-email" id="navEmail"></span>
+    <button class="btn-ghost btn-sm" onclick="doLogout()">Sign out</button>
   </div>
-</header>
+</nav>
 
-<main>
-  <div id="loading"><div class="spin"></div></div>
+<div class="page">
 
-  <div id="content" style="display:none">
+  <!-- ── Notices ─────────────────────────────────────────── -->
+  <div id="noticeBox"></div>
 
-    <!-- ── Conexion VPN ── -->
-    <div class="card">
-      <p class="card-label">Mi configuracion VPN</p>
-      <div class="status-bar">
-        <div class="dot dot-off" id="st-dot"></div>
-        <div>
-          <div class="st-title" id="st-title">Sin configuracion</div>
-          <div class="st-sub"   id="st-sub">Crea tu configuracion para empezar</div>
-        </div>
+  <!-- ── Status hero ─────────────────────────────────────── -->
+  <div class="status-hero" id="statusHero">
+    <div class="status-left">
+      <div class="status-indicator off" id="statusIndicator">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
       </div>
-      <div id="devices-area"></div>
-    </div>
-
-    <!-- ── Mi plan ── -->
-    <div class="card">
-      <p class="card-label">Mi plan</p>
-      <div class="plan-row">
-        <div>
-          <div class="plan-name"    id="plan-name">Plan Gratuito</div>
-          <div class="plan-devices" id="plan-devices">0 de 1 dispositivo en uso</div>
-        </div>
-        <a href="/#pricing" class="btn btn-outline btn-sm">Ver planes</a>
+      <div class="status-text">
+        <div class="label">VPN Status</div>
+        <div class="value" id="statusValue">No device configured</div>
+        <div class="sub" id="statusSub">Add a device below to get started</div>
       </div>
     </div>
+    <div class="status-right">
+      <a href="#devices" class="btn-primary btn-sm" id="ctaBtn">Add device</a>
+    </div>
+  </div>
 
-    <!-- ── Descargar WireGuard ── -->
+  <!-- ── Row 1: Map + Server info ────────────────────────── -->
+  <div class="grid-2">
+
+    <!-- World map -->
     <div class="card">
-      <p class="card-label">Instalar cliente VPN en tu dispositivo</p>
-      <p style="font-size:.84rem; color:var(--muted); margin-bottom:16px">
-        Descarga WireGuard, luego importa tu archivo de configuracion personal desde el panel de arriba.
+      <div class="card-header">
+        <span class="card-title">Server location</span>
+        <span style="font-family:var(--font-u);font-size:.75rem;color:var(--muted);">New York, United States</span>
+      </div>
+      <div class="card-body p0">
+        <div class="map-wrap">
+          <canvas id="worldMap" width="800" height="400"></canvas>
+          <div class="map-legend">
+            <span class="map-dot"></span>
+            <span style="font-family:var(--font-u);font-size:.7rem;color:var(--muted);">Active server</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server info + QR -->
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+      <!-- Server details -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Connection details</span>
+          <span id="planBadge" class="plan-badge-sm badge-free">Free</span>
+        </div>
+        <div class="card-body">
+          <div class="server-info" id="serverInfo">
+            <div class="server-row">
+              <div class="server-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-lt)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+              </div>
+              <div class="server-row-text">
+                <div class="row-label">Server</div>
+                <div class="row-val">New York, United States</div>
+              </div>
+            </div>
+            <div class="server-row">
+              <div class="server-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-lt)" stroke-width="1.8" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              </div>
+              <div class="server-row-text">
+                <div class="row-label">Protocol</div>
+                <div class="row-val">WireGuard + wstunnel (TCP 443)</div>
+              </div>
+            </div>
+            <div class="server-row">
+              <div class="server-row-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-lt)" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <div class="server-row-text">
+                <div class="row-label">Devices</div>
+                <div class="row-val" id="deviceCountLabel">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR code -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Mobile setup — QR code</span>
+        </div>
+        <div class="card-body">
+          <div class="qr-section">
+            <div id="qrContainer">
+              <div class="qr-placeholder">
+                <div class="qr-placeholder-text">Add a device to see the QR code for mobile setup</div>
+              </div>
+            </div>
+            <p class="qr-caption" id="qrCaption">Scan with WireGuard on iOS or Android</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Row 2: Devices ───────────────────────────────────── -->
+  <div class="card" style="margin-bottom:1.5rem;" id="devices">
+    <div class="card-header">
+      <span class="card-title">My devices</span>
+      <button class="btn-primary btn-sm" onclick="openAddDevice()">Add device</button>
+    </div>
+    <div class="card-body p0" id="deviceListWrap">
+      <div class="empty-state">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <strong>No devices configured</strong>
+        <p>Add your first device to generate a configuration file and QR code.</p>
+        <button class="btn-primary btn-sm" onclick="openAddDevice()">Add first device</button>
+      </div>
+    </div>
+    <div style="padding:.75rem 1.5rem;border-top:1px solid var(--border);display:none;" id="deviceMeter">
+      <div class="meter-wrap">
+        <div class="meter-track"><div class="meter-fill" id="meterFill" style="width:0%"></div></div>
+        <div class="meter-labels">
+          <span id="meterLeft">0 of 1 device used</span>
+          <span id="meterRight">Free plan</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 3: Downloads ─────────────────────────────────── -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-header">
+      <span class="card-title">Download WireGuard</span>
+    </div>
+    <div class="card-body">
+      <p style="font-family:var(--font-u);font-size:.84rem;color:var(--muted);margin-bottom:1.25rem;">
+        Install the WireGuard app for your device, then import your configuration file or scan the QR code.
       </p>
-      <div class="platform-grid">
-        <a href="https://download.wireguard.com/windows-client/wireguard-installer.exe"
-           class="platform-card" target="_blank" rel="noopener">
-          <span class="plat-name">Windows</span>
-          <span class="plat-sub">Instalador .exe</span>
-          <span class="plat-tag">Descargar</span>
-        </a>
-        <a href="https://apps.apple.com/us/app/wireguard/id1451685025"
-           class="platform-card" target="_blank" rel="noopener">
-          <span class="plat-name">macOS</span>
-          <span class="plat-sub">App Store</span>
-          <span class="plat-tag">Descargar</span>
-        </a>
-        <a href="https://apps.apple.com/us/app/wireguard/id1441195209"
-           class="platform-card" target="_blank" rel="noopener">
-          <span class="plat-name">iPhone / iOS</span>
-          <span class="plat-sub">App Store</span>
-          <span class="plat-tag">Descargar</span>
-        </a>
-        <a href="https://play.google.com/store/apps/details?id=com.wireguard.android"
-           class="platform-card" target="_blank" rel="noopener">
-          <span class="plat-name">Android</span>
-          <span class="plat-sub">Google Play</span>
-          <span class="plat-tag">Descargar</span>
-        </a>
+      <div class="dl-grid" id="downloadGrid">
+        <!-- Filled by JS based on platform detection -->
       </div>
     </div>
+  </div>
 
-    <!-- ── Instrucciones ── -->
-    <div class="card">
-      <p class="card-label">Como conectarse paso a paso</p>
+  <!-- ── Row 4: Setup guide ──────────────────────────────── -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-header">
+      <span class="card-title">Setup guide</span>
+    </div>
+    <div class="card-body p0">
 
-      <details>
-        <summary>iPhone y Android</summary>
+      <!-- iOS -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)">
+          iOS (iPhone / iPad)
+          <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
         <div class="acc-body">
           <ol>
-            <li>Instala <strong>WireGuard</strong> desde App Store o Google Play.</li>
-            <li>En este panel, toca <strong>Ver configuracion</strong> en tu dispositivo.</li>
-            <li>En WireGuard toca <strong>+</strong> y elige <em>Crear desde codigo QR</em>.</li>
-            <li>Escanea el codigo QR que aparece en pantalla.</li>
-            <li>Activa el tunel. Listo.</li>
+            <li>Install <strong>WireGuard</strong> from the <strong>App Store</strong>.</li>
+            <li>Open this dashboard on your computer and tap <strong>Add device</strong>.</li>
+            <li>In WireGuard, tap <strong>+</strong> then <strong>Create from QR code</strong>.</li>
+            <li>Scan the QR code shown above.</li>
+            <li>Enable the tunnel. Your traffic is now encrypted.</li>
           </ol>
         </div>
-      </details>
+      </div>
 
-      <details>
-        <summary>Windows y macOS</summary>
+      <!-- Android -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)">
+          Android
+          <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
         <div class="acc-body">
           <ol>
-            <li>Descarga e instala WireGuard desde el boton de arriba.</li>
-            <li>En este panel, toca <strong>Ver configuracion</strong> y descarga el archivo <strong>.conf</strong>.</li>
-            <li>En WireGuard elige <em>Importar tunel desde archivo</em>.</li>
-            <li>Activa el tunel.</li>
+            <li>Install <strong>WireGuard</strong> from <strong>Google Play</strong>.</li>
+            <li>Tap <strong>+</strong> in the app and choose <strong>Scan from QR code</strong>.</li>
+            <li>Scan the QR code shown on this dashboard.</li>
+            <li>Enable the tunnel.</li>
           </ol>
         </div>
-      </details>
+      </div>
 
-      <details>
-        <summary>Linux</summary>
+      <!-- Windows -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)">
+          Windows
+          <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
         <div class="acc-body">
-<pre class="cmd">sudo apt install wireguard -y
-# Descarga tu archivo .conf y copialo:
-sudo cp rok-vpn.conf /etc/wireguard/wg0.conf
-sudo wg-quick up wg0</pre>
+          <ol>
+            <li>Download and install <strong>WireGuard for Windows</strong>.</li>
+            <li>Click <strong>Add Tunnel</strong> and choose your downloaded <code>.conf</code> file.</li>
+            <li>Click <strong>Activate</strong>. The tunnel starts automatically.</li>
+          </ol>
         </div>
-      </details>
+      </div>
 
-      <details>
-        <summary>Si tu red bloquea UDP — modo wstunnel (TCP 443)</summary>
+      <!-- macOS -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)">
+          macOS
+          <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
         <div class="acc-body">
-          <p>Descarga la <strong>config wstunnel</strong> en vez de la directa. Funciona en redes empresariales, aeropuertos y hoteles.</p>
-<pre class="cmd">wstunnel client \
+          <ol>
+            <li>Install <strong>WireGuard</strong> from the Mac App Store.</li>
+            <li>Open WireGuard and choose <strong>Import Tunnel(s) from File</strong>.</li>
+            <li>Select your downloaded <code>.conf</code> file.</li>
+            <li>Enable the tunnel.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Linux -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)">
+          Linux
+          <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="acc-body">
+          <ol>
+            <li>Install WireGuard: <pre>sudo apt install wireguard -y</pre></li>
+            <li>Copy your downloaded <code>.conf</code> file to <code>/etc/wireguard/wg0.conf</code></li>
+            <li>Start the tunnel: <pre>sudo wg-quick up wg0</pre></li>
+            <li>Enable on boot: <pre>sudo systemctl enable wg-quick@wg0</pre></li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- wstunnel (UDP blocked) -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)">
+          If UDP is blocked (wstunnel mode)
+          <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="acc-body">
+          <ol>
+            <li>Download <strong>wstunnel</strong> v10.6.2 for your platform from GitHub.</li>
+            <li>Download the <strong>wstunnel config</strong> from your device below.</li>
+            <li>Run the wstunnel client in the background: <pre>wstunnel client \
   -L "udp://127.0.0.1:51820:127.0.0.1:1194?timeout_sec=0" \
-  wss://74.208.44.254:443</pre>
-          <p>Luego importa la config wstunnel en WireGuard y activa el tunel.</p>
+  ws://74.208.44.254:443</pre>
+            Note: the server uses <code>ws://</code> (not <code>wss://</code>).</li>
+            <li>Import the wstunnel <code>.conf</code> file into WireGuard.</li>
+            <li>Enable the tunnel.</li>
+          </ol>
         </div>
-      </details>
+      </div>
 
     </div>
+  </div>
 
-  </div><!-- /content -->
-</main>
+  <!-- ── Row 5: Plan ─────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Your plan</span>
+    </div>
+    <div class="card-body">
+      <div class="plan-card">
+        <div class="plan-info">
+          <div class="plan-name" id="planName">Free</div>
+          <div class="plan-label-sm" id="planDesc">1 device — United States</div>
+        </div>
+        <div id="upgradeWrap">
+          <button class="btn-outline btn-sm" onclick="showUpgrade()">Upgrade plan</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div id="toast"></div>
+</div><!-- /page -->
+
+<!-- ── Add device modal ───────────────────────────────────── -->
+<div class="backdrop" id="modalAddDevice">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalAddDevice')">&times;</button>
+    <div class="modal-title">Add device</div>
+    <p class="modal-sub">Give this device a name. A configuration file and QR code will be generated.</p>
+    <div class="form-err" id="addDeviceErr"></div>
+    <div class="field">
+      <label class="field-label">Device name</label>
+      <input class="field-input" id="deviceNameInput" type="text" placeholder="e.g. MacBook, iPhone, Work PC"
+             maxlength="20" autocomplete="off">
+    </div>
+    <button class="btn-primary btn-full" onclick="submitAddDevice()" id="addDeviceBtn">Create configuration</button>
+  </div>
+</div>
+
+<!-- ── Download modal ────────────────────────────────────── -->
+<div class="backdrop" id="modalDownload">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalDownload')">&times;</button>
+    <div class="modal-title" id="dlModalTitle">Download config</div>
+    <p class="modal-sub">Choose the configuration format for your device.</p>
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      <a class="btn-primary btn-full" id="dlWstunnel" href="#" target="_blank">
+        Download wstunnel config (TCP 443 — recommended)
+      </a>
+      <a class="btn-outline btn-full" id="dlDirect" href="#" target="_blank">
+        Download direct config (UDP 1194)
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ── Upgrade modal ─────────────────────────────────────── -->
+<div class="backdrop" id="modalUpgrade">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalUpgrade')">&times;</button>
+    <div class="modal-title">Upgrade to paid</div>
+    <p class="modal-sub">Unlock up to 5 devices, unlimited speed, and all server locations.</p>
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      <button class="btn-outline btn-full" onclick="closeModal('modalUpgrade')">Monthly — $4.99/mo</button>
+      <button class="btn-primary btn-full" onclick="closeModal('modalUpgrade')">Annual — $29.99/yr (save 50%)</button>
+    </div>
+    <p style="font-family:var(--font-u);font-size:.75rem;color:var(--muted);text-align:center;margin-top:1rem;">
+      Payments via Square. Cancel anytime.
+    </p>
+  </div>
+</div>
 
 <script>
-const API = '';
+/* ── Auth guard ─────────────────────────────────────────── */
+const TOKEN = localStorage.getItem('rok_token');
+if (!TOKEN) { window.location.href = '/'; }
 
-function tok() { return localStorage.getItem('rok_token'); }
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN };
+}
 
-function logout() {
+/* ── State ──────────────────────────────────────────────── */
+let me = null;
+let devices = [];
+let firstDeviceToken = null;
+
+/* ── Init ──────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', async () => {
+  buildDownloadGrid();
+  drawWorldMap();
+  await loadData();
+});
+
+/* ── Load user + devices ────────────────────────────────── */
+async function loadData() {
+  try {
+    const [meRes, devRes] = await Promise.all([
+      fetch('/api/v1/me',      { headers: authHeaders() }),
+      fetch('/api/v1/devices', { headers: authHeaders() })
+    ]);
+    if (meRes.status === 401 || devRes.status === 401) {
+      localStorage.removeItem('rok_token');
+      window.location.href = '/';
+      return;
+    }
+    me = await meRes.json();
+    const devData = await devRes.json();
+    devices = devData.devices || [];
+    renderAll();
+  } catch (e) {
+    showNotice('Connection error. Please refresh.', 'warn');
+  }
+}
+
+/* ── Render everything ──────────────────────────────────── */
+function renderAll() {
+  if (!me) return;
+  document.getElementById('navEmail').textContent = me.email || '';
+
+  /* Status hero */
+  const hasDevices = devices.length > 0;
+  const ind = document.getElementById('statusIndicator');
+  const val = document.getElementById('statusValue');
+  const sub = document.getElementById('statusSub');
+  const cta = document.getElementById('ctaBtn');
+  if (hasDevices) {
+    ind.className = 'status-indicator ok';
+    val.innerHTML = '<span class="status-dot dot-green"></span>VPN Configured';
+    val.style.color = 'var(--green)';
+    sub.textContent = devices.length + ' device' + (devices.length > 1 ? 's' : '') + ' ready — import config to connect';
+    cta.textContent = 'Add another';
+  } else {
+    ind.className = 'status-indicator off';
+    val.textContent = 'No device configured';
+    val.style.color = '';
+    sub.textContent = 'Add a device below to get started';
+    cta.textContent = 'Add device';
+  }
+
+  /* Plan badge */
+  const badge = document.getElementById('planBadge');
+  badge.className = 'plan-badge-sm ' + (me.tier === 'paid' ? 'badge-paid' : 'badge-free');
+  badge.textContent = me.tier === 'paid' ? 'Paid' : 'Free';
+
+  /* Plan section */
+  const planNames = { free: 'Free Plan', paid: 'Paid Plan' };
+  document.getElementById('planName').textContent = planNames[me.tier] || me.tier;
+  document.getElementById('planDesc').textContent =
+    me.tier === 'paid'
+      ? `Up to ${me.device_limit} devices — all server locations`
+      : `1 device — United States`;
+  if (me.tier === 'paid') {
+    document.getElementById('upgradeWrap').innerHTML =
+      '<span style="font-family:var(--font-u);font-size:.8rem;color:var(--green);">Active subscription</span>';
+  }
+
+  /* Device count */
+  document.getElementById('deviceCountLabel').textContent =
+    `${me.devices} of ${me.device_limit} device${me.device_limit !== 1 ? 's' : ''} used`;
+
+  /* Meter */
+  const meter = document.getElementById('deviceMeter');
+  if (devices.length > 0) {
+    meter.style.display = 'block';
+    const pct = Math.min(100, Math.round(me.devices / me.device_limit * 100));
+    document.getElementById('meterFill').style.width = pct + '%';
+    document.getElementById('meterFill').style.background = pct >= 90 ? 'var(--amber)' : 'var(--steel)';
+    document.getElementById('meterLeft').textContent = `${me.devices} of ${me.device_limit} device${me.device_limit !== 1 ? 's' : ''} used`;
+    document.getElementById('meterRight').textContent = me.tier === 'paid' ? 'Paid plan' : 'Free plan';
+  }
+
+  /* Device list */
+  renderDevices();
+
+  /* QR for first device */
+  if (devices.length > 0) {
+    firstDeviceToken = devices[0].download_token;
+    const qr = document.getElementById('qrContainer');
+    qr.innerHTML = `<div class="qr-frame"><img src="/download/${firstDeviceToken}/qr.png" alt="WireGuard QR code" width="180" height="180"></div>`;
+    document.getElementById('qrCaption').textContent = `${devices[0].name} — scan with WireGuard app`;
+  }
+}
+
+/* ── Device list rendering ──────────────────────────────── */
+function renderDevices() {
+  const wrap = document.getElementById('deviceListWrap');
+  if (devices.length === 0) {
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </div>
+      <strong>No devices configured</strong>
+      <p>Add your first device to generate a configuration file and QR code.</p>
+      <button class="btn-primary btn-sm" onclick="openAddDevice()">Add first device</button>
+    </div>`;
+    return;
+  }
+  wrap.innerHTML = '<div class="device-list">' + devices.map(d => `
+    <div class="device-item">
+      <div class="device-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-lt)" stroke-width="1.6" stroke-linecap="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </div>
+      <div class="device-text">
+        <div class="device-name">${escHtml(d.name)}</div>
+        <div class="device-meta">${d.ip_address} &middot; ${d.server_country || 'United States'} &middot; added ${fmtDate(d.created_at)}</div>
+      </div>
+      <div class="device-actions">
+        <button class="btn-icon" title="Download config" onclick="openDownload(${d.id},'${d.download_token}','${escHtml(d.name)}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+        <button class="btn-icon danger" title="Remove device" onclick="deleteDevice(${d.id})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  `).join('') + '</div>';
+}
+
+/* ── Add device ─────────────────────────────────────────── */
+function openAddDevice() {
+  document.getElementById('deviceNameInput').value = '';
+  document.getElementById('addDeviceErr').className = 'form-err';
+  document.getElementById('addDeviceBtn').disabled = false;
+  document.getElementById('addDeviceBtn').textContent = 'Create configuration';
+  openModal('modalAddDevice');
+  setTimeout(() => document.getElementById('deviceNameInput').focus(), 80);
+}
+
+document.getElementById('deviceNameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitAddDevice();
+});
+
+async function submitAddDevice() {
+  const name = document.getElementById('deviceNameInput').value.trim();
+  const btn  = document.getElementById('addDeviceBtn');
+  const err  = document.getElementById('addDeviceErr');
+  if (!name) { showFormErr(err, 'Please enter a device name.'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+  err.className = 'form-err';
+  try {
+    const res = await fetch('/api/v1/devices', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+    if (!res.ok) { showFormErr(err, data.error || 'Failed to create device.'); btn.disabled = false; btn.textContent = 'Create configuration'; return; }
+    closeModal('modalAddDevice');
+    await loadData();
+    showNotice('Device "' + escHtml(name) + '" added successfully.', 'success');
+  } catch (e) {
+    showFormErr(err, 'Network error. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Create configuration';
+  }
+}
+
+/* ── Delete device ──────────────────────────────────────── */
+async function deleteDevice(id) {
+  if (!confirm('Remove this device? Its configuration will stop working.')) return;
+  try {
+    const res = await fetch('/api/v1/devices/' + id, { method: 'DELETE', headers: authHeaders() });
+    if (!res.ok) { const d = await res.json(); showNotice(d.error || 'Failed to remove device.', 'warn'); return; }
+    await loadData();
+    showNotice('Device removed.', 'success');
+  } catch (e) {
+    showNotice('Network error. Please try again.', 'warn');
+  }
+}
+
+/* ── Download modal ─────────────────────────────────────── */
+function openDownload(id, token, name) {
+  document.getElementById('dlModalTitle').textContent = 'Download — ' + name;
+  document.getElementById('dlWstunnel').href = '/download/' + token + '/wstunnel-config';
+  document.getElementById('dlDirect').href = '/download/' + token + '/config';
+  openModal('modalDownload');
+}
+
+/* ── Platform download grid ─────────────────────────────── */
+function buildDownloadGrid() {
+  const ua = navigator.userAgent;
+  const isIOS      = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid  = /Android/.test(ua);
+  const isWindows  = /Windows/.test(ua);
+  const isMac      = /Macintosh|MacIntel/.test(ua) && !isIOS;
+  const isLinux    = /Linux/.test(ua) && !isAndroid;
+
+  const links = [
+    {
+      label: 'iOS (App Store)',
+      sub: 'WireGuard app',
+      href: 'https://apps.apple.com/app/wireguard/id1441195208',
+      icon: svgApple(),
+      featured: isIOS,
+    },
+    {
+      label: 'Android',
+      sub: 'Google Play',
+      href: 'https://play.google.com/store/apps/details?id=com.wireguard.android',
+      icon: svgAndroid(),
+      featured: isAndroid,
+    },
+    {
+      label: 'Windows',
+      sub: 'WireGuard installer',
+      href: 'https://download.wireguard.com/windows-client/wireguard-installer.exe',
+      icon: svgWindows(),
+      featured: isWindows,
+    },
+    {
+      label: 'macOS',
+      sub: 'Mac App Store',
+      href: 'https://apps.apple.com/app/wireguard/id1451685025',
+      icon: svgApple(),
+      featured: isMac,
+    },
+    {
+      label: 'Linux',
+      sub: 'apt / pacman / dnf',
+      href: 'https://www.wireguard.com/install/',
+      icon: svgLinux(),
+      featured: isLinux,
+    },
+  ];
+
+  const grid = document.getElementById('downloadGrid');
+  grid.innerHTML = links.map(l => `
+    <a class="dl-item${l.featured ? ' featured' : ''}" href="${l.href}" target="_blank" rel="noopener">
+      ${l.icon}
+      <span class="dl-name">${l.label}</span>
+      <span class="dl-sub">${l.sub}</span>
+    </a>
+  `).join('');
+}
+
+/* ── SVG icons for download grid ───────────────────────── */
+function svgApple() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-lt)" stroke-width="1.5" stroke-linecap="round">
+    <path d="M12 20.94c1.5 0 2.75-.72 3.5-1.84.75-1.12.75-2.5 0-3.62-.75-1.12-2-1.84-3.5-1.84s-2.75.72-3.5 1.84c-.75 1.12-.75 2.5 0 3.62C9.25 20.22 10.5 20.94 12 20.94z"/>
+    <path d="M15.5 6.5C15.5 4.57 13.93 3 12 3s-3.5 1.57-3.5 3.5"/>
+    <path d="M12 13.44V3"/>
+  </svg>`;
+}
+function svgAndroid() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-lt)" stroke-width="1.5" stroke-linecap="round">
+    <path d="M5 16V8a7 7 0 0 1 14 0v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/>
+    <line x1="8" y1="11" x2="8" y2="13"/><line x1="16" y1="11" x2="16" y2="13"/>
+    <path d="M7 3l2 3"/><path d="M17 3l-2 3"/>
+  </svg>`;
+}
+function svgWindows() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-lt)" stroke-width="1.5" stroke-linecap="round">
+    <path d="M3 5.5L10.5 4v7.5H3z"/><path d="M13 3.5L21 2v9.5h-8z"/>
+    <path d="M3 13H10.5v7.5L3 19z"/><path d="M13 13H21v8l-8-1z"/>
+  </svg>`;
+}
+function svgLinux() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-lt)" stroke-width="1.5" stroke-linecap="round">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+    <path d="M12 8v4l3 3"/>
+  </svg>`;
+}
+
+/* ── World map (canvas) ─────────────────────────────────── */
+function drawWorldMap() {
+  const canvas = document.getElementById('worldMap');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function ll(lon, lat) {
+    return [(lon + 180) / 360 * W, (90 - lat) / 180 * H];
+  }
+
+  function drawPath(points) {
+    ctx.beginPath();
+    points.forEach(([lon, lat], i) => {
+      const [x, y] = ll(lon, lat);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.fillStyle   = '#16293E';
+    ctx.strokeStyle = '#1F3D5A';
+    ctx.lineWidth   = 0.8;
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  /* Ocean */
+  ctx.fillStyle = '#050D18';
+  ctx.fillRect(0, 0, W, H);
+
+  /* Grid lines (subtle) */
+  ctx.strokeStyle = 'rgba(42,90,138,0.12)';
+  ctx.lineWidth = 0.5;
+  for (let lon = -180; lon <= 180; lon += 30) {
+    const [x] = ll(lon, 0);
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let lat = -90; lat <= 90; lat += 30) {
+    const [, y] = ll(0, lat);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  /* ── North America ── */
+  drawPath([
+    [-167,60],[-153,57],[-130,54],[-124,49],[-124,41],[-122,37],[-117,32],
+    [-110,23],[-92,16],[-83,9],[-77,8],[-76,10],
+    [-85,26],[-81,30],[-75,35],[-72,41],[-67,47],
+    [-60,46],[-53,47],[-55,52],[-67,56],[-64,60],
+    [-75,63],[-80,62],[-86,60],[-83,55],[-85,52],[-87,48],
+    [-95,50],[-97,55],[-100,59],[-108,60],
+    [-119,61],[-135,59],[-140,60],[-150,62],[-163,60]
+  ]);
+
+  /* Florida peninsula */
+  drawPath([[-82,30],[-81,26],[-80,25.5],[-81,24.5],[-82,25.5],[-83,27]]);
+
+  /* Baja California */
+  drawPath([[-117,32],[-110,23],[-109,24],[-116,30]]);
+
+  /* ── Greenland ── */
+  drawPath([
+    [-74,76],[-66,74],[-55,70],[-48,62],[-54,61],
+    [-58,63],[-67,65],[-73,72]
+  ]);
+
+  /* ── South America ── */
+  drawPath([
+    [-77,8],[-60,11],[-50,4],[-35,-8],[-52,-33],
+    [-57,-38],[-65,-55],[-75,-55],[-70,-18],[-77,-5],[-80,-2]
+  ]);
+
+  /* ── Europe (western) ── */
+  drawPath([
+    [-10,36],[-8,38],[-9,42],[3,43],[5,48],[8,54],[10,58],
+    [15,58],[15,69],[27,71],[30,60],[24,57],[18,55],
+    [15,51],[10,54],[8,54],[5,48],[2,44],[-1,44],[-5,44],[-10,36]
+  ]);
+
+  /* UK islands */
+  drawPath([[-6,50],[-2,51],[2,52],[0,56],[-5,58],[-6,56],[-5,52],[-6,50]]);
+
+  /* Ireland */
+  drawPath([[-10,52],[-6,52],[-6,54],[-10,54]]);
+
+  /* ── Africa ── */
+  drawPath([
+    [-6,36],[10,37],[25,33],[35,31],[43,11],[51,10],
+    [41,-4],[35,-26],[30,-34],[18,-34],[17,-29],
+    [12,-17],[12,-6],[9,1],[4,6],[-15,10],[-17,15],[-13,28]
+  ]);
+
+  /* Madagascar */
+  drawPath([[44,-12],[50,-12],[50,-25],[44,-25]]);
+
+  /* ── Asia (main body, joined to eastern Europe) ── */
+  drawPath([
+    [26,37],[30,37],[30,60],[40,65],[60,73],[80,73],[105,70],
+    [130,68],[140,58],[135,45],[145,44],[142,41],[132,38],
+    [120,30],[118,20],[108,16],[103,1],[100,5],
+    [80,25],[77,8],[63,23],[51,10],[43,11],[35,31],[25,33],
+    [36,37],[29,44],[24,57],[30,60],[26,37]
+  ]);
+
+  /* Japan (Honshu) */
+  drawPath([[130,34],[131,33],[135,34],[137,36],[140,38],[141,40],[140,42],[138,44],[136,42],[134,38],[130,34]]);
+
+  /* Korea */
+  drawPath([[126,34],[127,37],[129,38],[128,35],[126,34]]);
+
+  /* Sri Lanka */
+  drawPath([[80,9],[82,9],[82,7],[80,8]]);
+
+  /* Taiwan */
+  drawPath([[121,25],[122,25],[122,22],[121,22]]);
+
+  /* ── Australia ── */
+  drawPath([
+    [114,-22],[122,-22],[130,-11],[136,-12],[144,-14],
+    [148,-20],[153,-27],[153,-37],[148,-39],[140,-37],
+    [130,-32],[117,-31],[114,-25]
+  ]);
+
+  /* Tasmania */
+  drawPath([[144,-40],[148,-40],[148,-43],[144,-43]]);
+
+  /* New Zealand (North Island) */
+  drawPath([[174,-37],[178,-38],[176,-41],[174,-40]]);
+
+  /* New Zealand (South Island) */
+  drawPath([[166,-45],[172,-43],[172,-46],[168,-47],[166,-45]]);
+
+  /* ── Indonesia / SE Asia islands ── */
+  /* Sumatra */
+  drawPath([[95,5],[98,3],[105,1],[105,-4],[100,-5],[95,3]]);
+  /* Java */
+  drawPath([[105,-6],[111,-6],[115,-9],[107,-8],[105,-6]]);
+  /* Borneo */
+  drawPath([[108,-2],[117,4],[118,2],[116,-4],[110,-3],[108,-2]]);
+  /* Sulawesi (simplified) */
+  drawPath([[120,-1],[125,1],[126,-1],[123,-4],[120,-1]]);
+  /* Papua / New Guinea */
+  drawPath([[131,-2],[145,-5],[150,-9],[147,-10],[140,-8],[131,-4]]);
+
+  /* Philippines (Luzon) */
+  drawPath([[120,14],[122,16],[124,18],[122,18],[120,16]]);
+
+  /* ── Animated server location dot (New York: -73.9, 40.7) ── */
+  const [sx, sy] = ll(-73.9, 40.7);
+
+  function drawDot(t) {
+    /* Clear the dot area first */
+    const radius = 22;
+    ctx.clearRect(sx - radius, sy - radius, radius * 2, radius * 2);
+
+    /* Redraw the land at that spot (paint ocean then repaint continents in region) */
+    ctx.fillStyle = '#050D18';
+    ctx.fillRect(sx - radius, sy - radius, radius * 2, radius * 2);
+
+    /* Pulsing outer ring */
+    const pulse = 0.5 + 0.5 * Math.sin(t * 0.003);
+    const ringR = 9 + 5 * pulse;
+    ctx.beginPath();
+    ctx.arc(sx, sy, ringR, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,196,106,${0.04 + 0.06 * pulse})`;
+    ctx.fill();
+
+    /* Middle ring */
+    ctx.beginPath();
+    ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,196,106,0.18)';
+    ctx.fill();
+
+    /* Core dot */
+    ctx.beginPath();
+    ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#00C46A';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#00C46A';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    /* Label */
+    ctx.font = 'bold 9px system-ui,sans-serif';
+    ctx.fillStyle = 'rgba(239,243,248,0.7)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('NEW YORK', sx + 8, sy);
+  }
+
+  /* We need to redraw the continents ON TOP of the dot area each frame.
+     Simpler: stamp the static map to an offscreen canvas, then composite
+     the animated dot on top. */
+  const stamp = document.createElement('canvas');
+  stamp.width = W; stamp.height = H;
+  const sCtx = stamp.getContext('2d');
+  sCtx.drawImage(canvas, 0, 0);
+
+  function animate(t) {
+    ctx.drawImage(stamp, 0, 0);
+
+    const pulse = 0.5 + 0.5 * Math.sin(t * 0.003);
+    const ringR = 9 + 5 * pulse;
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, ringR, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,196,106,${0.06 + 0.08 * pulse})`;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, 6, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,196,106,0.25)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#00C46A';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = 'rgba(0,196,106,0.8)';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.font = 'bold 8px system-ui,sans-serif';
+    ctx.fillStyle = 'rgba(139,180,204,0.8)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('NEW YORK', sx + 7, sy);
+
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
+/* ── Accordion ──────────────────────────────────────────── */
+function toggleAcc(btn) {
+  const isOpen = btn.classList.contains('open');
+  document.querySelectorAll('.acc-btn.open').forEach(b => b.classList.remove('open'));
+  if (!isOpen) btn.classList.add('open');
+}
+
+/* ── Modals ─────────────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.backdrop').forEach(b => {
+  b.addEventListener('click', e => { if (e.target === b) b.classList.remove('open'); });
+});
+
+function showUpgrade() { openModal('modalUpgrade'); }
+
+/* ── Notices ────────────────────────────────────────────── */
+function showNotice(msg, type = 'info') {
+  const icons = {
+    info: '<path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    success: '<polyline points="20 6 9 17 4 12"/>',
+    warn: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  };
+  const cls = { info: 'notice-info', success: 'notice-success', warn: 'notice-warn' }[type];
+  const box = document.getElementById('noticeBox');
+  box.innerHTML = `<div class="notice ${cls}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">${icons[type]}</svg>
+    ${escHtml(msg)}
+  </div>`;
+  setTimeout(() => { box.innerHTML = ''; }, 5000);
+}
+
+/* ── Helpers ────────────────────────────────────────────── */
+function doLogout() {
   localStorage.removeItem('rok_token');
   window.location.href = '/';
 }
-
-function toast(msg, ms) {
-  var el = document.getElementById('toast');
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  } catch { return iso.slice(0, 10); }
+}
+function showFormErr(el, msg) {
   el.textContent = msg;
-  el.style.display = 'block';
-  setTimeout(function(){ el.style.display = 'none'; }, ms || 3500);
+  el.className = 'form-err on';
 }
-
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, function(c) {
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-  });
-}
-
-async function api(path, opts) {
-  opts = opts || {};
-  var res = await fetch(API + path, Object.assign({}, opts, {
-    headers: Object.assign(
-      {'Content-Type':'application/json', 'Authorization': 'Bearer ' + (tok() || '')},
-      opts.headers || {}
-    )
-  }));
-  var data = await res.json().catch(function(){ return {}; });
-  return { ok: res.ok, status: res.status, data: data };
-}
-
-function renderDevices(devices, limit) {
-  var area  = document.getElementById('devices-area');
-  var dot   = document.getElementById('st-dot');
-  var title = document.getElementById('st-title');
-  var sub   = document.getElementById('st-sub');
-
-  if (!devices.length) {
-    dot.className   = 'dot dot-off';
-    title.textContent = 'Sin configuracion activa';
-    sub.textContent   = 'Crea tu configuracion VPN para empezar a navegar de forma privada';
-    area.innerHTML =
-      '<div class="empty">' +
-        '<div class="empty-shield">' +
-          '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-            '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' +
-          '</svg>' +
-        '</div>' +
-        '<div class="empty-title">Activa tu VPN</div>' +
-        '<div class="empty-sub">Genera tu configuracion personal con un solo clic y empieza a navegar seguro</div>' +
-        '<button class="btn btn-green" id="btn-create" onclick="createDevice()">Activar VPN ahora</button>' +
-      '</div>';
-    return;
-  }
-
-  dot.className   = 'dot dot-on';
-  title.textContent = 'Configuracion lista — importa el archivo en WireGuard para conectarte';
-  sub.textContent   = devices[0].server_city
-    ? 'Servidor: ' + devices[0].server_city
-    : 'Importa el archivo .conf en WireGuard y activa el tunel';
-
-  var html = '';
-  devices.forEach(function(d) {
-    html +=
-      '<div class="device-row">' +
-        '<div class="device-info">' +
-          '<div class="device-name">' + esc(d.name || 'Mi dispositivo') + '</div>' +
-          '<div class="device-meta">' + esc(d.ip_address || '') +
-            (d.server_city ? '  —  ' + esc(d.server_city) : '') + '</div>' +
-        '</div>' +
-        '<div class="device-actions">' +
-          '<a href="/download/' + esc(d.download_token) + '" class="btn btn-primary btn-sm">Ver configuracion</a>' +
-          '<button class="btn btn-danger btn-sm" onclick="delDevice(' + d.id + ')">Eliminar</button>' +
-        '</div>' +
-      '</div>';
-  });
-
-  if (devices.length < limit) {
-    html +=
-      '<button class="btn-add" onclick="createDevice()">' +
-        'Agregar otro dispositivo (' + devices.length + ' / ' + limit + ')' +
-      '</button>';
-  }
-
-  area.innerHTML = html;
-}
-
-async function createDevice() {
-  var btn = document.getElementById('btn-create') || event.currentTarget;
-  if (btn) { btn.disabled = true; btn.textContent = 'Creando...'; }
-  var r = await api('/api/v1/devices', {
-    method: 'POST',
-    body: JSON.stringify({ name: 'mi-dispositivo' })
-  });
-  if (r.ok) {
-    window.location.href = '/download/' + r.data.download_token;
-  } else {
-    toast(r.data.error || 'No se pudo crear la configuracion');
-    if (btn) { btn.disabled = false; btn.textContent = 'Activar VPN ahora'; }
-  }
-}
-
-async function delDevice(id) {
-  if (!confirm('Eliminar este dispositivo? No podras deshacer esta accion.')) return;
-  var r = await api('/api/v1/devices/' + id, { method: 'DELETE' });
-  if (r.ok) { toast('Dispositivo eliminado'); load(); }
-  else toast(r.data.error || 'Error al eliminar');
-}
-
-async function load() {
-  if (!tok()) { window.location.href = '/'; return; }
-
-  var results = await Promise.all([api('/api/v1/me'), api('/api/v1/devices')]);
-  var me  = results[0];
-  var dev = results[1];
-
-  if (!me.ok) { logout(); return; }
-
-  var user    = me.data;
-  var devices = dev.ok ? (dev.data.devices || []) : [];
-
-  document.getElementById('hdr-email').textContent = user.email || '';
-  var badge = document.getElementById('hdr-badge');
-  if (user.tier === 'paid') {
-    badge.textContent  = 'Premium';
-    badge.className    = 'badge badge-paid';
-  } else {
-    badge.textContent  = 'Gratis';
-    badge.className    = 'badge badge-free';
-  }
-
-  document.getElementById('plan-name').textContent =
-    user.tier === 'paid' ? 'Plan Premium' : 'Plan Gratuito';
-  document.getElementById('plan-devices').textContent =
-    user.devices + ' de ' + user.device_limit +
-    ' dispositivo' + (user.device_limit !== 1 ? 's' : '') + ' en uso';
-
-  renderDevices(devices, user.device_limit);
-
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('content').style.display = '';
-}
-
-load();
 </script>
 </body>
 </html>

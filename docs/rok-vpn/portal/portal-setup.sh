@@ -56,18 +56,61 @@ fi
 echo "[6/7] Instalando servicio systemd..."
 cp "$SCRIPT_DIR/rok-portal.service" "/etc/systemd/system/${SERVICE_NAME}.service"
 
-# Generar clave de sesión Flask persistente. Sin esto, cada worker de gunicorn
-# usaría una clave distinta y las sesiones se romperían entre peticiones.
-SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
-if grep -q "ROK_SECRET_KEY=REPLACE_ME_AT_INSTALL" "$SERVICE_FILE"; then
+# ── Configuración y secretos ─────────────────────────────────────────────────
+# Los secretos van a /etc/rok-vpn/portal.env, NO a la unidad de systemd: la
+# unidad se versiona en git y `systemctl show` la deja leer a cualquier usuario
+# del sistema. El EnvironmentFile queda 0600 y sólo root lo ve.
+ENV_DIR="/etc/rok-vpn"
+ENV_FILE="${ENV_DIR}/portal.env"
+mkdir -p "$ENV_DIR"
+chmod 700 "$ENV_DIR"
+
+if [ ! -f "$ENV_FILE" ]; then
+  # Sin una clave de sesión fija cada worker de gunicorn usaría la suya y las
+  # sesiones se romperían entre peticiones.
   SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
   JWT_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
-  sed -i "s|ROK_SECRET_KEY=REPLACE_ME_AT_INSTALL\b|ROK_SECRET_KEY=${SECRET_KEY}|" "$SERVICE_FILE"
-  sed -i "s|ROK_JWT_SECRET=REPLACE_ME_AT_INSTALL_JWT|ROK_JWT_SECRET=${JWT_KEY}|" "$SERVICE_FILE"
-  chmod 600 "$SERVICE_FILE"
-  echo "    Claves de sesión y JWT generadas."
+  AGENT_TOKEN="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+  PORTAL_PW="$(python3 -c 'import secrets; print(secrets.token_urlsafe(18))')"
+
+  cat > "$ENV_FILE" << ENVEOF
+# Generado por portal-setup.sh — NO subir a git.
+ROK_SECRET_KEY=${SECRET_KEY}
+ROK_JWT_SECRET=${JWT_KEY}
+ROK_JWT_EXP_DAYS=30
+ROK_PORTAL_PASSWORD=${PORTAL_PW}
+ROK_AGENT_TOKEN=${AGENT_TOKEN}
+ROK_AGENT_TIMEOUT=10
+ROK_DB_PATH=/opt/rok-vpn/db/peers.db
+ROK_PEERS_DIR=/opt/rok-vpn/peers
+ROK_WG_IFACE=wg0
+ROK_WG_SUBNET=10.100.0
+ROK_DNS=10.100.0.1
+ROK_PORTAL_PORT=8080
+
+# ── Rellenar a mano antes de arrancar ───────────────────────────────────────
+# Endpoint WireGuard publico de ESTE VPS, en formato host:puerto.
+# Sin el, el catalogo se queda sin servidor local y no se pueden dar altas.
+ROK_VPS_ENDPOINT=
+
+# Dominio publico con https:// y sin barra final. Necesario para que la vista
+# previa de WhatsApp e iMessage resuelva la imagen de Open Graph.
+ROK_SITE_URL=
+
+# Square. Dejar en sandbox hasta tener las credenciales de produccion.
+ROK_SQUARE_ENV=sandbox
+ROK_SQUARE_TOKEN=
+ROK_SQUARE_LOCATION_ID=
+ENVEOF
+
+  chmod 600 "$ENV_FILE"
+  echo "    Secretos generados en ${ENV_FILE} (0600)."
+  echo ""
+  echo "    Contrasena del panel admin: ${PORTAL_PW}"
+  echo "    Guardala ahora; no se vuelve a mostrar."
+  echo ""
 else
-  echo "    Claves ya presentes, se conservan."
+  echo "    ${ENV_FILE} ya existe, se conserva."
 fi
 
 systemctl daemon-reload
@@ -75,16 +118,13 @@ systemctl enable "$SERVICE_NAME"
 
 # ── 7. Verificar contraseña de portal ────────────────────────────────────────
 echo "[7/7] Verificando configuración..."
-if grep -q "ROK_PORTAL_PASSWORD=changeme" "$SERVICE_FILE"; then
+if ! grep -q '^ROK_VPS_ENDPOINT=.\+' "$ENV_FILE"; then
   echo ""
-  echo "  ╔══════════════════════════════════════════════════════════════╗"
-  echo "  ║  ATENCIÓN: La contraseña del portal es 'changeme'.          ║"
-  echo "  ║  Edita /etc/systemd/system/${SERVICE_NAME}.service         ║"
-  echo "  ║  y cambia ROK_PORTAL_PASSWORD antes de iniciar el servicio. ║"
-  echo "  ╚══════════════════════════════════════════════════════════════╝"
+  echo "  ATENCION: falta ROK_VPS_ENDPOINT en ${ENV_FILE}."
+  echo "  Sin el, el catalogo no tiene servidor local y no se pueden dar altas."
   echo ""
-  echo "Después de cambiar la contraseña, ejecuta:"
-  echo "  systemctl daemon-reload && systemctl start $SERVICE_NAME"
+  echo "  Edita ${ENV_FILE}, rellena ROK_VPS_ENDPOINT y ROK_SITE_URL, y ejecuta:"
+  echo "    systemctl start $SERVICE_NAME"
 else
   systemctl start "$SERVICE_NAME"
   sleep 2

@@ -14,17 +14,29 @@ from flask import (Flask, Response, flash, jsonify, redirect,
                    render_template, request, send_file, session, url_for)
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import servers as srv
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("ROK_SECRET_KEY") or secrets.token_hex(32)
 
+# Detrás de nginx toda petición llega desde 127.0.0.1, así que sin esto el
+# limitador mete a todos los clientes en el mismo cubo: cinco intentos de login
+# en total dejarían fuera al resto del mundo. ProxyFix hace que remote_addr sea
+# la IP real del cliente. x_for=1 confía en exactamente un salto — el nuestro;
+# confiar en más dejaría que el cliente falsee su IP añadiendo cabeceras.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
 limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=["100 per minute"],
     storage_uri="memory://",
+    # Los tests recorren los mismos endpoints muchas veces seguidas y chocarían
+    # con el límite de 5/min de /login. Se desactiva sólo cuando se pide
+    # explícitamente; en producción la variable no existe y el límite queda activo.
+    enabled=os.environ.get("ROK_RATELIMIT_ENABLED", "1") != "0",
 )
 
 # ── Config from environment ────────────────────────────────────────────────────

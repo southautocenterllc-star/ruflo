@@ -51,11 +51,34 @@ server {
     # Cabeceras de seguridad mínimas para panel admin
     add_header X-Frame-Options DENY;
     add_header X-Content-Type-Options nosniff;
+    add_header Referrer-Policy strict-origin-when-cross-origin;
+
+    # La landing y las pantallas móviles llevan las imágenes y el runtime
+    # embebidos en base64 y rondan los 2,3 MB cada una. Sin gzip cada visita
+    # descarga ese peso completo; comprimidas bajan a unos pocos cientos de KB.
+    gzip              on;
+    gzip_types        text/html text/css application/javascript application/json image/svg+xml;
+    gzip_min_length   1024;
+    gzip_comp_level   6;
+    gzip_proxied      any;
+    gzip_vary         on;
+
+    # La imagen de Open Graph la piden los scrapers de WhatsApp e iMessage en
+    # cada compartición; se sirve desde disco sin pasar por gunicorn.
+    location /static/ {
+        alias       /opt/rok-vpn/portal/static/;
+        expires     7d;
+        add_header  Cache-Control "public, max-age=604800";
+        access_log  off;
+    }
 
     location / {
         proxy_pass         http://127.0.0.1:${PORTAL_PORT};
         proxy_set_header   Host \$host;
         proxy_set_header   X-Real-IP \$remote_addr;
+        # ProxyFix del portal lee la última IP de esta cabecera para aplicar el
+        # límite por cliente. nginx la reescribe siempre, así que un cliente no
+        # puede falsear la suya enviando su propio X-Forwarded-For.
         proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Proto https;
         proxy_read_timeout 30s;

@@ -7,32 +7,18 @@ Wants=network-online.target
 Type=simple
 WorkingDirectory=/opt/rok-vpn/portal
 
-# ── Variables de entorno ────────────────────────────────────────────────────
-# CAMBIA ROK_PORTAL_PASSWORD antes de iniciar el servicio.
-Environment="ROK_PORTAL_PASSWORD=changeme"
-# portal-setup.sh inyecta claves aleatorias durante la instalación.
-Environment="ROK_SECRET_KEY=REPLACE_ME_AT_INSTALL"
-Environment="ROK_JWT_SECRET=REPLACE_ME_AT_INSTALL_JWT"
-Environment="ROK_JWT_EXP_DAYS=30"
-Environment="ROK_DB_PATH=/opt/rok-vpn/db/peers.db"
-Environment="ROK_PEERS_DIR=/opt/rok-vpn/peers"
-Environment="ROK_VPS_ENDPOINT=74.208.44.254:1194"
-Environment="ROK_WG_IFACE=wg0"
-Environment="ROK_WG_SUBNET=10.100.0"
-Environment="ROK_DNS=10.100.0.1"
-Environment="ROK_PORTAL_PORT=8080"
-# Square — configura con tus credenciales reales (production) o de sandbox
-Environment="ROK_SQUARE_TOKEN=REPLACE_ME_SQUARE_TOKEN"
-Environment="ROK_SQUARE_ENV=sandbox"
-Environment="ROK_SQUARE_LOCATION_ID=REPLACE_ME_SQUARE_LOCATION"
+# ── Configuración ───────────────────────────────────────────────────────────
+# Todos los secretos viven en /etc/rok-vpn/portal.env (modo 0600, root),
+# NO en este archivo: la unidad se versiona en git y `systemctl show` la
+# expone a cualquier usuario del sistema. portal-setup.sh lo genera a partir
+# de .env.example con claves aleatorias.
+EnvironmentFile=/etc/rok-vpn/portal.env
 
-# Abrir puerto 8080 si no está abierto aún (idempotente)
-ExecStartPre=/bin/bash -c \
-  "nft list ruleset | grep -q 'tcp dport 8080 accept' || \
-   nft add rule inet filter input tcp dport 8080 accept"
-
+# Escucha sólo en loopback: nginx es la única vía de entrada. Antes se ataba a
+# 0.0.0.0 y hacía falta abrir el 8080 en nftables, lo que dejaba el portal
+# accesible por HTTP plano saltándose TLS y las cabeceras de seguridad.
 ExecStart=/opt/rok-vpn/portal/venv/bin/gunicorn \
-  --bind 0.0.0.0:8080 \
+  --bind 127.0.0.1:8080 \
   --workers 2 \
   --timeout 60 \
   --access-logfile - \
@@ -42,6 +28,13 @@ ExecStart=/opt/rok-vpn/portal/venv/bin/gunicorn \
 Restart=always
 RestartSec=5
 User=root
+
+# ── Endurecimiento ──────────────────────────────────────────────────────────
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/opt/rok-vpn /etc/wireguard
 
 [Install]
 WantedBy=multi-user.target

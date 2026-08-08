@@ -9,6 +9,14 @@ os.environ["ROK_DB_PATH"]       = os.path.join(tmp, "peers.db")
 os.environ["ROK_PEERS_DIR"]     = os.path.join(tmp, "peers")
 os.environ["ROK_PORTAL_PASSWORD"] = "test-pass-smoke"
 os.environ["ROK_SECRET_KEY"]    = "a" * 64
+# Sin endpoint no se marca ningún servidor como local y el catálogo se queda
+# sin servidor por defecto, así que las altas de peer fallan. El portal ya no
+# trae un IP de producción por defecto, de modo que el test debe fijar el suyo
+# (rango de documentación RFC 5737, nunca enrutable).
+os.environ["ROK_VPS_ENDPOINT"]  = "198.51.100.10:1194"
+# El test repite POST /login muchas veces y chocaría con el límite de 5/min.
+# El límite se cubre aparte, en test-ratelimit.py.
+os.environ["ROK_RATELIMIT_ENABLED"] = "0"
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -75,7 +83,7 @@ check("GET /admin sin sesión → redirect /login",
 # 4. login con contraseña incorrecta
 r = c.post("/login", data={"password": "wrong"}, follow_redirects=True)
 check("POST /login contraseña incorrecta → sigue en login",
-      b'name="password"' in r.data and "Contrase" in r.data.decode())
+      b'name="password"' in r.data and "Incorrect password" in r.data.decode())
 
 # 5. login correcto
 r = c.post("/login", data={"password": "test-pass-smoke"})
@@ -114,7 +122,7 @@ check("rok-vpn-smoke-1-wstunnel.conf guardado en PEERS_DIR",
 # 10. nombre duplicado rechazado
 r = c.post("/admin/add", data={"name": "smoke-1"}, follow_redirects=True)
 check("POST /admin/add nombre duplicado → error",
-      "Ya existe" in r.data.decode())
+      "already exists" in r.data.decode())
 
 # 11. obtener token de la BD
 with portal.get_db() as conn:
@@ -137,7 +145,7 @@ check("GET /download/<token>/config → .conf válido",
       r.status_code == 200
       and "[Interface]" in cfg
       and "Address = 10.100.0.2/24" in cfg
-      and "Endpoint = 74.208.44.254:1194" in cfg
+      and "Endpoint = 198.51.100.10:1194" in cfg
       and "AllowedIPs = 0.0.0.0/0, ::/0" in cfg,
       cfg)
 
@@ -161,7 +169,7 @@ check("GET /download/<token-inválido>/config → 404",
 # 16b. la PÁGINA de descarga con token inválido renderiza 404.html
 r = c2.get("/download/tokenqueNoExiste123")
 check("GET /download/<token-inválido> → 404 renderiza página",
-      r.status_code == 404 and "Enlace no v" in r.data.decode(),
+      r.status_code == 404 and "Invalid link" in r.data.decode(),
       f"{r.status_code} {r.data[:200]!r}")
 
 # 17. revocar sin sesión → redirect a login (no ejecuta)
@@ -173,7 +181,7 @@ check("POST /admin/revoke sin sesión → redirect login",
 # 18. revocar con sesión
 r = c.post("/admin/revoke/smoke-1", follow_redirects=True)
 check("POST /admin/revoke con sesión → revocado",
-      "revocado" in r.data.decode() and "Revocado" in r.data.decode())
+      "revoked" in r.data.decode())
 
 # 18b. conf files deleted from PEERS_DIR after revoke
 check("rok-vpn-smoke-1.conf borrado tras revocación",
@@ -213,7 +221,7 @@ check("Histórico: 2 filas smoke-1 (1 revocada + 1 activa)",
 # 24. duplicado entre ACTIVOS sigue rechazado
 r = c.post("/admin/add", data={"name": "smoke-1"}, follow_redirects=True)
 check("Duplicado entre activos → sigue rechazado",
-      "Ya existe" in r.data.decode())
+      "already exists" in r.data.decode())
 
 # 25. logout
 r = c.get("/logout")

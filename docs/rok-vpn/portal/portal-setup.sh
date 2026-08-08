@@ -25,17 +25,27 @@ mkdir -p "$PORTAL_DIR/templates" "$DB_DIR" "$PEERS_DIR"
 echo "[3/7] Copiando archivos..."
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-cp "$SCRIPT_DIR/app.py"                        "$PORTAL_DIR/app.py"
-cp "$SCRIPT_DIR/templates/login.html"          "$PORTAL_DIR/templates/login.html"
-cp "$SCRIPT_DIR/templates/admin.html"          "$PORTAL_DIR/templates/admin.html"
-cp "$SCRIPT_DIR/templates/download.html"       "$PORTAL_DIR/templates/download.html"
-cp "$SCRIPT_DIR/templates/404.html"            "$PORTAL_DIR/templates/404.html"
+cp "$SCRIPT_DIR/app.py"                           "$PORTAL_DIR/app.py"
+cp "$SCRIPT_DIR/requirements.txt"                 "$PORTAL_DIR/requirements.txt"
+
+# Templates
+for tmpl in login.html admin.html download.html 404.html landing.html mobile-screens.html; do
+  if [ -f "$SCRIPT_DIR/templates/$tmpl" ]; then
+    cp "$SCRIPT_DIR/templates/$tmpl" "$PORTAL_DIR/templates/$tmpl"
+  fi
+done
+
+# Static assets (OG image, etc.)
+if [ -d "$SCRIPT_DIR/static" ]; then
+  mkdir -p "$PORTAL_DIR/static"
+  cp -r "$SCRIPT_DIR/static/." "$PORTAL_DIR/static/"
+fi
 
 # ── 4. Entorno virtual Python ─────────────────────────────────────────────────
 echo "[4/7] Creando entorno virtual..."
 python3 -m venv "$PORTAL_DIR/venv"
 "$PORTAL_DIR/venv/bin/pip" install --upgrade pip -q
-"$PORTAL_DIR/venv/bin/pip" install flask "qrcode[pil]" gunicorn bcrypt PyJWT -q
+"$PORTAL_DIR/venv/bin/pip" install -r "$PORTAL_DIR/requirements.txt" -q
 
 # ── 5. Firewall — abrir TCP 8080 ──────────────────────────────────────────────
 echo "[5/7] Abriendo TCP $PORTAL_PORT en nftables..."

@@ -75,3 +75,32 @@ def test_walk_forward_and_risk_metrics():
     m = bt.metrics(t, c)
     assert {"sharpe", "sortino", "VaR95_trade_%", "CVaR95_trade_%"} <= m.keys()
     assert m["CVaR95_trade_%"] >= m["VaR95_trade_%"]
+
+
+def _fake_oanda(total):
+    """Fake OANDA endpoint honouring count + 'to' like the real API (newest-first paging)."""
+    import urllib.parse as up
+    times = pd.date_range("2024-01-01", periods=total, freq="h").strftime("%Y-%m-%dT%H:00:00.000000000Z")
+
+    def fetch(url, token):
+        assert token == "tok" and "/EUR_USD/candles" in url
+        q = dict(up.parse_qsl(up.urlparse(url).query))
+        end = list(times).index(q["to"]) if "to" in q else total
+        sel = times[max(0, end - int(q["count"])):end]
+        cs = [{"time": t, "complete": True, "mid": {"o": "1.1", "h": "1.2", "l": "1.0", "c": "1.15"}} for t in sel]
+        cs.append({"time": "9999", "complete": False, "mid": {"o": "0", "h": "0", "l": "0", "c": "0"}}) if "to" not in q else None
+        return {"candles": cs}
+    return fetch
+
+
+def test_load_oanda_pages_and_drops_incomplete(monkeypatch):
+    monkeypatch.setenv("OANDA_TOKEN", "tok")
+    df = bt.load_oanda("EUR_USD", bars=7000, fetch=_fake_oanda(9000))
+    assert len(df) == 7000 and df["time"].is_monotonic_increasing and df["time"].is_unique
+    assert df["close"].eq(1.15).all()
+
+
+def test_load_oanda_requires_token(monkeypatch):
+    monkeypatch.delenv("OANDA_TOKEN", raising=False)
+    with pytest.raises(RuntimeError):
+        bt.load_oanda("EUR_USD")

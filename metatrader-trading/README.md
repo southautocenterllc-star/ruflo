@@ -32,6 +32,7 @@ cd python
 python src/backtest.py --synthetic                     # smoke test on random data (no real edge)
 python src/backtest.py --csv EURUSD_H1.csv --spread 0.00015 --sl 0.0030 --tp 0.0060
 python src/backtest.py --mt5 EURUSD --bars 5000        # Windows + MT5 terminal
+python src/backtest.py --oanda EUR_USD --bars 10000 --save-csv EURUSD_H1.csv   # OANDA data
 python -m pytest tests
 ```
 Risk controls (ideas taken from the `ruflo-neural-trader` skills: trader-risk, trader-regime, trader-backtest):
@@ -40,6 +41,11 @@ Risk controls (ideas taken from the `ruflo-neural-trader` skills: trader-risk, t
 - Regime filter: `--min-adx 20` trades only in trending markets.
 - `--walk-forward 4` runs 4 consecutive windows to check the results hold across time
   (the strategy has no fitted parameters, so this measures stability, not optimisation).
+
+OANDA data (read-only, no orders are sent): create a **demo** account and API token at OANDA, then
+set `OANDA_TOKEN` (and optionally `OANDA_ENV=practice|live`, default `practice`) in your own shell.
+Never paste the token into chat, code or git. Instruments use OANDA names (`EUR_USD`, `GBP_USD`, `XAU_USD`),
+`--granularity M15|H1|H4|D`. `--save-csv` stores the data so you can re-run offline with `--csv`.
 
 CSV needs a header row: `time,open,high,low,close`.
 Model: entry at the next bar's open plus spread, SL/TP checked on high/low (SL first if both hit),

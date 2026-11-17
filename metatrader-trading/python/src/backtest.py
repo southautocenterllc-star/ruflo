@@ -1,6 +1,6 @@
 """Backtester for the EMA-crossover strategy (mirrors mql5/Experts/MACrossEA.mq5).
 
-Runs anywhere (no MT5 needed) on OHLC data from a CSV, from MT5 history, or synthetic data.
+Runs anywhere (no MT5 needed) on OHLC data from a CSV, MT5 history, OANDA, or synthetic data.
 
 Model:
 - Signal on a closed bar's cross; entry at the NEXT bar's open (+/- spread);
@@ -15,11 +15,16 @@ Usage:
     python src/backtest.py --synthetic
     python src/backtest.py --csv EURUSD_H1.csv --spread 0.00015 --sl 0.0030 --tp 0.0060
     python src/backtest.py --mt5 EURUSD --bars 5000
+    python src/backtest.py --oanda EUR_USD --bars 10000 --save-csv EURUSD_H1.csv   # needs OANDA_TOKEN
 CSV columns: time,open,high,low,close (header row required).
 """
 from __future__ import annotations
 
 import argparse
+import json
+import os
+import urllib.parse
+import urllib.request
 from dataclasses import dataclass
 
 import numpy as np
@@ -60,6 +65,49 @@ def load_mt5(symbol: str, bars: int = 5000) -> pd.DataFrame:
     df = pd.DataFrame(rates)
     df["time"] = pd.to_datetime(df["time"], unit="s")
     return df[["time", "open", "high", "low", "close"]]
+
+
+OANDA_HOSTS = {"practice": "https://api-fxpractice.oanda.com", "live": "https://api-fxtrade.oanda.com"}
+
+
+def _oanda_get(url: str, token: str) -> dict:
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+    with urllib.request.urlopen(req, timeout=30) as r:  # nosec - fixed OANDA hosts only
+        return json.load(r)
+
+
+def load_oanda(instrument: str = "EUR_USD", bars: int = 5000, granularity: str = "H1",
+               fetch=_oanda_get) -> pd.DataFrame:
+    """Download completed mid-price candles from OANDA v3 (read-only, no orders are sent).
+
+    Needs env var OANDA_TOKEN (create it in your OANDA demo account). OANDA_ENV is
+    'practice' (default) or 'live'. Instrument uses OANDA naming: EUR_USD, GBP_USD, XAU_USD...
+    """
+    token = os.getenv("OANDA_TOKEN")
+    if not token:
+        raise RuntimeError("Set OANDA_TOKEN (and optionally OANDA_ENV=practice|live)")
+    env = os.getenv("OANDA_ENV", "practice")
+    if env not in OANDA_HOSTS:
+        raise RuntimeError("OANDA_ENV must be 'practice' or 'live'")
+    base = f"{OANDA_HOSTS[env]}/v3/instruments/{urllib.parse.quote(instrument)}/candles"
+    rows, to = [], None
+    while len(rows) < bars:
+        q = {"granularity": granularity, "price": "M", "count": min(5000, bars - len(rows))}
+        if to:
+            q["to"] = to
+        candles = [c for c in fetch(f"{base}?{urllib.parse.urlencode(q)}", token)["candles"] if c["complete"]]
+        if not candles:
+            break
+        rows = [{"time": c["time"], "open": float(c["mid"]["o"]), "high": float(c["mid"]["h"]),
+                 "low": float(c["mid"]["l"]), "close": float(c["mid"]["c"])} for c in candles] + rows
+        to = candles[0]["time"]
+        if len(candles) < q["count"]:
+            break
+    if not rows:
+        raise RuntimeError(f"No candles returned for {instrument}")
+    df = pd.DataFrame(rows).drop_duplicates("time")
+    df["time"] = pd.to_datetime(df["time"]).dt.tz_localize(None)
+    return df.sort_values("time").tail(bars).reset_index(drop=True)
 
 
 def synthetic(n: int = 5000, seed: int = 42) -> pd.DataFrame:
@@ -216,7 +264,10 @@ def main() -> None:
     src = ap.add_mutually_exclusive_group(required=True)
     src.add_argument("--csv")
     src.add_argument("--mt5", metavar="SYMBOL")
+    src.add_argument("--oanda", metavar="INSTRUMENT", help="e.g. EUR_USD (needs OANDA_TOKEN)")
     src.add_argument("--synthetic", action="store_true")
+    ap.add_argument("--granularity", default="H1", help="OANDA candle size: M15, H1, H4, D")
+    ap.add_argument("--save-csv", metavar="PATH", help="save the downloaded data for offline reuse")
     ap.add_argument("--bars", type=int, default=5000)
     d = Params()
     for name in ("fast", "slow"):
@@ -229,7 +280,17 @@ def main() -> None:
     ap.add_argument("--walk-forward", type=int, default=0, metavar="N", help="also run N consecutive windows")
     a = ap.parse_args()
 
-    df = load_csv(a.csv) if a.csv else load_mt5(a.mt5, a.bars) if a.mt5 else synthetic(a.bars)
+    if a.csv:
+        df = load_csv(a.csv)
+    elif a.mt5:
+        df = load_mt5(a.mt5, a.bars)
+    elif a.oanda:
+        df = load_oanda(a.oanda, a.bars, a.granularity)
+    else:
+        df = synthetic(a.bars)
+    if a.save_csv:
+        df.to_csv(a.save_csv, index=False)
+        print(f"saved {len(df)} bars to {a.save_csv}")
     p = Params(fast=a.fast, slow=a.slow, sl=a.sl, tp=a.tp, spread=a.spread, risk_pct=a.risk_pct,
                min_adx=a.min_adx, daily_loss_limit=a.daily_limit, weekly_loss_limit=a.weekly_limit)
     trades, curve = run(df, p)

@@ -46,3 +46,32 @@ def test_synthetic_runs_and_reports():
 def test_invalid_params():
     with pytest.raises(ValueError):
         bt.run(bt.synthetic(100), bt.Params(sl=0))
+
+
+def test_circuit_breaker_blocks_entries_after_daily_loss(monkeypatch):
+    # two losing longs on the same day; second must be blocked by a 1% daily limit
+    rows = [(10, 10, 10, 10)] * 2 + [(10, 10, 8, 9), (10, 10, 10, 10), (10, 10, 8, 9)]
+    df = bars(rows)
+    monkeypatch.setattr(bt, "signals", lambda *a, **k: pd.Series([0, 1, 0, 1, 0]))
+    p = bt.Params(sl=1.0, tp=5.0, spread=0.0, risk_pct=2.0, daily_loss_limit=1.0, weekly_loss_limit=0)
+    trades, _ = bt.run(df, p)
+    assert len(trades) == 1
+    p2 = bt.Params(sl=1.0, tp=5.0, spread=0.0, risk_pct=2.0, daily_loss_limit=0, weekly_loss_limit=0)
+    assert len(bt.run(df, p2)[0]) == 2
+
+
+def test_adx_filter_reduces_trades():
+    df = bt.synthetic(3000)
+    base = bt.run(df, bt.Params(daily_loss_limit=0, weekly_loss_limit=0))[0]
+    filt = bt.run(df, bt.Params(min_adx=40, daily_loss_limit=0, weekly_loss_limit=0))[0]
+    assert len(filt) <= len(base)
+
+
+def test_walk_forward_and_risk_metrics():
+    df = bt.synthetic(2000)
+    wf = bt.walk_forward(df, bt.Params(), 4)
+    assert len(wf) == 4
+    t, c = bt.run(df)
+    m = bt.metrics(t, c)
+    assert {"sharpe", "sortino", "VaR95_trade_%", "CVaR95_trade_%"} <= m.keys()
+    assert m["CVaR95_trade_%"] >= m["VaR95_trade_%"]

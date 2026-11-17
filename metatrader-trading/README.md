@@ -34,6 +34,13 @@ python src/backtest.py --csv EURUSD_H1.csv --spread 0.00015 --sl 0.0030 --tp 0.0
 python src/backtest.py --mt5 EURUSD --bars 5000        # Windows + MT5 terminal
 python -m pytest tests
 ```
+Risk controls (ideas taken from the `ruflo-neural-trader` skills: trader-risk, trader-regime, trader-backtest):
+- Metrics: Sharpe, Sortino, VaR95/CVaR95 per trade.
+- Circuit breakers: `--daily-limit 3 --weekly-limit 5` (% of equity; 0 disables) stop new entries after the limit.
+- Regime filter: `--min-adx 20` trades only in trending markets.
+- `--walk-forward 4` runs 4 consecutive windows to check the results hold across time
+  (the strategy has no fitted parameters, so this measures stability, not optimisation).
+
 CSV needs a header row: `time,open,high,low,close`.
 Model: entry at the next bar's open plus spread, SL/TP checked on high/low (SL first if both hit),
 1 position at a time, position size = risk % of equity at the SL distance. No swaps/commission/slippage,

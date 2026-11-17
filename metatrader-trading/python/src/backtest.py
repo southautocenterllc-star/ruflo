@@ -8,6 +8,8 @@ Model:
 - Exits only via SL/TP, checked on high/low; if both hit in one bar, SL is assumed first.
 - Position size = risk_pct of equity at the SL distance, like the EA.
 - One position at a time.
+- Circuit breakers: no new entries after the daily/weekly loss limit is hit (realised equity).
+- Optional regime filter: trade only when ADX >= --min-adx.
 
 Usage:
     python src/backtest.py --synthetic
@@ -33,6 +35,10 @@ class Params:
     spread: float = 0.00015   # paid on entry, in price units
     risk_pct: float = 1.0     # % of equity risked per trade
     start_equity: float = 10_000.0
+    daily_loss_limit: float = 3.0    # circuit breaker: stop opening trades after -3% in a day (0 = off)
+    weekly_loss_limit: float = 5.0   # ... or -5% in a week (0 = off)
+    min_adx: float = 0.0             # regime filter: only trade when ADX >= this (0 = off, ~20 = trending)
+    bars_per_year: int = 24 * 252    # for annualising Sharpe/Sortino (H1 bars)
 
 
 def load_csv(path: str) -> pd.DataFrame:
@@ -80,6 +86,21 @@ def signals(close: pd.Series, fast: int, slow: int) -> pd.Series:
     return up.astype(int) - down.astype(int)
 
 
+def adx(df: pd.DataFrame, n: int = 14) -> pd.Series:
+    """Wilder ADX. High (>~20-25) = trending regime, low = ranging."""
+    up, down = df["high"].diff(), -df["low"].diff()
+    plus = np.where((up > down) & (up > 0), up, 0.0)
+    minus = np.where((down > up) & (down > 0), down, 0.0)
+    pc = df["close"].shift(1)
+    tr = pd.concat([df["high"] - df["low"], (df["high"] - pc).abs(), (df["low"] - pc).abs()], axis=1).max(axis=1)
+    a = 1 / n
+    atr = tr.ewm(alpha=a, adjust=False).mean()
+    pdi = 100 * pd.Series(plus, index=df.index).ewm(alpha=a, adjust=False).mean() / atr
+    mdi = 100 * pd.Series(minus, index=df.index).ewm(alpha=a, adjust=False).mean() / atr
+    dx = 100 * (pdi - mdi).abs() / (pdi + mdi).replace(0, np.nan)
+    return dx.ewm(alpha=a, adjust=False).mean().fillna(0)
+
+
 def run(df: pd.DataFrame, p: Params = Params()) -> tuple[pd.DataFrame, pd.Series]:
     """Return (trades, equity curve indexed like df)."""
     if p.sl <= 0 or p.tp <= 0:
@@ -92,9 +113,27 @@ def run(df: pd.DataFrame, p: Params = Params()) -> tuple[pd.DataFrame, pd.Series
     pos = 0
     entry = sl = tp = 0.0
     entry_i = 0
+    trend = adx(df).to_numpy() if p.min_adx > 0 else None
+    if "time" in df:
+        t = pd.to_datetime(df["time"])
+        day_key = t.dt.floor("D").factorize()[0]
+        week_key = t.dt.to_period("W").astype(str).factorize()[0]
+    else:
+        day_key = week_key = np.zeros(len(df), dtype=int)
+    day_eq = week_eq = equity
+    cur_day = cur_week = -1
 
     for i in range(1, len(df)):
-        if not pos and sig[i - 1] != 0:
+        if day_key[i] != cur_day:
+            cur_day, day_eq = day_key[i], equity
+        if week_key[i] != cur_week:
+            cur_week, week_eq = week_key[i], equity
+        halted = (
+            (p.daily_loss_limit > 0 and equity / day_eq - 1 <= -p.daily_loss_limit / 100)
+            or (p.weekly_loss_limit > 0 and equity / week_eq - 1 <= -p.weekly_loss_limit / 100)
+        )
+        regime_ok = trend is None or trend[i - 1] >= p.min_adx
+        if not pos and sig[i - 1] != 0 and not halted and regime_ok:
             pos = int(sig[i - 1])
             entry = o[i] + (p.spread if pos == 1 else -p.spread)
             sl = entry - pos * p.sl
@@ -131,6 +170,14 @@ def metrics(trades: pd.DataFrame, curve: pd.Series, p: Params = Params()) -> dic
     wins = trades.loc[trades["r"] > 0, "r"].sum()
     losses = -trades.loc[trades["r"] <= 0, "r"].sum()
     dd = (curve / curve.cummax() - 1).min()
+    rets = curve.pct_change().dropna()
+    ann = np.sqrt(p.bars_per_year)
+    sharpe = rets.mean() / rets.std() * ann if rets.std() > 0 else 0.0
+    downside = np.sqrt((np.minimum(rets, 0) ** 2).mean())   # downside deviation over all bars
+    sortino = rets.mean() / downside * ann if downside > 0 else 0.0
+    pct = trades["r"] * p.risk_pct                      # per-trade return, % of equity
+    var95 = -np.percentile(pct, 5)
+    cvar95 = -pct[pct <= np.percentile(pct, 5)].mean()
     return {
         "trades": len(trades),
         "win_rate_%": round(100 * (trades["r"] > 0).mean(), 1),
@@ -138,8 +185,30 @@ def metrics(trades: pd.DataFrame, curve: pd.Series, p: Params = Params()) -> dic
         "avg_R": round(trades["r"].mean(), 3),
         "return_%": round(100 * (curve.iloc[-1] / p.start_equity - 1), 2),
         "max_drawdown_%": round(100 * dd, 2),
+        "sharpe": round(sharpe, 2),
+        "sortino": round(sortino, 2),
+        "VaR95_trade_%": round(var95, 2),
+        "CVaR95_trade_%": round(cvar95, 2),
         "final_equity": round(float(curve.iloc[-1]), 2),
     }
+
+
+def walk_forward(df: pd.DataFrame, p: Params = Params(), splits: int = 4) -> pd.DataFrame:
+    """Run the strategy on `splits` consecutive windows to check stability across time.
+
+    The strategy has no fitted parameters, so this measures consistency (does the edge hold in
+    every period?), not out-of-sample optimisation. If you tune parameters, tune on early
+    windows only and judge on later ones.
+    """
+    if splits < 2:
+        raise ValueError("splits must be >= 2")
+    size = len(df) // splits
+    rows = []
+    for k in range(splits):
+        w = df.iloc[k * size:(k + 1) * size if k < splits - 1 else len(df)].reset_index(drop=True)
+        tr, cv = run(w, p)
+        rows.append({"window": k + 1, **metrics(tr, cv, p)})
+    return pd.DataFrame(rows).set_index("window")
 
 
 def main() -> None:
@@ -154,13 +223,21 @@ def main() -> None:
         ap.add_argument(f"--{name}", type=int, default=getattr(d, name))
     for name in ("sl", "tp", "spread", "risk_pct"):
         ap.add_argument(f"--{name.replace('_', '-')}", type=float, default=getattr(d, name))
+    ap.add_argument("--min-adx", type=float, default=d.min_adx, help="regime filter, e.g. 20")
+    ap.add_argument("--daily-limit", type=float, default=d.daily_loss_limit)
+    ap.add_argument("--weekly-limit", type=float, default=d.weekly_loss_limit)
+    ap.add_argument("--walk-forward", type=int, default=0, metavar="N", help="also run N consecutive windows")
     a = ap.parse_args()
 
     df = load_csv(a.csv) if a.csv else load_mt5(a.mt5, a.bars) if a.mt5 else synthetic(a.bars)
-    p = Params(fast=a.fast, slow=a.slow, sl=a.sl, tp=a.tp, spread=a.spread, risk_pct=a.risk_pct)
+    p = Params(fast=a.fast, slow=a.slow, sl=a.sl, tp=a.tp, spread=a.spread, risk_pct=a.risk_pct,
+               min_adx=a.min_adx, daily_loss_limit=a.daily_limit, weekly_loss_limit=a.weekly_limit)
     trades, curve = run(df, p)
     for k, v in metrics(trades, curve, p).items():
         print(f"{k:>16}: {v}")
+    if a.walk_forward:
+        print("\nwalk-forward windows:")
+        print(walk_forward(df, p, a.walk_forward).to_string())
 
 
 if __name__ == "__main__":
